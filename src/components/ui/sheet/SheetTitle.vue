@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { type HTMLAttributes, computed } from 'vue'
-import { AlertDialogTitle, type AlertDialogTitleProps } from 'radix-vue'
+import { DialogTitle, type DialogTitleProps } from 'radix-vue'
 import { cn } from '@/lib/utils'
 
-const props = defineProps<AlertDialogTitleProps & { class?: HTMLAttributes['class'] }>()
+const props = defineProps<DialogTitleProps & { class?: HTMLAttributes['class'] }>()
 
 const delegatedProps = computed(() => {
   const { class: _, ...delegated } = props
@@ -13,10 +13,10 @@ const delegatedProps = computed(() => {
 </script>
 
 <template>
-  <AlertDialogTitle
+  <DialogTitle
+    :class="cn('text-lg font-semibold text-foreground', props.class)"
     v-bind="delegatedProps"
-    :class="cn('text-lg font-semibold', props.class)"
   >
     <slot />
-  </AlertDialogTitle>
+  </DialogTitle>
 </template>

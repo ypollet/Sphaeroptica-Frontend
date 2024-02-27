@@ -12,7 +12,6 @@ const msg = ref('Open');
 
 
 function getMessage() {
-  console.log("Bol")
   const path = 'http://localhost:5000/ping';
   axios.get(path)
     .then((res) => {

@@ -18,7 +18,7 @@ import {
 </script>
 
 <template>
-  <Menubar class="rounded border-b">
+  <Menubar class="rounded border-b z-100 h-10">
     <MenubarMenu>
       <MenubarTrigger class="relative">
         File

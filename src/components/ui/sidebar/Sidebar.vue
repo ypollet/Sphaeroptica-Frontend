@@ -1,157 +1,298 @@
+<script setup lang="ts">
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+var playlists =  [
+  'Recently Added',
+  'Recently Played',
+  'Top Songs',
+  'Top Albums',
+  'Top Artists',
+  'Logic Discography',
+  'Bedtime Beats',
+  'Feeling Happy',
+  'I miss Y2K Pop',
+  'Runtober',
+  'Mellow Days',
+  'Eminem Essentials',
+]
+</script>
+
 <template>
-    <!--
-      This example requires updating your template:
-  
-      ```
-      <html class="h-full bg-white">
-      <body class="h-full">
-      ```
-    -->
-    <div>
-      <TransitionRoot as="template" :show="sidebarOpen">
-        <Dialog as="div" class="relative z-50 lg:hidden" @close="sidebarOpen = false">
-          <TransitionChild as="template" enter="transition-opacity ease-linear duration-300" enter-from="opacity-0" enter-to="opacity-100" leave="transition-opacity ease-linear duration-300" leave-from="opacity-100" leave-to="opacity-0">
-            <div class="fixed inset-0 bg-gray-900/80" />
-          </TransitionChild>
-  
-          <div class="fixed inset-0 flex">
-            <TransitionChild as="template" enter="transition ease-in-out duration-300 transform" enter-from="-translate-x-full" enter-to="translate-x-0" leave="transition ease-in-out duration-300 transform" leave-from="translate-x-0" leave-to="-translate-x-full">
-              <DialogPanel class="relative mr-16 flex w-full max-w-xs flex-1">
-                <TransitionChild as="template" enter="ease-in-out duration-300" enter-from="opacity-0" enter-to="opacity-100" leave="ease-in-out duration-300" leave-from="opacity-100" leave-to="opacity-0">
-                  <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
-                    <button type="button" class="-m-2.5 p-2.5" @click="sidebarOpen = false">
-                      <span class="sr-only">Close sidebar</span>
-                      <XMarkIcon class="h-6 w-6 text-white" aria-hidden="true" />
-                    </button>
-                  </div>
-                </TransitionChild>
-                <!-- Sidebar component, swap this element with another sidebar if you like -->
-                <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-2">
-                  <div class="flex h-16 shrink-0 items-center">
-                    <img class="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company" />
-                  </div>
-                  <nav class="flex flex-1 flex-col">
-                    <ul role="list" class="flex flex-1 flex-col gap-y-7">
-                      <li>
-                        <ul role="list" class="-mx-2 space-y-1">
-                          <li v-for="item in navigation" :key="item.name">
-                            <a :href="item.href" :class="[item.current ? 'bg-gray-50 text-indigo-600' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50', 'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold']">
-                              <component :is="item.icon" :class="[item.current ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-600', 'h-6 w-6 shrink-0']" aria-hidden="true" />
-                              {{ item.name }}
-                            </a>
-                          </li>
-                        </ul>
-                      </li>
-                      <li>
-                        <div class="text-xs font-semibold leading-6 text-gray-400">Your teams</div>
-                        <ul role="list" class="-mx-2 mt-2 space-y-1">
-                          <li v-for="team in teams" :key="team.name">
-                            <a :href="team.href" :class="[team.current ? 'bg-gray-50 text-indigo-600' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50', 'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold']">
-                              <span :class="[team.current ? 'text-indigo-600 border-indigo-600' : 'text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600', 'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white']">{{ team.initial }}</span>
-                              <span class="truncate">{{ team.name }}</span>
-                            </a>
-                          </li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </Dialog>
-      </TransitionRoot>
-  
-      <!-- Static sidebar for desktop -->
-      <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-        <!-- Sidebar component, swap this element with another sidebar if you like -->
-        <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
-          <div class="flex h-16 shrink-0 items-center">
-            <img class="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company" />
-          </div>
-          <nav class="flex flex-1 flex-col">
-            <ul role="list" class="flex flex-1 flex-col gap-y-7">
-              <li>
-                <ul role="list" class="-mx-2 space-y-1">
-                  <li v-for="item in navigation" :key="item.name">
-                    <a :href="item.href" :class="[item.current ? 'bg-gray-50 text-indigo-600' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50', 'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold']">
-                      <component :is="item.icon" :class="[item.current ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-600', 'h-6 w-6 shrink-0']" aria-hidden="true" />
-                      {{ item.name }}
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <div class="text-xs font-semibold leading-6 text-gray-400">Your teams</div>
-                <ul role="list" class="-mx-2 mt-2 space-y-1">
-                  <li v-for="team in teams" :key="team.name">
-                    <a :href="team.href" :class="[team.current ? 'bg-gray-50 text-indigo-600' : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50', 'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold']">
-                      <span :class="[team.current ? 'text-indigo-600 border-indigo-600' : 'text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600', 'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white']">{{ team.initial }}</span>
-                      <span class="truncate">{{ team.name }}</span>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              <li class="-mx-6 mt-auto">
-                <a href="#" class="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50">
-                  <img class="h-8 w-8 rounded-full bg-gray-50" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
-                  <span class="sr-only">Your profile</span>
-                  <span aria-hidden="true">Tom Cook</span>
-                </a>
-              </li>
-            </ul>
-          </nav>
+  <div class="pb-12">
+    <div class="space-y-4 py-4">
+      <div class="px-3 py-2">
+        <h2 class="mb-2 px-4 text-lg font-semibold tracking-tight">
+          Discover
+        </h2>
+        <div class="space-y-1">
+          <Button variant="secondary" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="10 8 16 12 10 16 10 8" />
+            </svg>
+            Listen Now
+          </Button>
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <rect width="7" height="7" x="3" y="3" rx="1" />
+              <rect width="7" height="7" x="14" y="3" rx="1" />
+              <rect width="7" height="7" x="14" y="14" rx="1" />
+              <rect width="7" height="7" x="3" y="14" rx="1" />
+            </svg>
+            Browse
+          </Button>
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
+              <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
+              <circle cx="12" cy="12" r="2" />
+              <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
+              <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19" />
+            </svg>
+            Radio
+          </Button>
         </div>
       </div>
-  
-      <div class="sticky top-0 z-40 flex items-center gap-x-6 bg-white px-4 py-4 shadow-sm sm:px-6 lg:hidden">
-        <button type="button" class="-m-2.5 p-2.5 text-gray-700 lg:hidden" @click="sidebarOpen = true">
-          <span class="sr-only">Open sidebar</span>
-          <Bars3Icon class="h-6 w-6" aria-hidden="true" />
-        </button>
-        <div class="flex-1 text-sm font-semibold leading-6 text-gray-900">Dashboard</div>
-        <a href="#">
-          <span class="sr-only">Your profile</span>
-          <img class="h-8 w-8 rounded-full bg-gray-50" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
-        </a>
-      </div>
-  
-      <main class="py-10 lg:pl-72">
-        <div class="px-4 sm:px-6 lg:px-8">
-          <!-- Your content -->
+      <div class="px-3 py-2">
+        <h2 class="mb-2 px-4 text-lg font-semibold tracking-tight">
+          Library
+        </h2>
+        <div class="space-y-1">
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <path d="M21 15V6" />
+              <path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+              <path d="M12 12H3" />
+              <path d="M16 6H3" />
+              <path d="M12 18H3" />
+            </svg>
+            Playlists
+          </Button>
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <circle cx="8" cy="18" r="4" />
+              <path d="M12 18V2l7 4" />
+            </svg>
+            Songs
+          </Button>
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Made for You
+          </Button>
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12" />
+              <circle cx="17" cy="7" r="5" />
+            </svg>
+            Artists
+          </Button>
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <path d="m16 6 4 14" />
+              <path d="M12 6v14" />
+              <path d="M8 8v12" />
+              <path d="M4 4v16" />
+            </svg>
+            Albums
+          </Button>
         </div>
-      </main>
+        <div class="space-y-1">
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <path d="M21 15V6" />
+              <path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+              <path d="M12 12H3" />
+              <path d="M16 6H3" />
+              <path d="M12 18H3" />
+            </svg>
+            Playlists
+          </Button>
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <circle cx="8" cy="18" r="4" />
+              <path d="M12 18V2l7 4" />
+            </svg>
+            Songs
+          </Button>
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Made for You
+          </Button>
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12" />
+              <circle cx="17" cy="7" r="5" />
+            </svg>
+            Artists
+          </Button>
+          <Button variant="ghost" class="w-full justify-start">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              class="mr-2 h-4 w-4"
+            >
+              <path d="m16 6 4 14" />
+              <path d="M12 6v14" />
+              <path d="M8 8v12" />
+              <path d="M4 4v16" />
+            </svg>
+            Albums
+          </Button>
+        </div>
+      </div>
+      <div class="py-2">
+        <h2 class="relative px-7 text-lg font-semibold tracking-tight">
+          Playlists
+        </h2>
+        <ScrollArea class="h-[300px] px-1">
+          <div class="space-y-1 p-2">
+            <Button
+              v-for="(playlist, i) in playlists"
+              :key="`${playlist}-${i}`"
+              variant="ghost"
+              class="w-full justify-start font-normal"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                class="mr-2 h-4 w-4"
+              >
+                <path d="M21 15V6" />
+                <path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                <path d="M12 12H3" />
+                <path d="M16 6H3" />
+                <path d="M12 18H3" />
+              </svg>
+              {{ playlist }}
+            </Button>
+          </div>
+        </ScrollArea>
+      </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref } from 'vue'
-  import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
-  import {
-    Bars3Icon,
-    CalendarIcon,
-    ChartPieIcon,
-    DocumentDuplicateIcon,
-    FolderIcon,
-    HomeIcon,
-    UsersIcon,
-    XMarkIcon,
-  } from '@heroicons/vue/24/outline'
-  
-  const navigation = [
-    { name: 'Dashboard', href: '#', icon: HomeIcon, current: true },
-    { name: 'Team', href: '#', icon: UsersIcon, current: false },
-    { name: 'Projects', href: '#', icon: FolderIcon, current: false },
-    { name: 'Calendar', href: '#', icon: CalendarIcon, current: false },
-    { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
-    { name: 'Reports', href: '#', icon: ChartPieIcon, current: false },
-  ]
-  const teams = [
-    { id: 1, name: 'Heroicons', href: '#', initial: 'H', current: false },
-    { id: 2, name: 'Tailwind Labs', href: '#', initial: 'T', current: false },
-    { id: 3, name: 'Workcation', href: '#', initial: 'W', current: false },
-  ]
-  
-  const sidebarOpen = ref(false)
-  </script>
-  
+  </div>
+</template>

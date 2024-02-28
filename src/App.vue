@@ -2,10 +2,11 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { useDark } from "@vueuse/core";
 const isDark = useDark();
+isDark.value = true;
 
 </script>
 
 <template>
-  <RouterView />
+  <div class="h-screen overflow-hidden"> <RouterView/></div>
 </template>
 

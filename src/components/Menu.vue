@@ -15,10 +15,32 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from '@/components/ui/menubar'
+
+import {Button} from '@/components/ui/button'
+
+import IconBars3 from '@/components/icons/IconBars3.vue'
+
+import {
+  Bars3Icon,
+  CalendarIcon,
+  ChartPieIcon,
+  DocumentDuplicateIcon,
+  FolderIcon,
+  HomeIcon,
+  UsersIcon,
+  XMarkIcon,
+} from '@heroicons/vue/24/outline'
+const emit = defineEmits<{
+  (e: 'show'): void
+}>()
+
 </script>
 
 <template>
   <Menubar class="rounded border-b z-100 h-10">
+    <Button class="relative bg-inherit" @click="emit('show')">
+      <IconBars3 class="h-6 w-6" aria-hidden="true"/>
+    </Button>
     <MenubarMenu>
       <MenubarTrigger class="relative">
         File
@@ -174,7 +196,7 @@ import {
       </MenubarContent>
     </MenubarMenu>
     <MenubarMenu>
-      <MenubarTrigger class="hidden md:block">
+      <MenubarTrigger>
         Settings
       </MenubarTrigger>
       <MenubarContent>

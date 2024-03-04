@@ -7,6 +7,6 @@ isDark.value = true;
 </script>
 
 <template>
-  <div class="h-screen overflow-hidden"> <RouterView/></div>
+  <div class="overflow-hidden"> <RouterView/></div>
 </template>
 

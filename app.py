@@ -7,6 +7,7 @@ import glob
 import io
 import os
 from PIL import Image
+import json
 
 
 
@@ -55,7 +56,9 @@ def get_response_image(image_path):
     byte_arr = io.BytesIO()
     pil_img.save(byte_arr, format=pil_img.format) # convert the PIL image to byte array
     encoded_img = encodebytes(byte_arr.getvalue()).decode('ascii') # encode as base64
-    return encoded_img
+    return {"image": encoded_img,
+            "format": pil_img.format.lower()
+          }
 
 # send_images page
 @app.route('/images')
@@ -63,17 +66,21 @@ def get_response_image(image_path):
 def images():
   cwd = os.getcwd()
   print(cwd)
-  result = glob.glob(f"{cwd}/data/geonemus-geoffroyii/thumbnails/*")
+
+  directory = f"{cwd}/data/geonemus-geoffroyii"
+  with open(f"{directory}/calibration.json", "r") as f:
+            calib_file = json.load(f)
+  to_jsonify = {}
   encoded_images = {}
-  for image_path in result:
+  for image_path in calib_file["extrinsics"]:
     try:
-      encoded_images[os.path.basename(image_path)] = get_response_image(image_path)
+      image_data = get_response_image(f"{directory}/{calib_file['thumbnails']}/{image_path}")
+      image_data["matrix"] = calib_file["extrinsics"][image_path]["matrix"]
+      encoded_images[image_path] = image_data
     except:
        continue
-  
-  to_jsonify = {}
   to_jsonify["images"] = encoded_images
-  return jsonify({'result': encoded_images})
+  return jsonify({'result': to_jsonify})
 
 if __name__ == '__main__':
     app.run()

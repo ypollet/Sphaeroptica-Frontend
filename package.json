@@ -21,7 +21,9 @@
     "embla-carousel-vue": "^8.0.0",
     "fontawesome-free": "^1.0.4",
     "install": "^0.13.0",
+    "ip": "^2.0.1",
     "lucide-vue-next": "^0.341.0",
+    "mathjs": "^12.4.0",
     "npm": "^10.4.0",
     "radix-vue": "^1.4.9",
     "tailwind-merge": "^2.2.1",
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@tsconfig/node20": "^20.1.2",
     "@types/node": "^20.11.20",
+    "@types/numjs": "^0.16.8",
     "@vitejs/plugin-vue": "^5.0.3",
     "@vitejs/plugin-vue-jsx": "^3.1.0",
     "@vue/tsconfig": "^0.5.1",

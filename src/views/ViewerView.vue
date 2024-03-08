@@ -39,8 +39,8 @@ const updateSidebar = function () {
       </TransitionRoot>
       <div
         id="viewer_container"
-        class="transition-width duration-500 ease-in-out rest_height flex items-center justify-center"
-        :class="{ rest_width: show_sidebar, 'w-full': !show_sidebar }"
+        class="transition-width duration-500 ease-in-out rest_height flex grow items-center justify-center" 
+        
       >
         <Viewer />
       </div>

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-var playlists =  [
+import axios from 'axios';
+import { useCameraStore } from '@/lib/stores';
+var playlists = [
   'Recently Added',
   'Recently Played',
   'Top Songs',
@@ -15,6 +17,55 @@ var playlists =  [
   'Mellow Days',
   'Eminem Essentials',
 ]
+
+type Shortcut = {
+  name: string,
+  longitude: number,
+  latitude: number
+}
+
+const camera = useCameraStore()
+var mapShortcuts: Map<String, Shortcut> = new Map()
+
+function getShortcuts() {
+  const path = 'http://localhost:5000/shortcuts';
+  axios.get(path)
+    .then((res) => {
+      let shortcuts = res.data.result.commands as Array<Shortcut>
+      console.log(shortcuts)
+      shortcuts.forEach((item) => {
+        mapShortcuts.set(item.name, item)
+      })
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+const map: Map<String, String> = new Map()
+map.set("top", "SUPERIOR")
+map.set("bot", "INFERIOR")
+map.set("left", "LEFT")
+map.set("right", "RIGHT")
+map.set("front", "FRONT")
+map.set("back", "POST")
+
+function shortcut(event: Event) {
+  if (event.currentTarget != null) {
+    let target = event.currentTarget as HTMLButtonElement
+    console.log("click : " + map.get(target.attributes.getNamedItem('data-key')?.value as String))
+    let newPos : Shortcut | undefined = mapShortcuts.get(map.get(target.attributes.getNamedItem('data-key')?.value as String)!)
+
+    console.log(newPos)
+    if(newPos != undefined){
+      camera.longitude = newPos.longitude
+      camera.latitude = newPos.latitude
+    }
+  }
+
+}
+
+getShortcuts()
+
 </script>
 
 <template>
@@ -22,62 +73,35 @@ var playlists =  [
     <div class="space-y-4 py-4">
       <div class="px-3 py-2">
         <h2 class="mb-2 px-4 text-lg font-semibold tracking-tight">
-          Discover
+          Shortcuts
         </h2>
-        <div class="space-y-1">
-          <Button variant="secondary" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polygon points="10 8 16 12 10 16 10 8" />
-            </svg>
-            Listen Now
+        <div class="grid grid-cols-4">
+          <div class="grid grid-cols-subgrid col-span-4">
+            <div class="col-start-2">
+              <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="top">
+                TOP
+              </Button>
+            </div>
+          </div>
+          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="left">
+            LEFT
           </Button>
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <rect width="7" height="7" x="3" y="3" rx="1" />
-              <rect width="7" height="7" x="14" y="3" rx="1" />
-              <rect width="7" height="7" x="14" y="14" rx="1" />
-              <rect width="7" height="7" x="3" y="14" rx="1" />
-            </svg>
-            Browse
+          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="front">
+            FRONT
           </Button>
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
-              <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
-              <circle cx="12" cy="12" r="2" />
-              <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
-              <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19" />
-            </svg>
-            Radio
+          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="right">
+            RIGHT
           </Button>
+          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="back">
+            BACK
+          </Button>
+          <div class="grid grid-cols-subgrid col-span-4">
+            <div class="col-start-2">
+              <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="bot">
+                BOT
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="px-3 py-2">
@@ -86,16 +110,8 @@ var playlists =  [
         </h2>
         <div class="space-y-1">
           <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
               <path d="M21 15V6" />
               <path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
               <path d="M12 12H3" />
@@ -105,64 +121,32 @@ var playlists =  [
             Playlists
           </Button>
           <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
               <circle cx="8" cy="18" r="4" />
               <path d="M12 18V2l7 4" />
             </svg>
             Songs
           </Button>
           <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
               <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
             Made for You
           </Button>
           <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
               <path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12" />
               <circle cx="17" cy="7" r="5" />
             </svg>
             Artists
           </Button>
           <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
               <path d="m16 6 4 14" />
               <path d="M12 6v14" />
               <path d="M8 8v12" />
@@ -173,16 +157,8 @@ var playlists =  [
         </div>
         <div class="space-y-1">
           <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
               <path d="M21 15V6" />
               <path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
               <path d="M12 12H3" />
@@ -192,64 +168,32 @@ var playlists =  [
             Playlists
           </Button>
           <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
               <circle cx="8" cy="18" r="4" />
               <path d="M12 18V2l7 4" />
             </svg>
             Songs
           </Button>
           <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
               <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
             Made for You
           </Button>
           <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
               <path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12" />
               <circle cx="17" cy="7" r="5" />
             </svg>
             Artists
           </Button>
           <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
               <path d="m16 6 4 14" />
               <path d="M12 6v14" />
               <path d="M8 8v12" />
@@ -263,24 +207,12 @@ var playlists =  [
         <h2 class="relative px-7 text-lg font-semibold tracking-tight">
           Playlists
         </h2>
-        <ScrollArea class="h-[240px] px-1">
+        <ScrollArea class="h-[300px] px-1">
           <div class="space-y-1 p-2">
-            <Button
-              v-for="(playlist, i) in playlists"
-              :key="`${playlist}-${i}`"
-              variant="ghost"
-              class="w-full justify-start font-normal"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                class="mr-2 h-4 w-4"
-              >
+            <Button v-for="(playlist, i) in playlists" :key="`${playlist}-${i}`" variant="ghost"
+              class="w-full justify-start font-normal">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="mr-2 h-4 w-4">
                 <path d="M21 15V6" />
                 <path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
                 <path d="M12 12H3" />

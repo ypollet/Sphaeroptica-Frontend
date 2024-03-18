@@ -63,7 +63,23 @@ def get_response_image(image_path):
             "format": pil_img.format.lower()
           }
 
-# send_images page
+
+# send_shortcuts page
+@app.route('/shortcuts')
+@cross_origin()
+def shortcuts():
+  cwd = os.getcwd()
+  directory = f"{cwd}/data/geonemus-geoffroyii"
+  with open(f"{directory}/calibration.json", "r") as f:
+    calib_file = json.load(f)
+  to_jsonify = {}
+  to_jsonify["commands"] = []
+  for command in calib_file["commands"]:
+    longitude, latitude = calib_file["commands"][command]
+    to_jsonify["commands"].append({"name" : command, "longitude": longitude, "latitude": latitude})
+    
+  return jsonify({'result': to_jsonify})
+# send images
 @app.route('/images')
 @cross_origin()
 def images():
@@ -104,7 +120,6 @@ def images():
     vec = C - center
     long, lat = converters.get_long_lat(vec)
     image_data["longitude"], image_data["latitude"] = converters.rad2degrees(long), converters.rad2degrees(lat)
-
     
   to_jsonify["images"] = encoded_images
   return jsonify({'result': to_jsonify})

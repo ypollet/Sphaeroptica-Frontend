@@ -25,6 +25,7 @@
     "lucide-vue-next": "^0.341.0",
     "mathjs": "^12.4.0",
     "npm": "^10.4.0",
+    "pinia": "^2.1.7",
     "radix-vue": "^1.4.9",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",

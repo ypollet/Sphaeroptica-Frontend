@@ -30,15 +30,13 @@ import {
   UsersIcon,
   XMarkIcon,
 } from '@heroicons/vue/24/outline'
-const emit = defineEmits<{
-  (e: 'show'): void
-}>()
+
 
 </script>
 
 <template>
   <Menubar class="rounded border-b z-100 h-10">
-    <Button class="relative bg-inherit" @click="emit('show')">
+    <Button class="relative bg-inherit">
       <IconBars3 class="h-6 w-6" aria-hidden="true"/>
     </Button>
     <MenubarMenu>

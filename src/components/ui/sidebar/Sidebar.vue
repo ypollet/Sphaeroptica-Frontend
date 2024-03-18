@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 var playlists =  [
@@ -264,7 +263,7 @@ var playlists =  [
         <h2 class="relative px-7 text-lg font-semibold tracking-tight">
           Playlists
         </h2>
-        <ScrollArea class="h-[300px] px-1">
+        <ScrollArea class="h-[240px] px-1">
           <div class="space-y-1 p-2">
             <Button
               v-for="(playlist, i) in playlists"

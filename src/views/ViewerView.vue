@@ -40,7 +40,6 @@ const updateSidebar = function () {
       <div
         id="viewer_container"
         class="transition-width duration-500 ease-in-out rest_height flex grow items-center justify-center" 
-        
       >
         <Viewer />
       </div>
@@ -53,7 +52,7 @@ const updateSidebar = function () {
   height: 60px;
 }
 .sidebar {
-  width: 256px;
+  width: 384px;
 }
 
 .rest_height {
@@ -61,6 +60,6 @@ const updateSidebar = function () {
 }
 
 .rest_width {
-  width: calc(100% - 256px);
+  width: calc(100% - 384px);
 }
 </style>

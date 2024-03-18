@@ -143,7 +143,7 @@ getImages()
 </script>
 <template>
   <div class="h-full w-full rounded-md border p-4 flex justify-center items-center">
-    <img class="object-fit" @mousedown="mouseEnter" @mouseup="mouseLeave" @mousemove="mouseMove"  :src="imageUrl" alt="album.name" aspect-ratio="auto" draggable="false">
+    <img class="object-fit" @mousedown="mouseEnter" @mouseup="mouseLeave" @mousemove="mouseMove" @mouseleave="mouseLeave" :src="imageUrl" alt="album.name" aspect-ratio="auto" draggable="false">
   </div>
 </template>
 
@@ -153,5 +153,6 @@ getImages()
   max-width: 100%;
   max-height: 100%;
   width:100%;
+  height:100%;
 }
 </style>

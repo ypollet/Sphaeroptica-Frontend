@@ -58,7 +58,8 @@ def get_response_image(image_path):
     byte_arr = io.BytesIO()
     pil_img.save(byte_arr, format=pil_img.format) # convert the PIL image to byte array
     encoded_img = encodebytes(byte_arr.getvalue()).decode('ascii') # encode as base64
-    return {"image": encoded_img,
+    
+    return {"image": f"data:image/{pil_img.format.lower()};base64, {encoded_img}",
             "format": pil_img.format.lower()
           }
 
@@ -72,18 +73,19 @@ def images():
   with open(f"{directory}/calibration.json", "r") as f:
             calib_file = json.load(f)
   to_jsonify = {}
-  encoded_images = {}
+  encoded_images = []
   centers = {}
-  for image_path in calib_file["extrinsics"]:
+  for image_name in calib_file["extrinsics"]:
     try:
-      image_data = get_response_image(f"{directory}/{calib_file['thumbnails']}/{image_path}")
+      image_data = get_response_image(f"{directory}/{calib_file['thumbnails']}/{image_name}")
+      image_data["name"] = image_name
       
-      mat = np.matrix(calib_file["extrinsics"][image_path]["matrix"])
+      mat = np.matrix(calib_file["extrinsics"][image_name]["matrix"])
       rotation = mat[0:3, 0:3]
       trans = mat[0:3, 3]
       C = converters.get_camera_world_coordinates(rotation, trans)
       
-      centers[image_path] = C
+      centers[image_name] = C
       centers_x = []
       centers_y = []
       centers_z = []
@@ -91,19 +93,18 @@ def images():
       centers_y.append(C.item(1)) # y
       centers_z.append(C.item(2)) # z
             
-      encoded_images[image_path] = image_data
+      encoded_images.append(image_data)
     except:
        continue
   _, center = reconstruction.sphereFit(centers_x, centers_y, centers_z)
   
-  for image_path in encoded_images:
-    C = centers[image_path]
-    encoded_images[image_path]
+  for image_data in encoded_images:
+    image_name = image_data["name"]
+    C = centers[image_name]
     vec = C - center
     long, lat = converters.get_long_lat(vec)
-    encoded_images[image_path]["longitude"], encoded_images[image_path]["latitude"] = converters.degrees2rad(long), converters.degrees2rad(lat)
+    image_data["longitude"], image_data["latitude"] = converters.rad2degrees(long), converters.rad2degrees(lat)
 
-  print(encoded_images["_x_00400_y_02880_step_06200_.jpg"].keys())
     
   to_jsonify["images"] = encoded_images
   return jsonify({'result': to_jsonify})

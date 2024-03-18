@@ -92,8 +92,8 @@ def get_long_lat(vector):
         vector (np.ndarray): given vector
 
     Returns:
-        float: longitude
-        float: latitude
+        float: longitude in radians
+        float: latitude in radians
     """
 
     C_normed = vector / np.linalg.norm(vector)

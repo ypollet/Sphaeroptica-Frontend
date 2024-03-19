@@ -26,7 +26,7 @@
     "mathjs": "^12.4.0",
     "npm": "^10.4.0",
     "pinia": "^2.1.7",
-    "radix-vue": "^1.4.9",
+    "radix-vue": "^1.5.3",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "vue": "^3.4.15",

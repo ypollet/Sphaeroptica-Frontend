@@ -29,3 +29,6 @@ coverage
 
 *.tsbuildinfo
 .venv/
+list
+vite.config.ts.timestamp-1709143216754-c26bae76cacec.mjs
+vite.config.ts.timestamp-1710851789726-d744e5280424d.mjs

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { VueElement, ref, watch } from 'vue';
+import { ref } from 'vue';
 import axios from 'axios';
 import * as math from 'mathjs';
 import { degreesToRad } from '@/lib/utils';
 import { useCameraStore } from '@/lib/stores';
+import type { Coordinates } from '@/lib/types';
 
 type Image = {
   name: string,
@@ -11,11 +12,6 @@ type Image = {
   longitude: number,
   latitude: number,
   image: string
-}
-
-type Move = {
-  x: number,
-  y: number
 }
 
 const LONG_MAX = 360
@@ -29,7 +25,7 @@ imagePos.$subscribe(() => {
 
 var lat_min: number = Number.MAX_VALUE
 var lat_max: number = Number.MIN_VALUE
-var mapImages: Map<String, Image> = new Map()
+var mapImages: Map<string, Image> = new Map()
 
 var isPressed: boolean = false
 
@@ -65,7 +61,6 @@ function getImages() {
   axios.get(path)
     .then((res) => {
       let list_images = res.data.result.images as Array<Image>
-      console.log("list_image " + Array.isArray(list_images))
 
       mapImages = new Map()
       list_images.forEach((image: Image) => {
@@ -90,7 +85,7 @@ function mouseEnter(event: MouseEvent) {
 }
 function mouseMove(event: MouseEvent) {
   if (isPressed) {
-    let pos: Move = { x: event.movementX, y: event.movementY }
+    let pos: Coordinates = { x: event.movementX, y: event.movementY }
     imagePos.setLongitude(((pos.x) / 5), LONG_MIN, LONG_MAX)
     imagePos.setLatitude(((pos.y) / 5), lat_min, lat_max)
    }

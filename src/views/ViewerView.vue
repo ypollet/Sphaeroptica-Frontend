@@ -4,7 +4,7 @@ import Menu from "@/components/Menu.vue";
 import Viewer from "@/components/Viewer.vue";
 import { Separator } from "@/components/ui/separator";
 import { Sidebar } from "@/components/ui/sidebar";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const isLeft = ref(false)
 </script>
@@ -15,9 +15,9 @@ const isLeft = ref(false)
     <Separator></Separator>
     <div class="h-full flex"
     :class="isLeft ? 'flex-row' : 'flex-row-reverse'">
-      <ScrollArea class="rest_height sidebar rounded-md border p-4">
+      <div class="rest_height overflow-x-hidden overflow-y-scroll sidebar rounded-md border p-4">
         <Sidebar />
-      </ScrollArea>
+      </div>
 
       <div id="viewer_container" class="rest_width rest_height flex grow items-center justify-center">
         <Viewer />

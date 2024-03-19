@@ -16,9 +16,20 @@ import {
   MenubarTrigger,
 } from '@/components/ui/menubar'
 
-import {Button} from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Button } from '@/components/ui/button'
 
 import IconBars3 from '@/components/icons/IconBars3.vue'
+
+import { useColorMode, useDark } from '@vueuse/core'
+import { Icon } from '@iconify/vue'
+
+
+const isDark = useDark()
+
+isDark.value = false
+
+//const mode = useColorMode()
 
 import {
   Bars3Icon,
@@ -36,8 +47,12 @@ import {
 
 <template>
   <Menubar class="rounded border-b z-100 h-10">
-    <Button class="relative bg-inherit">
-      <IconBars3 class="h-6 w-6" aria-hidden="true"/>
+    <Button variant="ghost">
+      <Icon icon="radix-icons:moon"
+        class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Icon icon="radix-icons:sun"
+        class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <span class="sr-only">Toggle theme</span>
     </Button>
     <MenubarMenu>
       <MenubarTrigger class="relative">
@@ -138,16 +153,8 @@ import {
         <MenubarItem>
           Smart Dictation...
           <MenubarShortcut>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              class="h-4 w-4"
-              viewBox="0 0 24 24"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round"
+              strokeLinejoin="round" strokeWidth="2" class="h-4 w-4" viewBox="0 0 24 24">
               <path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12" />
               <circle cx="17" cy="7" r="5" />
             </svg>
@@ -156,18 +163,11 @@ import {
         <MenubarItem>
           Emoji & Symbols
           <MenubarShortcut>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              class="h-4 w-4"
-              viewBox="0 0 24 24"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round"
+              strokeLinejoin="round" strokeWidth="2" class="h-4 w-4" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              <path
+                d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
             </svg>
           </MenubarShortcut>
         </MenubarItem>
@@ -198,6 +198,14 @@ import {
         Settings
       </MenubarTrigger>
       <MenubarContent>
+        <Icon icon="radix-icons:moon"
+          class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+        <Icon icon="radix-icons:sun"
+          class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        <span class="sr-only">Toggle theme</span>
+        
+
+        <MenubarSeparator />
         <MenubarLabel inset>
           Switch Account
         </MenubarLabel>

@@ -91,9 +91,9 @@ function mouseEnter(event: MouseEvent) {
 function mouseMove(event: MouseEvent) {
   if (isPressed) {
     let pos: Move = { x: event.movementX, y: event.movementY }
-    imagePos.setLongitude(((pos.x) / 2), LONG_MIN, LONG_MAX)
-    imagePos.setLatitude(((pos.y) / 2), lat_min, lat_max)
-  }
+    imagePos.setLongitude(((pos.x) / 5), LONG_MIN, LONG_MAX)
+    imagePos.setLatitude(((pos.y) / 5), lat_min, lat_max)
+   }
 }
 function mouseLeave() {
   isPressed = false

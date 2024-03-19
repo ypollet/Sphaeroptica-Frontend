@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import axios from 'axios';
 import { useCameraStore } from '@/lib/stores';
+
 var playlists = [
   'Recently Added',
   'Recently Played',

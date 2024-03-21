@@ -13,10 +13,13 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.19",
     "@heroicons/vue": "^2.1.1",
+    "@types/color": "^3.0.6",
+    "@types/sortablejs": "^1.15.8",
     "@vueuse/core": "^10.8.0",
     "axios": "^1.6.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "color": "^4.2.3",
     "embla-carousel": "^8.0.0",
     "embla-carousel-vue": "^8.0.0",
     "fontawesome-free": "^1.0.4",
@@ -26,11 +29,15 @@
     "mathjs": "^12.4.0",
     "npm": "^10.4.0",
     "pinia": "^2.1.7",
+    "pinia-plugin-persistedstate": "^3.2.1",
     "radix-vue": "^1.5.3",
+    "sortablejs": "^1.15.2",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "vue": "^3.4.15",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.2.5",
+    "vuedraggable": "^4.1.0",
+    "vuetify": "^3.5.10"
   },
   "devDependencies": {
     "@iconify-json/radix-icons": "^1.1.14",

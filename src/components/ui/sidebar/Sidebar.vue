@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import draggable from "vuedraggable"
+
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
   ScrollAreaRoot,
   ScrollAreaCorner,
@@ -10,21 +13,24 @@ import {
   ScrollAreaThumb
 } from "radix-vue";
 import axios from "axios";
-import { useCameraStore } from "@/lib/stores";
+import { useCameraStore, useLandmarksStore } from "@/lib/stores";
 import { Landmark } from "@/lib/types";
+import { ref, onMounted, nextTick } from "vue";
 
-import { TargetIcon } from "lucide-vue-next";
+const landmarksStore = useLandmarksStore()
 
-var landmarks: Array<Landmark> = [];
+const landmarksScroll = ref<HTMLElement | null>(null)
+console.log(landmarksScroll.value)
+console.log(landmarksScroll.value == null)
 
-for (let i: number = 0; i < 50; i++) {
-  landmarks.push(
-    new Landmark(
-      "Front.zsgiaqhofpoazeofhiuezhgfuhzeofihzohfpozjefohzeofjopzenfozejfkzelfnozjfop." +
-        i
-    )
-  );
-}
+onMounted(() => {
+  console.log("OnMounted")
+  console.log(landmarksScroll.value)
+  if (landmarksScroll.value) {
+    landmarksScroll.value.scrollIntoView(false)
+  }
+
+});
 
 type Shortcut = {
   name: string;
@@ -40,7 +46,7 @@ function getShortcuts() {
   axios
     .get(path)
     .then((res) => {
-      let shortcuts = res.data.result.commands as Array<Shortcut>;
+      let shortcuts = res.data.result.commands as Shortcut[];
       shortcuts.forEach((item) => {
         mapShortcuts.set(item.name, item);
       });
@@ -75,15 +81,47 @@ function shortcut(event: Event) {
     camera.latitude = newPos.latitude;
   }
 }
-function labelClicked(label : string) {
+function labelClicked(label: string) {
   console.log(label + " Clicked");
 }
 
+function clearLandmark() {
+  landmarksStore.landmarks = new Array<Landmark>()
+}
+
+function addLandmark() {
+  let id = landmarksStore.generateID()
+  landmarksStore.addLandmark(
+    new Landmark(id,
+      "Front." +
+      id
+    )
+  );
+  nextTick(() => {
+    if (landmarksScroll.value) {
+      console.log("scroll")
+      landmarksScroll.value.scrollIntoView(false)
+    }
+  })
+}
+
+function changeColor(event: Event, id: string) {
+  let target = event.currentTarget as HTMLButtonElement;
+  if (target == null) {
+    return;
+  }
+  console.log(landmarksStore.landmarks)
+  console.log("value : " + id)
+  landmarksStore.landmarks.find(x => x.id == id)!.setColorHEX(target.value)
+}
+
 getShortcuts();
+
+
 </script>
 
 <template>
-  <div class="pb-10 w-auto">
+  <div class="pb-[1000px] w-auto">
     <div class="space-y-4 py-4">
       <div class="px-3 py-2">
         <h2 class="mb-2 px-4 text-lg font-semibold tracking-tight">
@@ -92,56 +130,26 @@ getShortcuts();
         <div class="grid grid-cols-4">
           <div class="grid grid-cols-subgrid col-span-4">
             <div class="col-start-2">
-              <Button
-                @click="shortcut"
-                variant="default"
-                class="w-full justify-center"
-                data-key="top"
-              >
+              <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="top">
                 TOP
               </Button>
             </div>
           </div>
-          <Button
-            @click="shortcut"
-            variant="default"
-            class="w-full justify-center"
-            data-key="left"
-          >
+          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="left">
             LEFT
           </Button>
-          <Button
-            @click="shortcut"
-            variant="default"
-            class="w-full justify-center"
-            data-key="front"
-          >
+          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="front">
             FRONT
           </Button>
-          <Button
-            @click="shortcut"
-            variant="default"
-            class="w-full justify-center"
-            data-key="right"
-          >
+          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="right">
             RIGHT
           </Button>
-          <Button
-            @click="shortcut"
-            variant="default"
-            class="w-full justify-center"
-            data-key="back"
-          >
+          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="back">
             BACK
           </Button>
           <div class="grid grid-cols-subgrid col-span-4">
             <div class="col-start-2">
-              <Button
-                @click="shortcut"
-                variant="default"
-                class="w-full justify-center"
-                data-key="bot"
-              >
+              <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="bot">
                 BOT
               </Button>
             </div>
@@ -149,221 +157,54 @@ getShortcuts();
         </div>
       </div>
       <div class="px-3 py-2">
-        <h2 class="mb-2 px-4 text-lg font-semibold tracking-tight">Library</h2>
-        <div class="space-y-1">
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <path d="M21 15V6" />
-              <path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
-              <path d="M12 12H3" />
-              <path d="M16 6H3" />
-              <path d="M12 18H3" />
-            </svg>
-            Playlists
-          </Button>
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <circle cx="8" cy="18" r="4" />
-              <path d="M12 18V2l7 4" />
-            </svg>
-            Songs
-          </Button>
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            Made for You
-          </Button>
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12" />
-              <circle cx="17" cy="7" r="5" />
-            </svg>
-            Artists
-          </Button>
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <path d="m16 6 4 14" />
-              <path d="M12 6v14" />
-              <path d="M8 8v12" />
-              <path d="M4 4v16" />
-            </svg>
-            Albums
-          </Button>
-        </div>
-        <div class="space-y-1">
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <path d="M21 15V6" />
-              <path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
-              <path d="M12 12H3" />
-              <path d="M16 6H3" />
-              <path d="M12 18H3" />
-            </svg>
-            Playlists
-          </Button>
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <circle cx="8" cy="18" r="4" />
-              <path d="M12 18V2l7 4" />
-            </svg>
-            Songs
-          </Button>
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            Made for You
-          </Button>
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12" />
-              <circle cx="17" cy="7" r="5" />
-            </svg>
-            Artists
-          </Button>
-          <Button variant="ghost" class="w-full justify-start">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              class="mr-2 h-4 w-4"
-            >
-              <path d="m16 6 4 14" />
-              <path d="M12 6v14" />
-              <path d="M8 8v12" />
-              <path d="M4 4v16" />
-            </svg>
-            Albums
-          </Button>
-        </div>
-      </div>
-      <div class="px-3 py-2">
         <h2 class="relative px-7 text-lg font-semibold tracking-tight">
           Landmarks
         </h2>
-        <ScrollAreaRoot class="px-1">
-          <ScrollAreaViewport class="max-h-[300px] max-w-fit p-2">
-            <div
-              v-for="(landmark, i) in landmarks"
-              :key="`${landmark}-${i}`"
-              variant="ghost"
-              class="w-full flex row justify-start font-normal px-1 py-3"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                xmlns="http://www.w3.org/2000/svg"
-                class="mr-2 h-4 w-4"
-              >
-                <path
-                  d="M7.49985 0.877045C3.84216 0.877045 0.877014 3.84219 0.877014 7.49988C0.877014 11.1575 3.84216 14.1227 7.49985 14.1227C11.1575 14.1227 14.1227 11.1575 14.1227 7.49988C14.1227 3.84219 11.1575 0.877045 7.49985 0.877045ZM1.82701 7.49988C1.82701 4.36686 4.36683 1.82704 7.49985 1.82704C10.6328 1.82704 13.1727 4.36686 13.1727 7.49988C13.1727 10.6329 10.6328 13.1727 7.49985 13.1727C4.36683 13.1727 1.82701 10.6329 1.82701 7.49988ZM7.49999 9.49999C8.60456 9.49999 9.49999 8.60456 9.49999 7.49999C9.49999 6.39542 8.60456 5.49999 7.49999 5.49999C6.39542 5.49999 5.49999 6.39542 5.49999 7.49999C5.49999 8.60456 6.39542 9.49999 7.49999 9.49999Z"
-                  fill="currentColor"
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-              <Label @dblclick="labelClicked(landmark.label)">{{ landmark.label }}</Label>
-            </div>
-          </ScrollAreaViewport>
-          <ScrollBar/>
-          <ScrollBar orientation="horizontal"/>
-          <ScrollAreaCorner />
-        </ScrollAreaRoot>
+
+
+        <div ref="landmarksScroll" >
+          <draggable v-model="landmarksStore.landmarks" group="landmarks" item-key="id" :scroll-sensitivity="0"
+            :scrollSpeed="5" :force-fallback="true" :animation="150" :handle="'.handle'" class="overflow-auto max-h-96 max-w-full scroll-snap-type">
+            <template #item="{ element: landmark }: { element: Landmark }">
+              <div class="scroll-align border p-2">
+                <div class="h-16 w-full flex row justify-start items-center font-normal space-x-3 py-3">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"
+                    strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg"
+                    class="mr-2 h-6 w-6 handle">
+                    <path
+                      d="M7.49985 0.877045C3.84216 0.877045 0.877014 3.84219 0.877014 7.49988C0.877014 11.1575 3.84216 14.1227 7.49985 14.1227C11.1575 14.1227 14.1227 11.1575 14.1227 7.49988C14.1227 3.84219 11.1575 0.877045 7.49985 0.877045ZM1.82701 7.49988C1.82701 4.36686 4.36683 1.82704 7.49985 1.82704C10.6328 1.82704 13.1727 4.36686 13.1727 7.49988C13.1727 10.6329 10.6328 13.1727 7.49985 13.1727C4.36683 13.1727 1.82701 10.6329 1.82701 7.49988ZM7.49999 9.49999C8.60456 9.49999 9.49999 8.60456 9.49999 7.49999C9.49999 6.39542 8.60456 5.49999 7.49999 5.49999C6.39542 5.49999 5.49999 6.39542 5.49999 7.49999C5.49999 8.60456 6.39542 9.49999 7.49999 9.49999Z"
+                      fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path>
+                  </svg>
+                  <input type="color"
+                    class="h-8 w-8 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700"
+                    id="hs-color-input" :value="landmark.color.hex()" title="Choose your color"
+                    @change="changeColor($event, landmark.id)">
+                  <Label @dblclick="labelClicked(landmark.label)">{{ landmark.label }}</Label>
+                </div>
+              </div>
+
+            </template>
+            <template #footer>
+              <div class="flex flex-row">
+                <Button variant="ghost" class="h-8 item-centers mt-3" @click="addLandmark">Add Landmark</Button>
+                <Button variant="ghost" class="h-8 item-centers mt-3" @click="clearLandmark">Clear</Button>
+              </div>
+            </template>
+          </draggable>
+        </div>
+
+
       </div>
     </div>
   </div>
 </template>
+
+<style>
+.scroll-align {
+  scroll-snap-align: start;
+}
+
+.scroll-snap-type {
+  scroll-snap-type: y mandatory;
+}
+</style>

@@ -60,7 +60,7 @@ function getImages() {
   const path = 'http://localhost:5000/images';
   axios.get(path)
     .then((res) => {
-      let list_images = res.data.result.images as Array<Image>
+      let list_images = res.data.result.images as Image[]
 
       mapImages = new Map()
       list_images.forEach((image: Image) => {

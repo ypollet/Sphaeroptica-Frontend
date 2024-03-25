@@ -10,17 +10,18 @@ export class Landmark {
     poses : Map<string, Coordinates>
     color : Color
     position : number | undefined
+    edit : boolean
 
     constructor(id : string, label : string, color : Color | null = null, poses : Map<string, Coordinates> = new Map(), position : number | undefined = undefined){
         this.id = id
         this.label = label
         this.poses = poses
         this.poses.set("Hello", {x:255, y:255})
+        this.edit = false
 
         if(color == null){
             color = Color.rgb([Math.floor(Math.random()*256), Math.floor(Math.random()*256), Math.floor(Math.random()*256)])
         }
-        console.log(color.hex())
         this.color = color
         this.position = position
     }

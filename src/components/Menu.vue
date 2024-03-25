@@ -19,10 +19,9 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 
-import IconBars3 from '@/components/icons/IconBars3.vue'
+import { MoonStar, Sun } from 'lucide-vue-next'
 
 import { useToggle, useDark } from '@vueuse/core'
-import { Icon } from '@iconify/vue'
 
 
 const isDark = useDark()
@@ -34,9 +33,9 @@ const toggleDark = useToggle(isDark)
 <template>
   <Menubar class="rounded border-b z-100 h-10">
     <Button variant="ghost" @click="toggleDark()" class="px-3 py-1.5">
-      <Icon icon="radix-icons:moon"
+      <MoonStar
         class="h-[1rem] w-[1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Icon icon="radix-icons:sun"
+      <Sun
         class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
       <span class="sr-only">Toggle theme</span>
     </Button>

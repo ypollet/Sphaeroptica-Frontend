@@ -1,36 +1,23 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from '@/components/ui/input'
 import draggable from "vuedraggable"
 
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import {
-  ScrollAreaRoot,
-  ScrollAreaCorner,
-  ScrollAreaViewport,
-  ScrollAreaScrollbar,
-  ScrollAreaThumb
-} from "radix-vue";
+import scrollIntoView from 'scroll-into-view-if-needed'
+
 import axios from "axios";
 import { useCameraStore, useLandmarksStore } from "@/lib/stores";
 import { Landmark } from "@/lib/types";
-import { ref, onMounted, nextTick } from "vue";
+import { ref, nextTick } from "vue";
+
+import { X } from "lucide-vue-next";
 
 const landmarksStore = useLandmarksStore()
 
+const landmarksElements = ref<InstanceType<typeof draggable> | null>(null)
 const landmarksScroll = ref<HTMLElement | null>(null)
-console.log(landmarksScroll.value)
-console.log(landmarksScroll.value == null)
 
-onMounted(() => {
-  console.log("OnMounted")
-  console.log(landmarksScroll.value)
-  if (landmarksScroll.value) {
-    landmarksScroll.value.scrollIntoView(false)
-  }
-
-});
 
 type Shortcut = {
   name: string;
@@ -81,8 +68,15 @@ function shortcut(event: Event) {
     camera.latitude = newPos.latitude;
   }
 }
-function labelClicked(label: string) {
-  console.log(label + " Clicked");
+function labelClicked(landmark: Landmark) {
+  landmark.edit = true;
+}
+function changeLabel(event : KeyboardEvent, landmark: Landmark) {
+  let target : HTMLInputElement = event.target as HTMLInputElement
+  if (event.key === "Enter") {
+    landmark.edit = false;
+    landmark.label = target.value
+  }
 }
 
 function clearLandmark() {
@@ -98,9 +92,9 @@ function addLandmark() {
     )
   );
   nextTick(() => {
-    if (landmarksScroll.value) {
-      console.log("scroll")
-      landmarksScroll.value.scrollIntoView(false)
+    if (landmarksScroll.value && landmarksElements.value) {
+      scrollIntoView(landmarksElements.value.$el.childNodes[landmarksElements.value.$el.childNodes.length - 1], { behavior: 'smooth', scrollMode: 'if-needed', block: 'end', inline: 'start',  boundary: landmarksScroll.value })
+
     }
   })
 }
@@ -110,9 +104,11 @@ function changeColor(event: Event, id: string) {
   if (target == null) {
     return;
   }
-  console.log(landmarksStore.landmarks)
-  console.log("value : " + id)
   landmarksStore.landmarks.find(x => x.id == id)!.setColorHEX(target.value)
+}
+
+function removeLandmark(id: string) {
+  landmarksStore.landmarks = landmarksStore.landmarks.filter((el) => el.id != id)
 }
 
 getShortcuts();
@@ -162,35 +158,43 @@ getShortcuts();
         </h2>
 
 
-        <div ref="landmarksScroll" >
-          <draggable v-model="landmarksStore.landmarks" group="landmarks" item-key="id" :scroll-sensitivity="0"
-            :scrollSpeed="5" :force-fallback="true" :animation="150" :handle="'.handle'" class="overflow-auto max-h-96 max-w-full scroll-snap-type">
+        <div ref="landmarksScroll" class="overflow-auto max-h-96 max-w-full">
+          <draggable ref="landmarksElements" v-model="landmarksStore.landmarks" group="landmarks" item-key="id"
+            :scroll-sensitivity="5" :scrollSpeed="5" :force-fallback="true" :animation="150" :scroll="true"
+            :bubbleScroll="true" :handle="'.handle'"
+            class="relative scroll-snap-type w-fit min-w-full">
             <template #item="{ element: landmark }: { element: Landmark }">
-              <div class="scroll-align border p-2">
-                <div class="h-16 w-full flex row justify-start items-center font-normal space-x-3 py-3">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"
-                    strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg"
-                    class="mr-2 h-6 w-6 handle">
-                    <path
-                      d="M7.49985 0.877045C3.84216 0.877045 0.877014 3.84219 0.877014 7.49988C0.877014 11.1575 3.84216 14.1227 7.49985 14.1227C11.1575 14.1227 14.1227 11.1575 14.1227 7.49988C14.1227 3.84219 11.1575 0.877045 7.49985 0.877045ZM1.82701 7.49988C1.82701 4.36686 4.36683 1.82704 7.49985 1.82704C10.6328 1.82704 13.1727 4.36686 13.1727 7.49988C13.1727 10.6329 10.6328 13.1727 7.49985 13.1727C4.36683 13.1727 1.82701 10.6329 1.82701 7.49988ZM7.49999 9.49999C8.60456 9.49999 9.49999 8.60456 9.49999 7.49999C9.49999 6.39542 8.60456 5.49999 7.49999 5.49999C6.39542 5.49999 5.49999 6.39542 5.49999 7.49999C5.49999 8.60456 6.39542 9.49999 7.49999 9.49999Z"
-                      fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path>
-                  </svg>
-                  <input type="color"
-                    class="h-8 w-8 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700"
-                    id="hs-color-input" :value="landmark.color.hex()" title="Choose your color"
-                    @change="changeColor($event, landmark.id)">
-                  <Label @dblclick="labelClicked(landmark.label)">{{ landmark.label }}</Label>
+              <div class="scroll-align border flex grow p-2">
+                <div class="h-12 flex grow row justify-between items-center font-normal space-x-3 px-3 py-2">
+                  <div class="flex items-center justify-start space-x-3 py-3">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg"
+                      class="mr-2 h-6 w-6 handle">
+                      <path
+                        d="M7.49985 0.877045C3.84216 0.877045 0.877014 3.84219 0.877014 7.49988C0.877014 11.1575 3.84216 14.1227 7.49985 14.1227C11.1575 14.1227 14.1227 11.1575 14.1227 7.49988C14.1227 3.84219 11.1575 0.877045 7.49985 0.877045ZM1.82701 7.49988C1.82701 4.36686 4.36683 1.82704 7.49985 1.82704C10.6328 1.82704 13.1727 4.36686 13.1727 7.49988C13.1727 10.6329 10.6328 13.1727 7.49985 13.1727C4.36683 13.1727 1.82701 10.6329 1.82701 7.49988ZM7.49999 9.49999C8.60456 9.49999 9.49999 8.60456 9.49999 7.49999C9.49999 6.39542 8.60456 5.49999 7.49999 5.49999C6.39542 5.49999 5.49999 6.39542 5.49999 7.49999C5.49999 8.60456 6.39542 9.49999 7.49999 9.49999Z"
+                        fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                    <input type="color"
+                      class="h-8 w-8 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700"
+                      id="hs-color-input" :value="landmark.color.hex()" title="Choose your color"
+                      @change="changeColor($event, landmark.id)">
+                    <Label v-show="!landmark.edit" @dblclick="labelClicked(landmark)">{{ landmark.label }}</Label>
+                    <!--<Input v-show="!landmark.edit" type="text" :model-value="landmark.label" @keyup.enter="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"/>-->
+                    <Input v-show="landmark.edit" type="text" :model-value="landmark.label" 
+                    @keyup.enter="changeLabel($event, landmark)"/>
+                  </div>
+                  <Button class="relative w-16" variant="destructive" @click="removeLandmark(landmark.id)">
+                    <X />
+                  </Button>
                 </div>
               </div>
 
             </template>
-            <template #footer>
-              <div class="flex flex-row">
-                <Button variant="ghost" class="h-8 item-centers mt-3" @click="addLandmark">Add Landmark</Button>
-                <Button variant="ghost" class="h-8 item-centers mt-3" @click="clearLandmark">Clear</Button>
-              </div>
-            </template>
           </draggable>
+        </div>
+        <div class="flex flex-row">
+            <Button variant="ghost" class="h-8 item-centers mt-3" @click="addLandmark">Add Landmark</Button>
+            <Button variant="ghost" class="h-8 item-centers mt-3" @click="clearLandmark">Clear</Button>
         </div>
 
 

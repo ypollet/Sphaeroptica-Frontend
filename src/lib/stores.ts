@@ -40,7 +40,6 @@ export const useLandmarksStore = defineStore('landmarks', {
       let id : string = ""
       while(!check){
         id = (Math.random() + 1).toString(36).substring(2);
-        console.log("random ", id);
         if(this.landmarks.filter(e => e.id === id).length == 0){
           check = true
         }
@@ -52,13 +51,10 @@ export const useLandmarksStore = defineStore('landmarks', {
     storage: sessionStorage,
     key: 'landmarks',
     afterRestore: (ctx: PiniaPluginContext) => {
-      console.log(`just restored '${ctx.store.$id}'`)
       let landmarks = ctx.store.$state.landmarks.map((x: Landmark) => x)
-      console.log(landmarks)
       ctx.store.$state.landmarks = landmarks.map((jsonObject: Landmark) =>
         new Landmark(jsonObject.id, jsonObject.label, Color(jsonObject.color), new Map(Object.entries(jsonObject.poses)))
       )
-      console.log(ctx.store.$state.landmarks)
     },
   },
 })

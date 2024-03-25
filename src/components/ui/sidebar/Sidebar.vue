@@ -87,7 +87,6 @@ function addLandmark() {
   let id = landmarksStore.generateID()
   landmarksStore.addLandmark(
     new Landmark(id,
-      "Front." +
       id
     )
   );
@@ -160,8 +159,8 @@ getShortcuts();
 
         <div ref="landmarksScroll" class="overflow-auto max-h-96 max-w-full">
           <draggable ref="landmarksElements" v-model="landmarksStore.landmarks" group="landmarks" item-key="id"
-            :scroll-sensitivity="5" :scrollSpeed="5" :force-fallback="true" :animation="150" :scroll="true"
-            :bubbleScroll="true" :handle="'.handle'"
+             :force-fallback="true" :animation="150" :scroll="true"
+            :bubbleScroll="false" :handle="'.handle'"
             class="relative scroll-snap-type w-fit min-w-full">
             <template #item="{ element: landmark }: { element: Landmark }">
               <div class="scroll-align border flex grow p-2">
@@ -179,7 +178,6 @@ getShortcuts();
                       id="hs-color-input" :value="landmark.color.hex()" title="Choose your color"
                       @change="changeColor($event, landmark.id)">
                     <Label v-show="!landmark.edit" @dblclick="labelClicked(landmark)">{{ landmark.label }}</Label>
-                    <!--<Input v-show="!landmark.edit" type="text" :model-value="landmark.label" @keyup.enter="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"/>-->
                     <Input v-show="landmark.edit" type="text" :model-value="landmark.label" 
                     @keyup.enter="changeLabel($event, landmark)"/>
                   </div>

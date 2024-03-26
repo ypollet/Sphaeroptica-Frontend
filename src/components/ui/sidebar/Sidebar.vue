@@ -7,7 +7,7 @@ import draggable from "vuedraggable"
 import scrollIntoView from 'scroll-into-view-if-needed'
 
 import axios from "axios";
-import { useCameraStore, useLandmarksStore } from "@/lib/stores";
+import { useVirtualCameraStore, useLandmarksStore } from "@/lib/stores";
 import { Landmark } from "@/lib/types";
 import { ref, nextTick } from "vue";
 
@@ -25,7 +25,7 @@ type Shortcut = {
   latitude: number;
 };
 
-const camera = useCameraStore();
+const camera = useVirtualCameraStore();
 var mapShortcuts: Map<string, Shortcut> = new Map();
 
 function getShortcuts() {
@@ -157,7 +157,7 @@ getShortcuts();
         </h2>
 
 
-        <div ref="landmarksScroll" class="overflow-auto max-h-96 max-w-full">
+        <div ref="landmarksScroll" class="overflow-auto h-96 max-w-full border">
           <draggable ref="landmarksElements" v-model="landmarksStore.landmarks" group="landmarks" item-key="id"
              :force-fallback="true" :animation="150" :scroll="true"
             :bubbleScroll="false" :handle="'.handle'"

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 
 from flask_cors import CORS, cross_origin
 
@@ -83,9 +83,10 @@ def shortcuts():
 @app.route('/images')
 @cross_origin()
 def images():
+  path = request.args.get('study')
   cwd = os.getcwd()
 
-  directory = f"{cwd}/data/geonemus-geoffroyii"
+  directory = f"{cwd}/data/{path}"
   with open(f"{directory}/calibration.json", "r") as f:
             calib_file = json.load(f)
   to_jsonify = {}

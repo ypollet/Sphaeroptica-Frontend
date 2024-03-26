@@ -4,6 +4,14 @@ export type Coordinates = {
     y: number
 }
 
+export type Image = {
+    name: string,
+    format: string,
+    longitude: number,
+    latitude: number,
+    image: string
+  }
+
 export class Landmark {
     id : string;
     label : string;

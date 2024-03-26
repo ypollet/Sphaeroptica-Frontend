@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import Menu from "@/components/Menu.vue";
-import Viewer from "@/components/Viewer.vue";
+import Tabs from "@/components/Tabs.vue";
 import { Separator } from "@/components/ui/separator";
 import { Sidebar } from "@/components/ui/sidebar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -19,8 +19,8 @@ const isLeft = ref(false)
         <Sidebar />
       </div>
 
-      <div id="viewer_container" class="rest_width rest_height flex grow items-center justify-center">
-        <Viewer />
+      <div class="rest_width rest_height flex grow items-center justify-center">
+        <Tabs />
       </div>
     </div>
   </main>

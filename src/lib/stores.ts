@@ -2,14 +2,60 @@ import * as math from 'mathjs'
 import { defineStore, type PiniaPluginContext, type StateTree } from 'pinia'
 import { degreesToRad } from '@/lib/utils'
 import { Landmark } from './types'
+import type { Image } from './types'
 import Color from 'color'
 
-export const useCameraStore = defineStore('camera', {
-  state: () => ({ longitude: 0, latitude: 0 }),
+
+export const useImagesStore = defineStore('images', {
+  state: () => ({ latMin : Number.MAX_VALUE,
+                  latMax : Number.MIN_VALUE,
+                  images : Array<Image>(), 
+                  objectPath : "geonemus-geoffroyii", 
+                  selectedImage : "'https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj'"
+                }),
+  actions: {
+    reset(){
+      this.latMin = Number.MAX_VALUE
+      this.latMax = Number.MIN_VALUE
+      this.images = []
+      this.objectPath = "geonemus-geoffroyii"
+      this.selectedImage = "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj"
+    },
+    setNearestImage(radPos : number[]) {
+      let bestAngle: Number = Infinity;
+      let bestImage: Image | null = null
+        
+      this.images.forEach((imageData: Image) => {
+        let imgPos: [number, number] = [degreesToRad(imageData.longitude), degreesToRad(imageData.latitude)]
+        let sinus: number = math.sin(imgPos[1]) * math.sin(radPos[1])
+        let cosinus: number = math.cos(imgPos[1]) * math.cos(radPos[1]) * math.cos(math.abs(imgPos[0] - radPos[0]))
+        let centAngle: Number = math.acos(sinus + cosinus) as Number
+        if (centAngle < bestAngle) {
+          bestAngle = centAngle
+          bestImage = imageData
+        }
+      })
+    
+      if (bestImage === null) {
+        return;
+      }
+      var imageData: Image = bestImage
+      this.selectedImage = imageData.image
+    }
+  }              
+})
+export const useVirtualCameraStore = defineStore('camera', {
+  state: () => ({ longitude: 0, 
+                  latitude: 0,
+                   }),
   getters: {
     toRad: (state) => [degreesToRad(state.longitude), degreesToRad(state.latitude)],
   },
   actions: {
+    reset(){
+      this.longitude = 0
+      this.latitude = 0
+    },
     setLongitude(move: number, longMin: number, longMax: number) {
       let difference: number = longMax - longMin
       this.longitude -= longMin + move
@@ -18,14 +64,14 @@ export const useCameraStore = defineStore('camera', {
       }
       this.longitude = ((this.longitude) % difference) + longMin
     },
-
     setLatitude(move: number, latMin: number, latMax: number) {
       this.latitude = math.min(math.max(this.latitude + move, latMin), latMax)
-    }
+    },
   },
 
   persist: {
     storage: sessionStorage,
+    key: 'camera',
   },
 })
 

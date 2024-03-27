@@ -4,7 +4,6 @@ import Menu from "@/components/Menu.vue";
 import Tabs from "@/components/Tabs.vue";
 import { Separator } from "@/components/ui/separator";
 import { Sidebar } from "@/components/ui/sidebar";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const isLeft = ref(false)
 </script>
@@ -36,7 +35,7 @@ const isLeft = ref(false)
 }
 
 .rest_height {
-  height: calc(100% - 60px);
+  height: calc(100% - 61px);
 }
 
 .rest_width {

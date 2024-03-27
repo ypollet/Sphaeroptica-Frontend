@@ -11,15 +11,22 @@ export const useImagesStore = defineStore('images', {
                   latMax : Number.MIN_VALUE,
                   images : Array<Image>(), 
                   objectPath : "geonemus-geoffroyii", 
-                  selectedImage : "'https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj'"
+                  selectedImage : "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj",
+                  selectedImageWidth : 595,
+                  selectedImageHeight : 138,
                 }),
+  getters: {
+    getImageSize: (state) => [state.selectedImageWidth, state.selectedImageHeight],
+  },
   actions: {
     reset(){
       this.latMin = Number.MAX_VALUE
       this.latMax = Number.MIN_VALUE
       this.images = []
       this.objectPath = "geonemus-geoffroyii"
-      this.selectedImage = "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj"
+      this.selectedImage = "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj",
+      this.selectedImageWidth = 595,
+      this.selectedImageHeight = 138
     },
     setNearestImage(radPos : number[]) {
       let bestAngle: Number = Infinity;
@@ -41,6 +48,8 @@ export const useImagesStore = defineStore('images', {
       }
       var imageData: Image = bestImage
       this.selectedImage = imageData.image
+      this.selectedImageHeight = imageData.height
+      this.selectedImageWidth = imageData.width
     }
   }              
 })

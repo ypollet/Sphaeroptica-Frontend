@@ -1,20 +1,51 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import axios from 'axios';
 import { useImagesStore, useVirtualCameraStore } from '@/lib/stores';
 import type { Coordinates, Image } from '@/lib/types';
+import { help } from 'mathjs';
 
 const LONG_MAX = 360
 const LONG_MIN = 0
 
 var imageStore = useImagesStore()
 var cameraStore = useVirtualCameraStore()
-console.log(imageStore.latMin)
-console.log(imageStore.latMax)
 
+interface Div {
+  clientWidth : number,
+  clientHeight : number
+}
+
+function checkClass(){
+  let clientWidth : number = 1;
+  let clientHeight : number = 1;
+  if(imageContainer.value){
+    clientWidth = imageContainer.value.clientWidth
+    clientHeight = imageContainer.value.clientHeight
+  }
+  viewerClass.value = (clientWidth/clientHeight) > (imageStore.selectedImageWidth/ imageStore.selectedImageHeight) ? 'h-full' : 'w-full'
+}
+const viewerClass = ref('w-full')
+
+
+onMounted(() => {
+  const resizeObserver = new ResizeObserver(function() {
+    checkClass()
+  });
+  if(imageContainer.value){
+    resizeObserver.observe(imageContainer.value);
+  }
+})
+const imageContainer = ref<HTMLDivElement | null>(null)
 cameraStore.$subscribe(() => {
   imageStore.setNearestImage(cameraStore.toRad)
 })
+
+watch(imageStore.getImageSize,
+() => {
+  checkClass()
+})
+checkClass()
 
 var isPressed: boolean = false
 
@@ -27,6 +58,7 @@ function getImages() {
     })
     .then((res) => {
       imageStore.images = res.data.result.images as Image[]
+      console.log("images : length = " + imageStore.images.length)
       
       imageStore.images.forEach((image: Image) => {
         console.log(image.name)
@@ -44,7 +76,6 @@ function getImages() {
     .catch((error) => {
       console.error(error);
     });
-
 }
 
 function mouseEnter(event: MouseEvent) {
@@ -61,6 +92,10 @@ function mouseLeave() {
   isPressed = false
 }
 
+function onResize(){
+  console.log("resize")
+}
+
 if (imageStore.images.length == 0){
   getImages()
 }
@@ -68,9 +103,9 @@ imageStore.setNearestImage(cameraStore.toRad)
 
 </script>
 <template>
-  <div class="h-full w-full rounded-md border p-4 flex justify-center items-center">
-    <img class="object-fit" @mousedown="mouseEnter" @mouseup="mouseLeave" @mousemove="mouseMove"
-      @mouseleave="mouseLeave" :src="imageStore.selectedImage" alt="album.name" aspect-ratio="auto" draggable="false">
+  <div ref="imageContainer" class="w-full h-full border flex justify-center items-center">
+    <img class="object-fit" @mousedown="mouseEnter" @mouseup="mouseLeave" @mousemove="mouseMove" @mouseleave="mouseLeave" 
+      :class="viewerClass" :src="imageStore.selectedImage" alt="album.name" aspect-ratio="auto" draggable="false">
   </div>
 </template>
 
@@ -79,7 +114,6 @@ imageStore.setNearestImage(cameraStore.toRad)
   object-fit: contain;
   max-width: 100%;
   max-height: 100%;
-  width: 100%;
-  height: 100%;
+  display:block;
 }
 </style>

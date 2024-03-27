@@ -93,7 +93,6 @@ function addLandmark() {
   nextTick(() => {
     if (landmarksScroll.value && landmarksElements.value) {
       scrollIntoView(landmarksElements.value.$el.childNodes[landmarksElements.value.$el.childNodes.length - 1], { behavior: 'smooth', scrollMode: 'if-needed', block: 'end', inline: 'start',  boundary: landmarksScroll.value })
-
     }
   })
 }

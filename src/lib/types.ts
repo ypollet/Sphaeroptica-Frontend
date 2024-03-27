@@ -9,7 +9,9 @@ export type Image = {
     format: string,
     longitude: number,
     latitude: number,
-    image: string
+    image: string,
+    width: number,
+    height: number
   }
 
 export class Landmark {

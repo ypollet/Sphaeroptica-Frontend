@@ -60,7 +60,9 @@ def get_response_image(image_path):
     encoded_img = encodebytes(byte_arr.getvalue()).decode('ascii') # encode as base64
     
     return {"image": f"data:image/{pil_img.format.lower()};base64, {encoded_img}",
-            "format": pil_img.format.lower()
+            "format": pil_img.format.lower(),
+            "height": pil_img.height,
+            "width": pil_img.width
           }
 
 
@@ -83,7 +85,7 @@ def shortcuts():
 @app.route('/images')
 @cross_origin()
 def images():
-  path = request.args.get('study')
+  path = request.args['study']
   cwd = os.getcwd()
 
   directory = f"{cwd}/data/{path}"
@@ -92,6 +94,9 @@ def images():
   to_jsonify = {}
   encoded_images = []
   centers = {}
+  centers_x = []
+  centers_y = []
+  centers_z = []
   for image_name in calib_file["extrinsics"]:
     try:
       image_data = get_response_image(f"{directory}/{calib_file['thumbnails']}/{image_name}")
@@ -103,15 +108,13 @@ def images():
       C = converters.get_camera_world_coordinates(rotation, trans)
       
       centers[image_name] = C
-      centers_x = []
-      centers_y = []
-      centers_z = []
       centers_x.append(C.item(0)) # x
       centers_y.append(C.item(1)) # y
       centers_z.append(C.item(2)) # z
             
       encoded_images.append(image_data)
-    except:
+    except Exception as error:
+       print(error)
        continue
   _, center = reconstruction.sphereFit(centers_x, centers_y, centers_z)
   

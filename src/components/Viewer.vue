@@ -1,51 +1,22 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import axios from 'axios';
-import { useImagesStore, useVirtualCameraStore } from '@/lib/stores';
-import type { Coordinates, Image } from '@/lib/types';
-import { help } from 'mathjs';
+import { storeToRefs } from 'pinia';
+import { useLandmarkImagesStore, useVCImagesStore, useVirtualCameraStore } from '@/lib/stores';
+import type { Coordinates, LandmarkImage, VirtualCameraImage } from '@/lib/types';
 
 const LONG_MAX = 360
 const LONG_MIN = 0
 
-var imageStore = useImagesStore()
-var cameraStore = useVirtualCameraStore()
+const landmarksImageStore = useLandmarkImagesStore()
+const imageStore = useVCImagesStore()
+const cameraStore = useVirtualCameraStore()
 
-interface Div {
-  clientWidth : number,
-  clientHeight : number
-}
-
-function checkClass(){
-  let clientWidth : number = 1;
-  let clientHeight : number = 1;
-  if(imageContainer.value){
-    clientWidth = imageContainer.value.clientWidth
-    clientHeight = imageContainer.value.clientHeight
-  }
-  viewerClass.value = (clientWidth/clientHeight) > (imageStore.selectedImageWidth/ imageStore.selectedImageHeight) ? 'h-full' : 'w-full'
-}
-const viewerClass = ref('w-full')
-
-
-onMounted(() => {
-  const resizeObserver = new ResizeObserver(function() {
-    checkClass()
-  });
-  if(imageContainer.value){
-    resizeObserver.observe(imageContainer.value);
-  }
-})
 const imageContainer = ref<HTMLDivElement | null>(null)
+
 cameraStore.$subscribe(() => {
   imageStore.setNearestImage(cameraStore.toRad)
 })
-
-watch(imageStore.getImageSize,
-() => {
-  checkClass()
-})
-checkClass()
 
 var isPressed: boolean = false
 
@@ -57,11 +28,10 @@ function getImages() {
             }
     })
     .then((res) => {
-      imageStore.images = res.data.result.images as Image[]
+      imageStore.images = res.data.result.images as VirtualCameraImage[]
       console.log("images : length = " + imageStore.images.length)
       
-      imageStore.images.forEach((image: Image) => {
-        console.log(image.name)
+      imageStore.images.forEach((image: VirtualCameraImage) => {
         if (image.latitude < imageStore.latMin) {
           imageStore.latMin = image.latitude
         }
@@ -92,8 +62,33 @@ function mouseLeave() {
   isPressed = false
 }
 
-function onResize(){
-  console.log("resize")
+function selectImage(){
+  const path = 'http://localhost:5000/image';
+  let image : LandmarkImage = {
+    name: imageStore.selectedImageName,
+    image: 'http://localhost:5000/image?study='+imageStore.objectPath+"&image="+imageStore.selectedImageName,
+    format: 'jpg',
+    width: 5472,
+    height: 3648
+  }
+  landmarksImageStore.addImage(image)
+  /*
+  axios.get(path, {
+            params: {
+              study: imageStore.objectPath,
+              image: imageStore.selectedImageName
+            }
+    })
+    .then((res) => {
+      console.log(res.data)
+      let image : LandmarkImage = res.data.result as LandmarkImage
+      landmarksImageStore.addImage(image)
+      //landmarksImageStore.setTab(image.name)
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+    */
 }
 
 if (imageStore.images.length == 0){
@@ -104,8 +99,8 @@ imageStore.setNearestImage(cameraStore.toRad)
 </script>
 <template>
   <div ref="imageContainer" class="w-full h-full border flex justify-center items-center">
-    <img class="object-fit" @mousedown="mouseEnter" @mouseup="mouseLeave" @mousemove="mouseMove" @mouseleave="mouseLeave" 
-      :class="viewerClass" :src="imageStore.selectedImage" alt="album.name" aspect-ratio="auto" draggable="false">
+    <img class="object-fit" @mousedown="mouseEnter" @mouseup="mouseLeave" @mousemove="mouseMove" @mouseleave="mouseLeave" @dblclick="selectImage()"
+      :src="imageStore.selectedImage" alt="album.name" aspect-ratio="auto" draggable="false">
   </div>
 </template>
 
@@ -114,6 +109,8 @@ imageStore.setNearestImage(cameraStore.toRad)
   object-fit: contain;
   max-width: 100%;
   max-height: 100%;
+  width:100%;
+  height:100%;
   display:block;
 }
 </style>

@@ -7,14 +7,15 @@ import draggable from "vuedraggable"
 import scrollIntoView from 'scroll-into-view-if-needed'
 
 import axios from "axios";
-import { useVirtualCameraStore, useLandmarksStore } from "@/lib/stores";
+import { useVirtualCameraStore, useLandmarksStore, useVCImagesStore } from "@/lib/stores";
 import { Landmark } from "@/lib/types";
 import { ref, nextTick } from "vue";
 
 import { X } from "lucide-vue-next";
+import { storeToRefs } from "pinia";
 
+const imageStore = useVCImagesStore()
 const landmarksStore = useLandmarksStore()
-
 const landmarksElements = ref<InstanceType<typeof draggable> | null>(null)
 const landmarksScroll = ref<HTMLElement | null>(null)
 
@@ -31,7 +32,11 @@ var mapShortcuts: Map<string, Shortcut> = new Map();
 function getShortcuts() {
   const path = "http://localhost:5000/shortcuts";
   axios
-    .get(path)
+    .get(path, {
+            params: {
+              study: imageStore.objectPath,
+            }
+          })
     .then((res) => {
       let shortcuts = res.data.result.commands as Shortcut[];
       shortcuts.forEach((item) => {
@@ -68,15 +73,18 @@ function shortcut(event: Event) {
     camera.latitude = newPos.latitude;
   }
 }
-function labelClicked(landmark: Landmark) {
-  landmark.edit = true;
-}
-function changeLabel(event : KeyboardEvent, landmark: Landmark) {
-  let target : HTMLInputElement = event.target as HTMLInputElement
-  if (event.key === "Enter") {
-    landmark.edit = false;
-    landmark.label = target.value
+
+function changeColor(event: Event, id: string) {
+  let target = event.currentTarget as HTMLButtonElement;
+  if (target == null) {
+    return;
   }
+  landmarksStore.landmarks.find(x => x.id == id)!.setColorHEX(target.value)
+}
+
+
+function changeLabel(payload : string | number, landmark : Landmark) {
+  landmark.label = payload.toString()
 }
 
 function clearLandmark() {
@@ -95,14 +103,6 @@ function addLandmark() {
       scrollIntoView(landmarksElements.value.$el.childNodes[landmarksElements.value.$el.childNodes.length - 1], { behavior: 'smooth', scrollMode: 'if-needed', block: 'end', inline: 'start',  boundary: landmarksScroll.value })
     }
   })
-}
-
-function changeColor(event: Event, id: string) {
-  let target = event.currentTarget as HTMLButtonElement;
-  if (target == null) {
-    return;
-  }
-  landmarksStore.landmarks.find(x => x.id == id)!.setColorHEX(target.value)
 }
 
 function removeLandmark(id: string) {
@@ -124,26 +124,26 @@ getShortcuts();
         <div class="grid grid-cols-4">
           <div class="grid grid-cols-subgrid col-span-4">
             <div class="col-start-2">
-              <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="top">
+              <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="top">
                 TOP
               </Button>
             </div>
           </div>
-          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="left">
+          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="left">
             LEFT
           </Button>
-          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="front">
+          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="front">
             FRONT
           </Button>
-          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="right">
+          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="right">
             RIGHT
           </Button>
-          <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="back">
+          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="back">
             BACK
           </Button>
           <div class="grid grid-cols-subgrid col-span-4">
             <div class="col-start-2">
-              <Button @click="shortcut" variant="default" class="w-full justify-center" data-key="bot">
+              <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="bot">
                 BOT
               </Button>
             </div>
@@ -176,12 +176,12 @@ getShortcuts();
                       class="h-8 w-8 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700"
                       id="hs-color-input" :value="landmark.color.hex()" title="Choose your color"
                       @change="changeColor($event, landmark.id)">
-                    <Label v-show="!landmark.edit" @dblclick="labelClicked(landmark)">{{ landmark.label }}</Label>
-                    <Input v-show="landmark.edit" type="text" :model-value="landmark.label" 
-                    @keyup.enter="changeLabel($event, landmark)"/>
+                    <Label v-show="!landmark.edit" @dblclick="landmark.edit = true">{{ landmark.label }}</Label>
+                    <Input v-show="landmark.edit" type="text" :model-value="landmark.label" class="h-auto" @focusout="landmark.edit = false"
+                    @keyup.enter="landmark.edit = false" @update:model-value="changeLabel($event, landmark)"/>
                   </div>
-                  <Button class="relative w-16" variant="destructive" @click="removeLandmark(landmark.id)">
-                    <X />
+                  <Button class="relative w-6 h-6 p-0" variant="destructive" @click="removeLandmark(landmark.id)">
+                    <X class="relative w-4 h-4 p-0"/>
                   </Button>
                 </div>
               </div>

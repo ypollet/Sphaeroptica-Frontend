@@ -2,37 +2,63 @@ import * as math from 'mathjs'
 import { defineStore, type PiniaPluginContext, type StateTree } from 'pinia'
 import { degreesToRad } from '@/lib/utils'
 import { Landmark } from './types'
-import type { Image } from './types'
+import type { VirtualCameraImage, LandmarkImage } from './types'
 import Color from 'color'
 
 
-export const useImagesStore = defineStore('images', {
+export const DEFAULT_TAB = "viewer"
+
+export const useLandmarkImagesStore = defineStore('landmarks_images', {
+  state: () => ({ images : Array<LandmarkImage>(), selected : -1}),
+  getters: {
+    getTabName: (state) => (state.selected >= 0 && state.selected < state.images.length) ? state.images[state.selected].name : DEFAULT_TAB,
+  },
+  actions: {
+    reset() {
+      this.images = []
+      this.selected = -1
+    },
+    setTab(value : string){
+      this.selected = this.images.findIndex((image) => image.name == value)
+    },
+    removeImage(index : number){
+      this.images.splice(index, 1)
+    },
+    addImage(image : LandmarkImage){
+      if(this.images.filter((el) => el.name == image.name).length == 0){
+        console.log("lol")
+        this.images.push(image)
+      }
+    }
+  },
+  persist: {
+    storage: sessionStorage,
+    key: 'landmarks_images',
+  },  
+})
+
+export const useVCImagesStore = defineStore('vc_images', {
   state: () => ({ latMin : Number.MAX_VALUE,
                   latMax : Number.MIN_VALUE,
-                  images : Array<Image>(), 
+                  images : Array<VirtualCameraImage>(), 
                   objectPath : "geonemus-geoffroyii", 
                   selectedImage : "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj",
-                  selectedImageWidth : 595,
-                  selectedImageHeight : 138,
+                  selectedImageName : "UCLouvain"
                 }),
-  getters: {
-    getImageSize: (state) => [state.selectedImageWidth, state.selectedImageHeight],
-  },
   actions: {
     reset(){
       this.latMin = Number.MAX_VALUE
       this.latMax = Number.MIN_VALUE
       this.images = []
       this.objectPath = "geonemus-geoffroyii"
-      this.selectedImage = "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj",
-      this.selectedImageWidth = 595,
-      this.selectedImageHeight = 138
+      this.selectedImage = "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj"
+      this.selectedImageName = "UCLouvain"
     },
     setNearestImage(radPos : number[]) {
       let bestAngle: Number = Infinity;
-      let bestImage: Image | null = null
+      let bestImage: VirtualCameraImage | null = null
         
-      this.images.forEach((imageData: Image) => {
+      this.images.forEach((imageData: VirtualCameraImage) => {
         let imgPos: [number, number] = [degreesToRad(imageData.longitude), degreesToRad(imageData.latitude)]
         let sinus: number = math.sin(imgPos[1]) * math.sin(radPos[1])
         let cosinus: number = math.cos(imgPos[1]) * math.cos(radPos[1]) * math.cos(math.abs(imgPos[0] - radPos[0]))
@@ -46,12 +72,15 @@ export const useImagesStore = defineStore('images', {
       if (bestImage === null) {
         return;
       }
-      var imageData: Image = bestImage
+      var imageData: VirtualCameraImage = bestImage
       this.selectedImage = imageData.image
-      this.selectedImageHeight = imageData.height
-      this.selectedImageWidth = imageData.width
+      this.selectedImageName = imageData.name
     }
-  }              
+  },
+  persist: {
+    storage: sessionStorage,
+    key: 'vc_images',
+  },          
 })
 export const useVirtualCameraStore = defineStore('camera', {
   state: () => ({ longitude: 0, 

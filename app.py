@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory
 
 from flask_cors import CORS, cross_origin
 
@@ -66,12 +66,33 @@ def get_response_image(image_path):
           }
 
 
+# send single image
+@app.route('/image')
+@cross_origin()
+def image():
+  path = request.args['study']
+  image_name = request.args['image']
+  cwd = os.getcwd()
+  directory = f"{cwd}/data/{path}"
+  image_data = {}
+  try:
+    image_data = get_response_image(f"{directory}/{image_name}")
+    image_data["name"] = image_name
+               
+  except Exception as error:
+    print(error)
+    
+  #return jsonify({'result': image_data})
+  print(f"")
+  return send_from_directory(f"{cwd}/data/", f"{path}/{image_name}")
+
 # send_shortcuts page
 @app.route('/shortcuts')
 @cross_origin()
 def shortcuts():
+  path = request.args['study']
   cwd = os.getcwd()
-  directory = f"{cwd}/data/geonemus-geoffroyii"
+  directory = f"{cwd}/data/{path}"
   with open(f"{directory}/calibration.json", "r") as f:
     calib_file = json.load(f)
   to_jsonify = {}

@@ -14,10 +14,7 @@ export type VirtualCameraImage = {
 
 export type LandmarkImage = {
     name: string,
-    format: string,
     image: string,
-    width: number,
-    height: number
 }
 
 export class Landmark {

@@ -67,9 +67,6 @@ function selectImage(){
   let image : LandmarkImage = {
     name: imageStore.selectedImageName,
     image: 'http://localhost:5000/image?study='+imageStore.objectPath+"&image="+imageStore.selectedImageName,
-    format: 'jpg',
-    width: 5472,
-    height: 3648
   }
   landmarksImageStore.addImage(image)
   /*

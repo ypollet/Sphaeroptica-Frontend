@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Button from "./ui/button/Button.vue";
 import { X } from "lucide-vue-next";
 import { useLandmarkImagesStore, DEFAULT_TAB } from "@/lib/stores";
-import Image from "./Image.vue";
+import ImageViewer from "./ImageViewer.vue";
 import { storeToRefs } from "pinia";
 import { ScrollBar, ScrollArea } from "./ui/scroll-area/";
 
@@ -50,7 +50,7 @@ function onTabChange(value : string) {
         </div>
     </TabsContent>
     <TabsContent v-for="image in imageStore.images" :value="image.name"  class="image m-0">
-      <Image :model-value="image"/>
+      <ImageViewer :model-value="image"/>
     </TabsContent>
   </Tabs>
     

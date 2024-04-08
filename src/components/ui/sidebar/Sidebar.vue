@@ -115,7 +115,7 @@ getShortcuts();
 </script>
 
 <template>
-  <div class="pb-[1000px] w-auto">
+  <div class="pb-[12px] w-auto">
     <div class="space-y-4 py-4">
       <div class="px-3 py-2">
         <h2 class="mb-2 px-4 text-lg font-semibold tracking-tight">

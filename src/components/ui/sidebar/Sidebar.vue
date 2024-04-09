@@ -156,11 +156,11 @@ getShortcuts();
         </h2>
 
 
-        <div ref="landmarksScroll" class="overflow-auto h-96 max-w-full border">
+        <div ref="landmarksScroll" class="scroll-snap-type overflow-auto h-96 max-w-full border">
           <draggable ref="landmarksElements" v-model="landmarksStore.landmarks" group="landmarks" item-key="id"
              :force-fallback="true" :animation="150" :scroll="true"
             :bubbleScroll="false" :handle="'.handle'"
-            class="relative scroll-snap-type w-fit min-w-full">
+            class="relative w-fit min-w-full">
             <template #item="{ element: landmark }: { element: Landmark }">
               <div class="scroll-align border flex grow p-2">
                 <div class="h-12 flex grow row justify-between items-center font-normal space-x-3 px-3 py-2">

@@ -158,7 +158,7 @@ getShortcuts();
         </h2>
 
 
-        <div ref="landmarksScroll" :class="cn('overflow-auto h-96 max-w-full border', scrollSnapType ? 'scroll-snap-type' : '')">
+        <div ref="landmarksScroll" :class="cn('overflow-auto h-[25rem] max-w-full border', scrollSnapType ? 'scroll-snap-type' : '')">
           <draggable ref="landmarksElements" v-model="landmarksStore.landmarks" group="landmarks" item-key="id"
              :force-fallback="true" :animation="150" :scroll="true"
             :bubbleScroll="true" :handle="'.handle'"

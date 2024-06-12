@@ -69,23 +69,6 @@ function selectImage(){
     image: 'http://localhost:5000/image?study='+imageStore.objectPath+"&image="+imageStore.selectedImageName,
   }
   landmarksImageStore.addImage(image)
-  /*
-  axios.get(path, {
-            params: {
-              study: imageStore.objectPath,
-              image: imageStore.selectedImageName
-            }
-    })
-    .then((res) => {
-      console.log(res.data)
-      let image : LandmarkImage = res.data.result as LandmarkImage
-      landmarksImageStore.addImage(image)
-      //landmarksImageStore.setTab(image.name)
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-    */
 }
 
 if (imageStore.images.length == 0){

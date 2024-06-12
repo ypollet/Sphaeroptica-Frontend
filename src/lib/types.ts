@@ -1,4 +1,5 @@
 import Color from "color"
+import type { Icon, LatLng } from "leaflet"
 export type Coordinates = {
     x: number,
     y: number
@@ -15,6 +16,20 @@ export type VirtualCameraImage = {
 export type LandmarkImage = {
     name: string,
     image: string,
+}
+
+export type MarkerInfo = {
+    label: string,
+    latlng: LatLng,
+    dragged : boolean
+}
+
+
+export type MarkerInfoCanvas = {
+    label: string,
+    x : number,
+    y : number,
+    dragged : boolean
 }
 
 export class Landmark {

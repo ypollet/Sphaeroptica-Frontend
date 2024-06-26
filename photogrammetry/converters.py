@@ -32,7 +32,7 @@
 import math
 import numpy as np
 
-def rad2degrees(rad):
+def rad2degrees(rad : float) -> float:
     """rad to degree converter
 
     Args:
@@ -44,7 +44,7 @@ def rad2degrees(rad):
 
     return round(rad*180/math.pi, 10)
 
-def degrees2rad(deg):
+def degrees2rad(deg : float) -> float:
     """degree to rad converter
 
     Args:
@@ -56,7 +56,7 @@ def degrees2rad(deg):
 
     return round(deg*math.pi/180, 10)
 
-def get_camera_world_coordinates(rotation, trans):
+def get_camera_world_coordinates(rotation : float, trans : float) -> np.ndarray:
     """get world coordinates of the camera for the intrinsic matrix (rotation and translation matrices)
 
     Args:
@@ -70,7 +70,7 @@ def get_camera_world_coordinates(rotation, trans):
     # - (R_t @ T)
     return -rotation.T.dot(trans)
 
-def get_trans_vector(rotation, C):
+def get_trans_vector(rotation : np.ndarray, C : np.ndarray) -> np.ndarray:
     """Compute the translation matrix from the rotation matrix and the camera world coordinates
 
     Args:
@@ -85,15 +85,15 @@ def get_trans_vector(rotation, C):
     return np.array(-rotation.dot(C)).T
 
 
-def get_long_lat(vector):
+def get_long_lat(vector : np.ndarray) -> tuple[float, float]:
     """get geographic coordinates from a vector (centered at the origin (0,0,0))
 
     Args:
         vector (np.ndarray): given vector
 
     Returns:
-        float: longitude in radians
-        float: latitude in radians
+        float: longitude
+        float: latitude
     """
 
     C_normed = vector / np.linalg.norm(vector)
@@ -105,7 +105,7 @@ def get_long_lat(vector):
     longitude = math.atan2(y,x)
     return longitude, latitude
 
-def get_unit_vector_from_long_lat(longitude, latitude):
+def get_unit_vector_from_long_lat(longitude : np.ndarray, latitude : np.ndarray) -> np.ndarray:
     """comput a unit vector (centered at the origin (0,0,0) from geographic coordinates
 
     Args:

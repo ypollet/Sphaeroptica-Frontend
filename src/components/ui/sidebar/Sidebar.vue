@@ -9,7 +9,7 @@ import scrollIntoView from 'scroll-into-view-if-needed'
 import axios from "axios";
 import { useVirtualCameraStore, useLandmarksStore, useVCImagesStore } from "@/lib/stores";
 import { Landmark } from "@/lib/types";
-import { ref, nextTick } from "vue";
+import { ref, nextTick, watch } from "vue";
 
 import { X } from "lucide-vue-next";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,11 @@ const landmarksScroll = ref<HTMLElement | null>(null)
 
 const scrollSnapType = ref<boolean>(true)
 
+watch(landmarksStore.landmarks, () => {
+  console.log("Change Landmarks")
+})
+
+console.log(imageStore.objectPath)
 
 type Shortcut = {
   name: string;
@@ -93,20 +98,6 @@ function clearLandmark() {
   landmarksStore.landmarks = new Array<Landmark>()
 }
 
-function addLandmark() {
-  let id = landmarksStore.generateID()
-  landmarksStore.addLandmark(
-    new Landmark(id,
-      id
-    )
-  );
-  nextTick(() => {
-    if (landmarksScroll.value && landmarksElements.value) {
-      scrollIntoView(landmarksElements.value.$el.childNodes[landmarksElements.value.$el.childNodes.length - 1], { behavior: 'smooth', scrollMode: 'if-needed', block: 'end', inline: 'start',  boundary: landmarksScroll.value })
-    }
-  })
-}
-
 function removeLandmark(id: string) {
   landmarksStore.landmarks = landmarksStore.landmarks.filter((el) => el.id != id)
 }
@@ -158,7 +149,7 @@ getShortcuts();
         </h2>
 
 
-        <div ref="landmarksScroll" :class="cn('overflow-auto h-[25rem] max-w-full border', scrollSnapType ? 'scroll-snap-type' : '')">
+        <div ref="landmarksScroll" :class="cn('overflow-auto h-96 max-w-full border', scrollSnapType ? 'scroll-snap-type' : '')">
           <draggable ref="landmarksElements" v-model="landmarksStore.landmarks" group="landmarks" item-key="id"
              :force-fallback="true" :animation="150" :scroll="true"
             :bubbleScroll="true" :handle="'.handle'"
@@ -176,7 +167,7 @@ getShortcuts();
                         fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" @dragenter="console.log('Enter')" @dragleave="console.log('leave')"></path>
                     </svg>
                     <input type="color"
-                      class="h-8 w-8 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700"
+                      class="h-8 w-8 block bg-white border border-gray-950 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-300"
                       id="hs-color-input" :value="landmark.color.hex()" title="Choose your color"
                       @change="changeColor($event, landmark.id)">
                     <Label v-show="!landmark.edit" @dblclick="landmark.edit = true">{{ landmark.label }}</Label>
@@ -193,7 +184,6 @@ getShortcuts();
           </draggable>
         </div>
         <div class="flex flex-row">
-            <Button variant="ghost" class="h-8 item-centers mt-3" @click="addLandmark">Add Landmark</Button>
             <Button variant="ghost" class="h-8 item-centers mt-3" @click="clearLandmark">Clear</Button>
         </div>
 

@@ -16,25 +16,21 @@ export type VirtualCameraImage = {
 export type LandmarkImage = {
     name: string,
     image: string,
-}
-
-export type MarkerInfo = {
-    label: string,
-    latlng: LatLng,
-    dragged : boolean
+    zoom: number,
+    offset: Coordinates
 }
 
 
-export type MarkerInfoCanvas = {
-    label: string,
-    x : number,
-    y : number,
-    dragged : boolean
+export type Marker = {
+    id : string,
+    pos : Coordinates,
+    color : Color
 }
 
 export class Landmark {
-    id: string;
-    label: string;
+    id: string
+    version: number
+    label: string
     poses: Map<string, Coordinates>
     color: Color
     position: number | undefined
@@ -42,6 +38,7 @@ export class Landmark {
 
     constructor(id: string, label: string, color: Color | null = null, poses: Map<string, Coordinates> = new Map(), position: number | undefined = undefined) {
         this.id = id
+        this.version = 1
         this.label = label
         this.poses = poses
         this.poses.set("Hello", { x: 255, y: 255 })
@@ -72,10 +69,12 @@ export class Landmark {
 
     addPose(image: string, pose: Coordinates) {
         this.poses.set(image, pose)
+        this.version++
     }
 
     removePose(image: string) {
         this.poses.delete(image)
+        this.version++
     }
 
     checkTriangulation() {

@@ -26,7 +26,6 @@ export const useLandmarkImagesStore = defineStore('landmarks_images', {
     },
     addImage(image : LandmarkImage){
       if(this.images.filter((el) => el.name == image.name).length == 0){
-        console.log("lol")
         this.images.push(image)
       }
     }
@@ -41,7 +40,7 @@ export const useVCImagesStore = defineStore('vc_images', {
   state: () => ({ latMin : Number.MAX_VALUE,
                   latMax : Number.MIN_VALUE,
                   images : Array<VirtualCameraImage>(), 
-                  objectPath : "geonemus-geoffroyii", 
+                  objectPath : "papillon_big", 
                   selectedImage : "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj",
                   selectedImageName : "UCLouvain"
                 }),
@@ -50,7 +49,7 @@ export const useVCImagesStore = defineStore('vc_images', {
       this.latMin = Number.MAX_VALUE
       this.latMax = Number.MIN_VALUE
       this.images = []
-      this.objectPath = "geonemus-geoffroyii"
+      this.objectPath = "papillon_big"
       this.selectedImage = "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj"
       this.selectedImageName = "UCLouvain"
     },

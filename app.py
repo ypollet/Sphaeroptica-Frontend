@@ -10,7 +10,7 @@ from PIL import Image
 import json
 import numpy as np
 
-from scripts import converters, reconstruction
+from photogrammetry import converters, reconstruction
 
 
 
@@ -25,13 +25,12 @@ app.config.from_object(__name__)
 
 # definitions
 SITE = {
-        'logo': 'FLASK-VUE',
-        'version': '0.0.1'
+        'logo': 'Sphaeroptica',
+        'version': '2.0.0'
 }
 
 OWNER = {
-        'name': 'Wilber Wanjira',
-        'website': 'https://wilber.co.ke'
+        'name': 'Yann Pollet',
 }
 
 # pass data to the frontend
@@ -44,13 +43,6 @@ site_data = {
 @app.route('/')
 def welcome():
   return render_template('index.html', **site_data)
-
-
-# ping page
-@app.route('/ping')
-@cross_origin()
-def ping():
-  return jsonify("Pong !")
 
 
 def get_response_image(image_path):

@@ -67,6 +67,8 @@ function selectImage(){
   let image : LandmarkImage = {
     name: imageStore.selectedImageName,
     image: 'http://localhost:5000/image?study='+imageStore.objectPath+"&image="+imageStore.selectedImageName,
+    zoom: -1,
+    offset: {x:0, y:0}
   }
   landmarksImageStore.addImage(image)
 }

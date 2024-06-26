@@ -31,6 +31,7 @@
 
 from enum import Enum
 from PySide6.QtCore import Qt
+import numpy as np
 
 HEIGHT_COMPONENT = 25
 
@@ -75,14 +76,14 @@ class ProjPoint():
     """object containing the projection matrix of the image and the pixel for each landmark posed
     """
 
-    def __init__(self, proj_mat, pixel_point) -> None:
+    def __init__(self, proj_mat : np.matrix, pixel_point : np.ndarray) -> None:
         self.proj_mat = proj_mat
         self.pixel_point = pixel_point
     
     def __str__(self) -> str:
         return f"{self.proj_mat} x {self.pixel_point}"
 
-class Point():
+class Pose():
     """Landmark posed on image
     """
 
@@ -91,7 +92,7 @@ class Point():
         self.y = float(y)  
     
     def scaled(self, factor):
-        return Point(round(self.x*factor), round(self.y*factor))
+        return Pose(round(self.x*factor), round(self.y*factor))
     
     def __str__(self) -> str:
         return (self.x, self.y).__str__()

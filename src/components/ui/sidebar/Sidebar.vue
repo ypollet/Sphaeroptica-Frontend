@@ -86,12 +86,12 @@ function changeColor(event: Event, id: string) {
   if (target == null) {
     return;
   }
-  landmarksStore.landmarks.find(x => x.id == id)!.setColorHEX(target.value)
+  landmarksStore.landmarks.find(x => x.getId() == id)!.setColorHEX(target.value)
 }
 
 
 function changeLabel(payload : string | number, landmark : Landmark) {
-  landmark.label = payload.toString()
+  landmark.setLabel(payload.toString())
 }
 
 function clearLandmark() {
@@ -99,7 +99,7 @@ function clearLandmark() {
 }
 
 function removeLandmark(id: string) {
-  landmarksStore.landmarks = landmarksStore.landmarks.filter((el) => el.id != id)
+  landmarksStore.landmarks = landmarksStore.landmarks.filter((el) => el.getId() != id)
 }
 
 getShortcuts();
@@ -168,13 +168,13 @@ getShortcuts();
                     </svg>
                     <input type="color"
                       class="h-8 w-8 block bg-white border border-gray-950 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-300"
-                      id="hs-color-input" :value="landmark.color.hex()" title="Choose your color"
-                      @change="changeColor($event, landmark.id)">
-                    <Label v-show="!landmark.edit" @dblclick="landmark.edit = true">{{ landmark.label }}</Label>
-                    <Input v-show="landmark.edit" type="text" :model-value="landmark.label" class="h-auto" @focusout="landmark.edit = false"
-                    @keyup.enter="landmark.edit = false" @update:model-value="changeLabel($event, landmark)"/>
+                      id="hs-color-input" :value="landmark.getColorHEX()" title="Choose your color"
+                      @change="changeColor($event, landmark.getId())">
+                    <Label v-show="!landmark.getEdit()" @dblclick="landmark.setEdit(true)">{{ landmark.label }}</Label>
+                    <Input v-show="landmark.getEdit()" type="text" :model-value="landmark.label" class="h-auto" @focusout="landmark.setEdit(false)"
+                    @keyup.enter="landmark.setEdit(false)" @update:model-value="changeLabel($event, landmark)"/>
                   </div>
-                  <Button class="relative w-6 h-6 p-0" variant="destructive" @click="removeLandmark(landmark.id)">
+                  <Button class="relative w-6 h-6 p-0" variant="destructive" @click="removeLandmark(landmark.getId())">
                     <X class="relative w-4 h-4 p-0"/>
                   </Button>
                 </div>

@@ -2,19 +2,21 @@
 import { ref, watch, onMounted } from 'vue';
 import axios from 'axios';
 import { storeToRefs } from 'pinia';
-import { useLandmarkImagesStore, useVCImagesStore, useVirtualCameraStore } from '@/lib/stores';
+import { useLandmarkImagesStore, useVCImagesStore, useVirtualCameraStore, useLandmarksStore } from '@/lib/stores';
 import type { Coordinates, LandmarkImage, VirtualCameraImage } from '@/lib/types';
 
 const LONG_MAX = 360
 const LONG_MIN = 0
 
 const landmarksImageStore = useLandmarkImagesStore()
+const landmarksStore = useLandmarksStore()
 const imageStore = useVCImagesStore()
 const cameraStore = useVirtualCameraStore()
 
 const imageContainer = ref<HTMLDivElement | null>(null)
 
 cameraStore.$subscribe(() => {
+  console.log("Change Camera")
   imageStore.setNearestImage(cameraStore.toRad)
 })
 
@@ -68,7 +70,9 @@ function selectImage(){
     name: imageStore.selectedImageName,
     image: 'http://localhost:5000/image?study='+imageStore.objectPath+"&image="+imageStore.selectedImageName,
     zoom: -1,
-    offset: {x:0, y:0}
+    offset: {x:0, y:0},
+    versions : new Map(),
+    reprojections : new Map()
   }
   landmarksImageStore.addImage(image)
 }

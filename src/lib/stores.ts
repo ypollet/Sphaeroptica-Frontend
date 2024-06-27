@@ -1,15 +1,16 @@
 import * as math from 'mathjs'
 import { defineStore, type PiniaPluginContext, type StateTree } from 'pinia'
 import { degreesToRad } from '@/lib/utils'
-import { Landmark } from './types'
-import type { VirtualCameraImage, LandmarkImage } from './types'
+import { Landmark, LandmarkImage } from './types'
+import type { VirtualCameraImage } from './types'
 import Color from 'color'
+import axios from 'axios'
 
 
 export const DEFAULT_TAB = "viewer"
 
 export const useLandmarkImagesStore = defineStore('landmarks_images', {
-  state: () => ({ images : Array<LandmarkImage>(), selected : -1}),
+  state: () => ({ images: Array<LandmarkImage>(), selected: -1 }),
   getters: {
     getTabName: (state) => (state.selected >= 0 && state.selected < state.images.length) ? state.images[state.selected].name : DEFAULT_TAB,
   },
@@ -18,14 +19,14 @@ export const useLandmarkImagesStore = defineStore('landmarks_images', {
       this.images = []
       this.selected = -1
     },
-    setTab(value : string){
+    setTab(value: string) {
       this.selected = this.images.findIndex((image) => image.name == value)
     },
-    removeImage(index : number){
+    removeImage(index: number) {
       this.images.splice(index, 1)
     },
-    addImage(image : LandmarkImage){
-      if(this.images.filter((el) => el.name == image.name).length == 0){
+    addImage(image: LandmarkImage) {
+      if (this.images.filter((el) => el.name == image.name).length == 0) {
         this.images.push(image)
       }
     }
@@ -33,19 +34,34 @@ export const useLandmarkImagesStore = defineStore('landmarks_images', {
   persist: {
     storage: sessionStorage,
     key: 'landmarks_images',
-  },  
+    afterRestore: (ctx: PiniaPluginContext) => {
+      let images = ctx.store.$state.images.map((x: LandmarkImage) => x)
+      console.log("Restore LandmarkImages")
+      console.log(images)
+      ctx.store.$state.images = images.map((jsonObject: LandmarkImage) =>
+          new LandmarkImage(jsonObject.name, 
+            jsonObject.image, 
+            jsonObject.zoom, 
+            jsonObject.offset, 
+            new Map(Object.entries(jsonObject.versions)), 
+            new Map(Object.entries(jsonObject.reprojections)))
+      )
+      console.log(ctx.store.$state.images)
+    },
+  },
 })
 
 export const useVCImagesStore = defineStore('vc_images', {
-  state: () => ({ latMin : Number.MAX_VALUE,
-                  latMax : Number.MIN_VALUE,
-                  images : Array<VirtualCameraImage>(), 
-                  objectPath : "papillon_big", 
-                  selectedImage : "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj",
-                  selectedImageName : "UCLouvain"
-                }),
+  state: () => ({
+    latMin: Number.MAX_VALUE,
+    latMax: Number.MIN_VALUE,
+    images: Array<VirtualCameraImage>(),
+    objectPath: "papillon_big",
+    selectedImage: "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj",
+    selectedImageName: "UCLouvain"
+  }),
   actions: {
-    reset(){
+    reset() {
       this.latMin = Number.MAX_VALUE
       this.latMax = Number.MIN_VALUE
       this.images = []
@@ -53,10 +69,10 @@ export const useVCImagesStore = defineStore('vc_images', {
       this.selectedImage = "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj"
       this.selectedImageName = "UCLouvain"
     },
-    setNearestImage(radPos : number[]) {
+    setNearestImage(radPos: number[]) {
       let bestAngle: Number = Infinity;
       let bestImage: VirtualCameraImage | null = null
-        
+
       this.images.forEach((imageData: VirtualCameraImage) => {
         let imgPos: [number, number] = [degreesToRad(imageData.longitude), degreesToRad(imageData.latitude)]
         let sinus: number = math.sin(imgPos[1]) * math.sin(radPos[1])
@@ -67,7 +83,7 @@ export const useVCImagesStore = defineStore('vc_images', {
           bestImage = imageData
         }
       })
-    
+
       if (bestImage === null) {
         return;
       }
@@ -79,17 +95,18 @@ export const useVCImagesStore = defineStore('vc_images', {
   persist: {
     storage: sessionStorage,
     key: 'vc_images',
-  },          
+  },
 })
 export const useVirtualCameraStore = defineStore('camera', {
-  state: () => ({ longitude: 0, 
-                  latitude: 0,
-                   }),
+  state: () => ({
+    longitude: 0,
+    latitude: 0,
+  }),
   getters: {
     toRad: (state) => [degreesToRad(state.longitude), degreesToRad(state.latitude)],
   },
   actions: {
-    reset(){
+    reset() {
       this.longitude = 0
       this.latitude = 0
     },
@@ -118,12 +135,12 @@ export const useLandmarksStore = defineStore('landmarks', {
     addLandmark(landmark: Landmark) {
       this.landmarks.push(landmark)
     },
-    generateID(){
-      let check : boolean = false
-      let id : string = ""
-      while(!check){
+    generateID() {
+      let check: boolean = false
+      let id: string = ""
+      while (!check) {
         id = (Math.random() + 1).toString(36).substring(2);
-        if(this.landmarks.filter(e => e.id === id).length == 0){
+        if (this.landmarks.filter(e => e.getId() === id).length == 0) {
           check = true
         }
       }

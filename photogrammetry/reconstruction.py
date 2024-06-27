@@ -33,7 +33,7 @@ import numpy as np
 import math
 
 from PySide6.QtGui import QColor
-from scripts import helpers, converters
+from photogrammetry import helpers, converters
 
 
 

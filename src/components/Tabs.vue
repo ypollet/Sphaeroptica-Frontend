@@ -11,6 +11,8 @@ import { ScrollBar, ScrollArea } from "./ui/scroll-area/";
 const imageStore = useLandmarkImagesStore()
 
 const { getTabName } = storeToRefs(imageStore)
+console.log(getTabName.value)
+console.log(imageStore.images)
 
 function removeTab(index: number) {
   imageStore.images.splice(index, 1)

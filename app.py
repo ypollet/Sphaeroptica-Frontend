@@ -13,9 +13,11 @@ import numpy as np
 from photogrammetry import converters, reconstruction
 
 
+cwd = os.getcwd()
 
 # configuration
 DEBUG = True
+DATA_FOLDER = f"{cwd}/data"
 
 # instantiate the app
 app = Flask(__name__, static_folder="dist/static", template_folder="dist", static_url_path="/static")
@@ -30,7 +32,7 @@ SITE = {
 }
 
 OWNER = {
-        'name': 'Yann Pollet',
+        'name': 'Royal Belgian Institute of Natural Sciences',
 }
 
 # pass data to the frontend
@@ -44,6 +46,25 @@ site_data = {
 def welcome():
   return render_template('index.html', **site_data)
 
+
+@app.route('/triangulate', methods=['POST'])
+def triangulate():
+  path = request.form.get("study")
+  poses = request.form.get("poses")
+  
+  print(poses)
+  
+  return {"result": "ok"}
+
+@app.route('/reproject', methods=['POST'])
+def reproject():
+  path = request.form.get("study")
+  position = request.form.get("position")
+  image_name = request.form['image']
+  
+  print(position)
+  print(image_name)
+  return {"result": "ok"}
 
 def get_response_image(image_path):
     pil_img = Image.open(image_path, mode='r') # reads the PIL image
@@ -64,8 +85,7 @@ def get_response_image(image_path):
 def image():
   path = request.args['study']
   image_name = request.args['image']
-  cwd = os.getcwd()
-  directory = f"{cwd}/data/{path}"
+  directory = f"{DATA_FOLDER}/{path}"
   image_data = {}
   try:
     image_data = get_response_image(f"{directory}/{image_name}")
@@ -76,15 +96,14 @@ def image():
     
   #return jsonify({'result': image_data})
   print(f"")
-  return send_from_directory(f"{cwd}/data/", f"{path}/{image_name}")
+  return send_from_directory(DATA_FOLDER, f"{path}/{image_name}")
 
 # send_shortcuts page
 @app.route('/shortcuts')
 @cross_origin()
 def shortcuts():
   path = request.args['study']
-  cwd = os.getcwd()
-  directory = f"{cwd}/data/{path}"
+  directory = f"{DATA_FOLDER}/{path}"
   with open(f"{directory}/calibration.json", "r") as f:
     calib_file = json.load(f)
   to_jsonify = {}
@@ -99,9 +118,8 @@ def shortcuts():
 @cross_origin()
 def images():
   path = request.args['study']
-  cwd = os.getcwd()
 
-  directory = f"{cwd}/data/{path}"
+  directory = f"{DATA_FOLDER}/{path}"
   with open(f"{directory}/calibration.json", "r") as f:
             calib_file = json.load(f)
   to_jsonify = {}

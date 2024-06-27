@@ -1,5 +1,8 @@
 import Color from "color"
-import type { Icon, LatLng } from "leaflet"
+import { useVCImagesStore } from "./stores"
+import axios from "axios"
+import { type Matrix }  from "mathjs"
+
 export type Coordinates = {
     x: number,
     y: number
@@ -13,11 +16,22 @@ export type VirtualCameraImage = {
     image: string,
 }
 
-export type LandmarkImage = {
-    name: string,
-    image: string,
-    zoom: number,
+export class LandmarkImage  {
+    name: string
+    image: string
+    zoom: number
     offset: Coordinates
+    versions : Map<string, number>
+    reprojections : Map<string, Coordinates>
+
+    constructor(name : string, image : string, zoom: number = 1, offset : Coordinates = {x:0, y:0}, versions : Map<string, number>= new Map(), reprojections : Map<string, Coordinates> = new Map()){
+        this.name = name
+        this.image = image
+        this.zoom = zoom
+        this.offset = offset
+        this.versions = versions
+        this.reprojections = reprojections
+    }
 }
 
 
@@ -33,15 +47,14 @@ export class Landmark {
     label: string
     poses: Map<string, Coordinates>
     color: Color
-    position: number | undefined
+    position: Matrix | undefined
     edit: boolean
 
-    constructor(id: string, label: string, color: Color | null = null, poses: Map<string, Coordinates> = new Map(), position: number | undefined = undefined) {
+    constructor(id: string, label: string, color: Color | null = null, poses: Map<string, Coordinates> = new Map(), position: Matrix | undefined = undefined) {
         this.id = id
         this.version = 1
         this.label = label
         this.poses = poses
-        this.poses.set("Hello", { x: 255, y: 255 })
         this.edit = false
 
         if (color == null) {
@@ -55,11 +68,26 @@ export class Landmark {
         return { id: this.id, label: this.label, color: this.color.hex(), position: this.position, poses: Object.fromEntries(this.poses) }
     }
 
+    getId() : string {
+        return this.id
+    }
+    getLabel() : string {
+        return this.label
+    }
+    setLabel(label : string){
+        this.label = label
+    }
 
+    getVersion() : number{
+        return this.version
+    }
+    
+    getColorHEX() : string{
+        return this.color.hex()
+    }
     setColorHEX(color: string) {
         this.color = Color(color)
     }
-
     setColorRGB(color: number[]) {
         if (color.length < 3) {
             return
@@ -69,13 +97,49 @@ export class Landmark {
 
     addPose(image: string, pose: Coordinates) {
         this.poses.set(image, pose)
-        this.version++
     }
-
     removePose(image: string) {
         this.poses.delete(image)
-        this.version++
     }
+    getPoses() : Map<String, Coordinates>{
+        return this.poses
+    }
+
+    getPosition(){
+        return this.position
+    }
+
+    setPosition(position : Matrix){
+        this.position = position
+    }
+    getEdit() : boolean{
+        return this.edit
+    }
+    setEdit(edit : boolean){
+        this.edit = edit
+    }
+    
+    triangulatePosition(objectPath : string) {
+        if(! this.checkTriangulation()){
+            //not enough poses for triangulation, set position to undefined
+            this.position = undefined
+            return
+        }
+        const path = 'http://localhost:5000/triangulate';
+        axios.post(path, {
+          study: objectPath,
+          poses: this.poses
+        })
+          .then((res) => {
+            let position = res.data.result.position 
+            console.log("Position = " + position)
+            this.position = position
+            this.version++
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
 
     checkTriangulation() {
         return this.poses.size >= 2

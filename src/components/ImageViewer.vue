@@ -1,13 +1,34 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, type HTMLAttributes, watch } from 'vue'
+import { ref, onMounted, nextTick, type HTMLAttributes, watch, version } from 'vue'
 import { cn } from '@/lib/utils'
 import { type Coordinates, type LandmarkImage, Landmark, type Marker } from '@/lib/types'
-import { useLandmarksStore } from '@/lib/stores'
+import { useLandmarksStore, useVCImagesStore } from '@/lib/stores'
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuTrigger,
 } from '@/components/ui/context-menu'
+import axios from 'axios'
 
 const landmarksStore = useLandmarksStore()
+const imageStore = useVCImagesStore()
+
+function computeReprojection(){
+
+}
+
+function checkVersions(){
+  landmarksStore.landmarks.forEach((landmark, index) => {
+    console.log(props.modelValue.versions)
+    if(props.modelValue.versions.get(landmark.id) == null || props.modelValue.versions.get(landmark.id) != landmark.getVersion()){
+      props.modelValue.versions.set(landmark.id, landmark.getVersion())
+      computeReprojection()
+    }
+  })
+  update()
+}
+landmarksStore.$subscribe((mutation, state) => {
+  checkVersions()
+})
+
 
 const ZOOM_MIN = 0.1
 const ZOOM_MAX = 4
@@ -31,7 +52,7 @@ const landmarkDragged = ref<number>(-1)
 const draggedPos = ref<Coordinates>({ x: -1, y: -1 })
 const posContextMenu = ref<Coordinates>({ x: -1, y: -1 })
 
-const degrees_to_radians = (deg : number) => (deg * Math.PI) / 180.0; // Convert degrees to radians using the formula: radians = (degrees * Math.PI) / 180
+const degrees_to_radians = (deg: number) => (deg * Math.PI) / 180.0; // Convert degrees to radians using the formula: radians = (degrees * Math.PI) / 180
 
 watch(landmarkDragged, () => {
   if (landmarkDragged.value < 0) {
@@ -46,7 +67,6 @@ onMounted(() => {
     if (imageContainer.value && canvas.value && base_image.value) {
       canvas.value.width = Math.floor(imageContainer.value.clientWidth)
       canvas.value.height = Math.floor(imageContainer.value.clientHeight)
-      screenFit()
       update()
     }
 
@@ -54,6 +74,7 @@ onMounted(() => {
   if (imageContainer.value) {
     resizeObserver.observe(imageContainer.value);
   }
+  checkVersions()
 })
 
 function loaded() {
@@ -64,11 +85,6 @@ function loaded() {
     update()
   })
 }
-
-landmarksStore.$subscribe((mutation, state) => {
-  update()
-})
-
 
 function drawImage() {
   if (canvas.value && base_image.value && base_image.value.complete) {
@@ -86,89 +102,89 @@ function drawImage() {
       shiftCanvas.value.x, shiftCanvas.value.y, base_image.value.naturalWidth, base_image.value.naturalHeight)
 
     landmarksStore.landmarks.forEach((landmark, id) => {
-      let marker = landmark.poses.get(props.modelValue.name)
+      let marker = landmark.getPoses().get(props.modelValue.name)
       let radius = DOT_RADIUS / props.modelValue.zoom
       if (!marker) {
         //if undefined
         return
       }
       ctx.beginPath();
-      if(landmarkDragged.value == id){
+      if (landmarkDragged.value == id) {
         marker = draggedPos.value
-        const targetRadius = radius*4
+        const targetRadius = radius * 4
         // draw circle
         ctx.arc((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y), targetRadius, 0, 2 * Math.PI);
         ctx.strokeStyle = 'white';
-        ctx.lineWidth = DOT_RADIUS /2 / props.modelValue.zoom;
+        ctx.lineWidth = DOT_RADIUS / 2 / props.modelValue.zoom;
         ctx.stroke()
         ctx.closePath();
 
         // draw white lines diagonals
         ctx.beginPath();
-        let start : Coordinates = posCircle(marker, 45, targetRadius, shiftCanvas.value);
-        let end : Coordinates = posCircle(marker, 45, targetRadius*SPACE_TARGET, shiftCanvas.value);
+        let start: Coordinates = posCircle(marker, 45, targetRadius, shiftCanvas.value);
+        let end: Coordinates = posCircle(marker, 45, targetRadius * SPACE_TARGET, shiftCanvas.value);
         ctx.moveTo(start.x, start.y)
         ctx.lineTo(end.x, end.y)
 
         start = posCircle(marker, 135, targetRadius, shiftCanvas.value);
-        end = posCircle(marker, 135, targetRadius*SPACE_TARGET, shiftCanvas.value);
+        end = posCircle(marker, 135, targetRadius * SPACE_TARGET, shiftCanvas.value);
         ctx.moveTo(start.x, start.y)
         ctx.lineTo(end.x, end.y)
 
         start = posCircle(marker, 225, targetRadius, shiftCanvas.value);
-        end = posCircle(marker, 225, targetRadius*SPACE_TARGET, shiftCanvas.value);
+        end = posCircle(marker, 225, targetRadius * SPACE_TARGET, shiftCanvas.value);
         ctx.moveTo(start.x, start.y)
         ctx.lineTo(end.x, end.y)
 
         start = posCircle(marker, 315, targetRadius, shiftCanvas.value);
-        end = posCircle(marker, 315, targetRadius*SPACE_TARGET, shiftCanvas.value);
+        end = posCircle(marker, 315, targetRadius * SPACE_TARGET, shiftCanvas.value);
         ctx.moveTo(start.x, start.y)
         ctx.lineTo(end.x, end.y)
 
         ctx.strokeStyle = 'white';
-        ctx.lineWidth = DOT_RADIUS /3 / props.modelValue.zoom;
+        ctx.lineWidth = DOT_RADIUS / 3 / props.modelValue.zoom;
 
         ctx.stroke()
         ctx.closePath();
-        
+
         // draw black lines lines horizontal and vertical
         ctx.beginPath();
 
         //horizontal
-        ctx.moveTo((marker.x + shiftCanvas.value.x)+(targetRadius*(1-SPACE_TARGET)), (marker.y + shiftCanvas.value.y))
-        ctx.lineTo((marker.x + shiftCanvas.value.x)+(targetRadius*SPACE_TARGET), (marker.y + shiftCanvas.value.y))
+        ctx.moveTo((marker.x + shiftCanvas.value.x) + (targetRadius * (1 - SPACE_TARGET)), (marker.y + shiftCanvas.value.y))
+        ctx.lineTo((marker.x + shiftCanvas.value.x) + (targetRadius * SPACE_TARGET), (marker.y + shiftCanvas.value.y))
 
-        ctx.moveTo((marker.x + shiftCanvas.value.x)-(targetRadius*(1-SPACE_TARGET)), (marker.y + shiftCanvas.value.y))
-        ctx.lineTo((marker.x + shiftCanvas.value.x)-(targetRadius*SPACE_TARGET), (marker.y + shiftCanvas.value.y))
+        ctx.moveTo((marker.x + shiftCanvas.value.x) - (targetRadius * (1 - SPACE_TARGET)), (marker.y + shiftCanvas.value.y))
+        ctx.lineTo((marker.x + shiftCanvas.value.x) - (targetRadius * SPACE_TARGET), (marker.y + shiftCanvas.value.y))
 
         //vertical
-        ctx.moveTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y)+(targetRadius*(1-SPACE_TARGET)))
-        ctx.lineTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y)+(targetRadius*SPACE_TARGET))
+        ctx.moveTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) + (targetRadius * (1 - SPACE_TARGET)))
+        ctx.lineTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) + (targetRadius * SPACE_TARGET))
 
-        ctx.moveTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y)-(targetRadius*(1-SPACE_TARGET)))
-        ctx.lineTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y)-(targetRadius*SPACE_TARGET))
+        ctx.moveTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) - (targetRadius * (1 - SPACE_TARGET)))
+        ctx.lineTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) - (targetRadius * SPACE_TARGET))
 
         ctx.strokeStyle = 'black';
-        ctx.lineWidth = DOT_RADIUS /3 / props.modelValue.zoom;
+        ctx.lineWidth = DOT_RADIUS / 3 / props.modelValue.zoom;
         ctx.stroke()
       }
-      else{
-        
+      else {
+
         ctx.arc((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y), radius, 0, 2 * Math.PI);
-        ctx.fillStyle = landmark.color.hex()
+        ctx.fillStyle = landmark.getColorHEX()
         ctx.fill();
         ctx.lineWidth = DOT_RADIUS / 2 / props.modelValue.zoom;
         ctx.strokeStyle = "black";
         ctx.stroke();
-        
+
       }
-      
+
     });
   }
 }
 
-function posCircle(center : Coordinates, angle : number, radius : number, translate : Coordinates = {x : 0, y : 0}) : Coordinates {
-  return { x: (center.x + radius * Math.cos(degrees_to_radians(angle)))+ translate.x, y: (center.y + radius * Math.sin(degrees_to_radians(angle)))+ translate.y };
+function posCircle(center: Coordinates, angle: number, radius: number, translate: Coordinates = { x: 0, y: 0 }): Coordinates {
+  return { x: (center.x + radius * Math.cos(degrees_to_radians(angle))) + translate.x, y: (center.y + radius * Math.sin(degrees_to_radians(angle))) + translate.y };
 }
 
 function update() {
@@ -243,34 +259,33 @@ function startDrag(event: MouseEvent) {
   if (event.button == 0) {
     dragging.value = true
     if (canvas.value) {
-    let pos = getPos(event)
-    landmarksStore.landmarks.forEach((landmark, index) => {
-      let marker = landmark.poses.get(props.modelValue.name)
-      if (!marker) {
-        //if undefined
-        return
-      }
-      if(pointInsideCircle(pos, marker, DOT_RADIUS/props.modelValue.zoom)){
-        console.log("found")
-        landmarkDragged.value = index
-      }
-    })
-  }
+      let pos = getPos(event)
+      landmarksStore.landmarks.forEach((landmark, index) => {
+        let marker = landmark.getPoses().get(props.modelValue.name)
+        if (!marker) {
+          //if undefined
+          return
+        }
+        if (pointInsideCircle(pos, marker, DOT_RADIUS / props.modelValue.zoom)) {
+          console.log("found")
+          landmarkDragged.value = index
+        }
+      })
+    }
   }
 }
 
 function mousemove(event: MouseEvent) {
   if (dragging.value == true) {
-    console.log(landmarkDragged.value)
-    if(landmarkDragged.value < 0){
+    if (landmarkDragged.value < 0) {
       // no marker to drag => pan image
       updateOffset(event.movementX, event.movementY)
     }
-    else{
+    else {
       // drag marker
       draggedPos.value = getPos(event)
     }
-    
+
     update()
   }
 }
@@ -278,21 +293,26 @@ function mousemove(event: MouseEvent) {
 function stopDrag(event: MouseEvent) {
   dragging.value = false
 
-  if(landmarkDragged.value >= 0){
+  if (landmarkDragged.value >= 0) {
     //update pos of landmark
     landmarksStore.landmarks[landmarkDragged.value].addPose(props.modelValue.name, getPos(event))
+
+    //triangulate landmark
+    landmarksStore.landmarks[landmarkDragged.value].triangulatePosition(imageStore.objectPath)
+
     // reinit landmarkDrag
     landmarkDragged.value = -1
     draggedPos.value = { x: -1, y: -1 }
+
   }
 
-  
+
 }
 
-function pointInsideCircle(pointCoord : Coordinates, circleCoord : Coordinates, radius : number) {
-    const distance =
-        Math.sqrt((pointCoord.x - circleCoord.x) ** 2 + (pointCoord.y - circleCoord.y) ** 2);
-    return distance < radius;
+function pointInsideCircle(pointCoord: Coordinates, circleCoord: Coordinates, radius: number) {
+  const distance =
+    Math.sqrt((pointCoord.x - circleCoord.x) ** 2 + (pointCoord.y - circleCoord.y) ** 2);
+  return distance < radius;
 }
 function printPos(event: MouseEvent) {
   let pos = getPos(event)
@@ -317,6 +337,8 @@ function addMarker(event: MouseEvent) {
 
 function clickContext(landmark: Landmark) {
   landmark.addPose(props.modelValue.name, { x: posContextMenu.value.x, y: posContextMenu.value.y })
+  //triangulate landmark
+  landmark.triangulatePosition(imageStore.objectPath)
   update()
 }
 
@@ -336,7 +358,7 @@ function addLandmark() {
     @wheel.prevent>
     <ContextMenu>
       <ContextMenuTrigger class="flex w-full h-full">
-        <canvas ref="canvas" :class="(landmarkDragged>=0) ? 'cursor-none' : 'cursor-pointer'" @mousedown="startDrag"
+        <canvas ref="canvas" :class="(landmarkDragged >= 0) ? 'cursor-none' : 'cursor-pointer'" @mousedown="startDrag"
           @mouseup="stopDrag" @mouseout="stopDrag" @mousemove="mousemove" @wheel="zoomWithWheel"
           @contextmenu="addMarker">
         </canvas>
@@ -347,13 +369,13 @@ function addLandmark() {
         </ContextMenuLabel>
         <ContextMenuSeparator />
         <ContextMenuItem v-for="landmark in landmarksStore.landmarks" class="block" inset
-          @select="clickContext(landmark)">
+          @select="clickContext(landmark as Landmark)">
           <div class="flex space-x-4">
-            <svg class="h-4 w-4" viewBox="0 0 8 8" stroke="currentColor" stroke-width="1" :fill="landmark.color.hex()"
+            <svg class="h-4 w-4" viewBox="0 0 8 8" stroke="currentColor" stroke-width="1" :fill="landmark.getColorHEX()"
               xmlns="http://www.w3.org/2000/svg">
               <circle cx="4" cy="4" r="3" />
             </svg>
-            <div>{{ landmark.label }}</div>
+            <div>{{ landmark.getLabel() }}</div>
           </div>
         </ContextMenuItem>
         <ContextMenuSeparator />

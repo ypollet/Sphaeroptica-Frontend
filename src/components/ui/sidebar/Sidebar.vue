@@ -11,7 +11,7 @@ import { useVirtualCameraStore, useLandmarksStore, useVCImagesStore } from "@/li
 import { Landmark } from "@/lib/types";
 import { ref, nextTick, watch } from "vue";
 
-import { X } from "lucide-vue-next";
+import { X, RefreshCcw } from "lucide-vue-next";
 import { cn } from "@/lib/utils";
 
 const imageStore = useVCImagesStore()
@@ -20,12 +20,6 @@ const landmarksElements = ref<InstanceType<typeof draggable> | null>(null)
 const landmarksScroll = ref<HTMLElement | null>(null)
 
 const scrollSnapType = ref<boolean>(true)
-
-watch(landmarksStore.landmarks, () => {
-  console.log("Change Landmarks")
-})
-
-console.log(imageStore.objectPath)
 
 type Shortcut = {
   name: string;
@@ -174,9 +168,14 @@ getShortcuts();
                     <Input v-show="landmark.getEdit()" type="text" :model-value="landmark.label" class="h-auto" @focusout="landmark.setEdit(false)"
                     @keyup.enter="landmark.setEdit(false)" @update:model-value="changeLabel($event, landmark)"/>
                   </div>
-                  <Button class="relative w-6 h-6 p-0" variant="destructive" @click="removeLandmark(landmark.getId())">
-                    <X class="relative w-4 h-4 p-0"/>
-                  </Button>
+                  <div class="flex w-full h-full items-center justify-end space-x-4">
+                    <Button class="relative w-6 h-6 p-0" variant="secondary" @click="landmark.resetPoses()">
+                      <RefreshCcw class="relative w-4 h-4 p-0"/>
+                    </Button>
+                    <Button class="relative w-6 h-6 p-0" variant="destructive" @click="removeLandmark(landmark.getId())">
+                      <X class="relative w-4 h-4 p-0"/>
+                    </Button>
+                  </div>
                 </div>
               </div>
 

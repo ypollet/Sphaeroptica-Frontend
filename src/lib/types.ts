@@ -50,9 +50,9 @@ export class Landmark {
     position: Matrix | undefined
     edit: boolean
 
-    constructor(id: string, label: string, color: Color | null = null, poses: Map<string, Coordinates> = new Map(), position: Matrix | undefined = undefined) {
+    constructor(id: string, label: string, version : number = 1,color: Color | null = null, poses: Map<string, Coordinates> = new Map(), position: Matrix | undefined = undefined) {
         this.id = id
-        this.version = 1
+        this.version = version
         this.label = label
         this.poses = poses
         this.edit = false
@@ -62,6 +62,16 @@ export class Landmark {
         }
         this.color = color
         this.position = position
+    }
+
+    equals(other : Landmark | string | null){
+        if(other == null){
+            return false
+        }
+        if(typeof other === "string"){
+            return this.id == other
+        }
+        return this.id == other.id
     }
 
     toJSON() {
@@ -104,6 +114,11 @@ export class Landmark {
     getPoses() : Map<String, Coordinates>{
         return this.poses
     }
+    resetPoses(){
+        this.position = undefined
+        this.poses = new Map()
+        this.version++
+    }
 
     getPosition(){
         return this.position
@@ -125,12 +140,16 @@ export class Landmark {
             this.position = undefined
             return
         }
+        console.log('Triangulate : ', this.label)
+        console.log(this.poses)
+        console.log(Object.fromEntries(this.poses))
         const path = 'http://localhost:5000/triangulate';
         axios.post(path, {
           study: objectPath,
-          poses: this.poses
+          poses: Object.fromEntries(this.poses)
         })
           .then((res) => {
+            console.log(res.data)
             let position = res.data.result.position 
             console.log("Position = " + position)
             this.position = position

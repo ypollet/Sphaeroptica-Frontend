@@ -32,7 +32,7 @@
 import numpy as np
 import math
 
-from PySide6.QtGui import QColor
+from colour import Color
 from photogrammetry import helpers, converters
 
 
@@ -41,10 +41,10 @@ class Landmark():
     """Referenced Point with position of landmarks and its position
     """
 
-    def __init__(self, id, label, color=QColor('blue'), position = None, poses = None) -> None:
+    def __init__(self, id, label, color=Color('blue'), position = None, poses = None) -> None:
         self.id = id
         self.label : str = label
-        self.color : QColor = color
+        self.color : Color = color
         self.poses : dict[str, helpers.Pose]= poses if poses is not None else dict()
         self.position = position
 
@@ -176,7 +176,12 @@ def scale_homogeonous_point(point):
 
     return np.array(point) / point[-1]
 
-def triangulate_point(proj_points : list[helpers.ProjPoint]):
+
+def projection_matrix(intrinsics : np.ndarray, extrinsics : np.ndarray):
+    extrinsics = extrinsics[0:3, 0:4]
+    return np.matmul(intrinsics, extrinsics)
+
+def triangulate_point(proj_points : list[helpers.ProjPoint]) -> np.ndarray:
     """Triangulate the set landmarks to a 3D point 
 
     Args:
@@ -200,7 +205,7 @@ def triangulate_point(proj_points : list[helpers.ProjPoint]):
 
     return scale_homogeonous_point(X)
 
-def project_points(point3D, intrinsics, extrinsics, dist_coeffs=np.matrix([0 for x in range(OPENCV_DISTORT_VALUES)])):
+def project_points(point3D : np.ndarray, intrinsics : np.ndarray, extrinsics  : np.ndarray, dist_coeffs : np.ndarray=np.matrix([0 for x in range(OPENCV_DISTORT_VALUES)])) -> np.ndarray:
     """project the 3D point to the 2D image plane
 
     Args:
@@ -210,14 +215,15 @@ def project_points(point3D, intrinsics, extrinsics, dist_coeffs=np.matrix([0 for
         dist_coeffs (np.ndarray, optional): distortion coefficients. Defaults to np.matrix([0 for x in range(OPENCV_DISTORT_VALUES)]).
 
     Returns:
-        np.array: the pixel of the reprojection
+        np.ndarray: the pixel of the reprojection
     """
-
     point = intrinsics @ extrinsics @ point3D.T
-    factor = point[2]
+    print(point)
+    factor = point.item(2)
+    
     pos = np.array([0,0])
     for i in range(len(pos)):
-        pos[i] = (point[i]/float(factor)).item(0,0)
+        pos[i] = (point.item(i)/float(factor))
     pos = distort(pos, intrinsics, dist_coeffs)
     return pos.reshape(2,1)
 
@@ -400,101 +406,3 @@ def distancePointLine(point, origin, direction_vector):
     a = origin + np.multiply(t_a, direction_vector)
 
     return get_distance(np.squeeze(np.array(point)), np.squeeze(np.array(a)))
-
-
-###########################################################################################################
-#
-# Deprecated functions used for the virtual camera 
-#
-###########################################################################################################
-
-def get_ray_direction(img_point, intrinsics, extrinsics):
-    """ Deprecated (works but not used)
-    get the unit vector of the ray projection of a pixel on a calibrated image
-
-    Args:
-        img_point (np.array): pixel
-        intrinsics (np.ndarray): intrinsic matrix of the calibrated image
-        extrinsics (np.ndarray): extrinsic matrix of the calibrated image
-
-    Returns:
-        np.array: direction vector
-    """
-     
-    rotation = extrinsics[0:3, 0:3]
-    trans = extrinsics[0:3, 3]
-    P = intrinsics@extrinsics
-    P_inv = P.T @ np.linalg.inv(P @ P.T)
-    #img_point[0], img_point[1] = normalize_pixel(img_point[:2], intrinsics) 
-    C = converters.get_camera_world_coordinates(rotation, trans)
-    direction_ray = scale_homogeonous_point(P_inv @ img_point)[:-1] - C
-    direction_ray_norm = direction_ray / np.linalg.norm(direction_ray)
-
-    return direction_ray_norm
-
-def find_homography_svd(src_points, dst_points):
-    """ Deprecated (works but not used)
-    Computes the homography matrix
-
-    Args:
-        src_points (list): list of points on source image
-        dst_points (list): list of correspondent points on destination image
-
-    Returns:
-        np.ndarray: homography matrix
-    """
-    if len(src_points) != len(dst_points):
-        return None
-    A = None
-    for i in range(len(src_points)):
-        x_a, y_a = src_points[i].item(0), src_points[i].item(1)
-        x_b, y_b = dst_points[i].item(0), dst_points[i].item(1)
-        view = np.matrix([[-x_a, -y_a, -1, 0, 0, 0, x_a*x_b, y_a*x_b, x_b],
-                          [0, 0, 0, -x_a, -y_a, -1, x_a*y_b, y_a*y_b, y_b]])
-        A = np.concatenate([A, view]) if A is not None else view
-    
-    print(A.shape)
-        
-    U, s, Vh = np.linalg.svd(A, full_matrices = False)
-    X = Vh[-1,:].reshape((3,3))
-    factor = np.linalg.norm(X)
-    return X / factor
-
-
-def find_homography_inhomogeneous(src_points, dst_points):
-    """ Deprecated (works but not used)
-    Homography computation thanks to an inhomogeneous solution
-
-    Args:
-        src_points (list): list of points on source image
-        dst_points (list): list of correspondent points on destination image
-
-    Returns:
-        np.ndarray: homography matrix
-    """
-    if len(src_points) != len(dst_points):
-        return None
-    A = None
-    b = None
-    for i in range(len(src_points)):
-        x_a, y_a = src_points[i].item(0), src_points[i].item(1)
-        x_b, y_b = dst_points[i].item(0), dst_points[i].item(1)
-        '''view = np.matrix([[x_a, y_a, 1, 0, 0, 0, -x_a*x_b, -y_a*x_b],
-                          [0, 0, 0, x_a, y_a, 1, -x_a*y_b, -y_a*y_b]])
-        sol = np.matrix([[x_b],
-                         [y_b]])'''
-        view = np.matrix([[x_a, y_a, 1, 0, 0, 0, -x_a*x_b, -y_a*x_b],
-                          [0, 0, 0, -x_a, -y_a, -1, x_a*y_b, y_a*y_b]])
-        sol = np.matrix([[x_b],
-                         [-y_b]])
-        A = np.concatenate([A, view]) if A is not None else view
-        b = np.concatenate([b, sol]) if b is not None else sol
-    
-    U, s, Vh = np.linalg.svd(A, full_matrices = False)
-    b_prime = np.transpose(U)@b
-    
-    y = (b_prime.T/s).T
-
-    h = np.transpose(Vh)@y
-    h = np.concatenate([h, np.matrix([1.0])])
-    return h.reshape(3,3)

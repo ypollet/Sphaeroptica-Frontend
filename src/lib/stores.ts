@@ -56,7 +56,7 @@ export const useVCImagesStore = defineStore('vc_images', {
     latMin: Number.MAX_VALUE,
     latMax: Number.MIN_VALUE,
     images: Array<VirtualCameraImage>(),
-    objectPath: "papillon_big",
+    objectPath: "geonemus-geoffroyii",
     selectedImage: "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj",
     selectedImageName: "UCLouvain"
   }),
@@ -65,7 +65,7 @@ export const useVCImagesStore = defineStore('vc_images', {
       this.latMin = Number.MAX_VALUE
       this.latMax = Number.MIN_VALUE
       this.images = []
-      this.objectPath = "papillon_big"
+      this.objectPath = "geonemus-geoffroyii"
       this.selectedImage = "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj"
       this.selectedImageName = "UCLouvain"
     },
@@ -152,8 +152,9 @@ export const useLandmarksStore = defineStore('landmarks', {
     key: 'landmarks',
     afterRestore: (ctx: PiniaPluginContext) => {
       let landmarks = ctx.store.$state.landmarks.map((x: Landmark) => x)
+      console.log(landmarks)
       ctx.store.$state.landmarks = landmarks.map((jsonObject: Landmark) =>
-        new Landmark(jsonObject.id, jsonObject.label, Color(jsonObject.color), new Map(Object.entries(jsonObject.poses)))
+        new Landmark(jsonObject.id, jsonObject.label, jsonObject.version, Color(jsonObject.color), new Map(Object.entries(jsonObject.poses)), jsonObject.position)
       )
     },
   },

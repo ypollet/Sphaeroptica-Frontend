@@ -10,7 +10,7 @@ from PIL import Image
 import json
 import numpy as np
 
-from photogrammetry import converters, reconstruction
+from photogrammetry import helpers, converters, reconstruction
 
 
 cwd = os.getcwd()
@@ -49,22 +49,60 @@ def welcome():
 
 @app.route('/triangulate', methods=['POST'])
 def triangulate():
-  path = request.form.get("study")
-  poses = request.form.get("poses")
+  if request.method == 'POST':
+    data = request.get_json()
+    path = data['study']
+    poses = data['poses']
+
+    directory = f"{DATA_FOLDER}/{path}"
+    with open(f"{directory}/calibration.json", "r") as f:
+      calib_file = json.load(f)
+
+    intrinsics = np.matrix(calib_file["intrinsics"]["camera matrix"]["matrix"])
+    proj_points = []
+    for image in poses:
+      extrinsics = np.matrix(calib_file["extrinsics"][image]["matrix"])
+      proj_mat = reconstruction.projection_matrix(intrinsics, extrinsics)
+      pose = np.matrix([poses[image]['x'], poses[image]['y']])
+      proj_points.append(helpers.ProjPoint(proj_mat, pose))
+    
+    # Triangulation computation with all the undistorted landmarks
+    landmark_pos = reconstruction.triangulate_point(proj_points)      
+    
+    print(data)
+    print(path)
+    print(proj_points)
   
-  print(poses)
-  
-  return {"result": "ok"}
+    return {"result": {
+          "position": landmark_pos.tolist()
+       }
+    }
+          
 
 @app.route('/reproject', methods=['POST'])
 def reproject():
-  path = request.form.get("study")
-  position = request.form.get("position")
-  image_name = request.form['image']
-  
-  print(position)
-  print(image_name)
-  return {"result": "ok"}
+  if request.method == 'POST':
+    data = request.get_json()
+    path = data["study"]
+    position = np.array(data["position"])
+    print(position.shape)
+    image_name = data['image']
+    
+    directory = f"{DATA_FOLDER}/{path}"
+    with open(f"{directory}/calibration.json", "r") as f:
+      calib_file = json.load(f)
+
+    intrinsics = np.matrix(calib_file["intrinsics"]["camera matrix"]["matrix"])
+    dist_coeffs = np.matrix(calib_file["intrinsics"]["distortion matrix"]["matrix"])
+    extrinsics = np.matrix(calib_file["extrinsics"][image_name]["matrix"])[0:3, 0:4]
+
+    pose = reconstruction.project_points(position, intrinsics, extrinsics, dist_coeffs)
+    
+    print(position)
+    print(image_name)
+    return {"result":{
+          "pose": {"x": pose.item(0), "y": pose.item(1)}
+       }}
 
 def get_response_image(image_path):
     pil_img = Image.open(image_path, mode='r') # reads the PIL image

@@ -14,3 +14,5 @@ export function radToDegrees(rad: number) {
   return (rad * 180.0) / math.pi;
 }
 
+export const ZOOM_MIN = 0.1
+export const ZOOM_MAX = 4

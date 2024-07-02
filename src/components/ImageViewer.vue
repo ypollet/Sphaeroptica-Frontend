@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, type HTMLAttributes, watch, version } from 'vue'
-import { cn } from '@/lib/utils'
+import { cn, ZOOM_MAX, ZOOM_MIN } from '@/lib/utils'
 import { type Coordinates, type LandmarkImage, Landmark, type Marker } from '@/lib/types'
 import { useLandmarksStore, useVCImagesStore } from '@/lib/stores'
 import {
@@ -11,27 +11,45 @@ import axios from 'axios'
 const landmarksStore = useLandmarksStore()
 const imageStore = useVCImagesStore()
 
-function computeReprojection(){
-
+function computeReprojection(landmark : Landmark){
+  const path = 'http://localhost:5000/reproject';
+  console.log("Reprojection for " + landmark.id)
+  axios.post(path, {
+          study: imageStore.objectPath,
+          position: landmark.position,
+          image: props.modelValue.name
+        })
+          .then((res) => {
+            let pose : Coordinates = res.data.result.pose
+            props.modelValue.reprojections.set(landmark.id, pose)
+            update()
+          })
+          .catch((error) => {
+            console.error(error);
+          });
 }
 
 function checkVersions(){
+  console.log("Check Versions")
   landmarksStore.landmarks.forEach((landmark, index) => {
-    console.log(props.modelValue.versions)
-    if(props.modelValue.versions.get(landmark.id) == null || props.modelValue.versions.get(landmark.id) != landmark.getVersion()){
+    if(props.modelValue.versions.get(landmark.id) == null || props.modelValue.versions.get(landmark.id) !== landmark.getVersion()){
       props.modelValue.versions.set(landmark.id, landmark.getVersion())
-      computeReprojection()
+      
+      if(landmark.position != null){
+        computeReprojection(landmark)
+      }else{
+        // automatically delete key just in case
+        props.modelValue.reprojections.delete(landmark.id)
+      }
     }
   })
-  update()
 }
 landmarksStore.$subscribe((mutation, state) => {
   checkVersions()
+  update()
 })
 
 
-const ZOOM_MIN = 0.1
-const ZOOM_MAX = 4
 const ZOOM_DELTA = 0.5
 
 const DOT_RADIUS = 4
@@ -48,19 +66,12 @@ const canvas = ref<HTMLCanvasElement | null>(null)
 
 const shiftCanvas = ref<Coordinates>({ x: 0, y: 0 })
 const dragging = ref<boolean>(false)
-const landmarkDragged = ref<number>(-1)
+const landmarkDragged = ref<Landmark | null>(null)
 const draggedPos = ref<Coordinates>({ x: -1, y: -1 })
 const posContextMenu = ref<Coordinates>({ x: -1, y: -1 })
+const contextMenuOpen = ref<boolean>(false)
 
 const degrees_to_radians = (deg: number) => (deg * Math.PI) / 180.0; // Convert degrees to radians using the formula: radians = (degrees * Math.PI) / 180
-
-watch(landmarkDragged, () => {
-  if (landmarkDragged.value < 0) {
-
-  } else {
-
-  }
-})
 
 onMounted(() => {
   const resizeObserver = new ResizeObserver(function () {
@@ -87,7 +98,7 @@ function loaded() {
 }
 
 function drawImage() {
-  if (canvas.value && base_image.value && base_image.value.complete) {
+  if (canvas.value && base_image.value && base_image.value.complete && props.modelValue.zoom > 0) {
     let ctx = canvas.value.getContext("2d")!
 
     ctx.scale(props.modelValue.zoom, props.modelValue.zoom)
@@ -104,12 +115,24 @@ function drawImage() {
     landmarksStore.landmarks.forEach((landmark, id) => {
       let marker = landmark.getPoses().get(props.modelValue.name)
       let radius = DOT_RADIUS / props.modelValue.zoom
-      if (!marker) {
-        //if undefined
+      if (!marker && !landmark.equals(landmarkDragged.value)) {
+        //if there  is no pose on the image, check position
+        marker = props.modelValue.reprojections.get(landmark.id)
+        if(marker != undefined){
+          // draw reprojections already computed
+          ctx.beginPath();
+          ctx.arc((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y), radius, 0, 2 * Math.PI);
+          ctx.fillStyle = landmark.getColorHEX()
+          ctx.fill();
+          ctx.lineWidth = DOT_RADIUS / 2 / props.modelValue.zoom;
+          ctx.strokeStyle = "white";
+          ctx.stroke();
+          ctx.closePath()
+        }
         return
       }
       ctx.beginPath();
-      if (landmarkDragged.value == id) {
+      if (landmark.equals(landmarkDragged.value)) {
         marker = draggedPos.value
         const targetRadius = radius * 4
         // draw circle
@@ -169,16 +192,15 @@ function drawImage() {
         ctx.stroke()
       }
       else {
-
-        ctx.arc((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y), radius, 0, 2 * Math.PI);
+        // Marker is defined and landmarkDragged not equals landmark
+        ctx.arc((marker!.x + shiftCanvas.value.x), (marker!.y + shiftCanvas.value.y), radius, 0, 2 * Math.PI);
         ctx.fillStyle = landmark.getColorHEX()
         ctx.fill();
         ctx.lineWidth = DOT_RADIUS / 2 / props.modelValue.zoom;
         ctx.strokeStyle = "black";
         ctx.stroke();
-
       }
-
+      ctx.closePath()
     });
   }
 }
@@ -258,26 +280,23 @@ function zoomWithWheel(event: WheelEvent) {
 function startDrag(event: MouseEvent) {
   if (event.button == 0) {
     dragging.value = true
-    if (canvas.value) {
-      let pos = getPos(event)
-      landmarksStore.landmarks.forEach((landmark, index) => {
-        let marker = landmark.getPoses().get(props.modelValue.name)
-        if (!marker) {
-          //if undefined
-          return
-        }
-        if (pointInsideCircle(pos, marker, DOT_RADIUS / props.modelValue.zoom)) {
-          console.log("found")
-          landmarkDragged.value = index
-        }
-      })
-    }
+    let pos = getPos(event)
+    landmarksStore.landmarks.forEach((landmark, index) => {
+      let marker = landmark.getPoses().get(props.modelValue.name) || props.modelValue.reprojections.get(landmark.id)
+      if (!marker) {
+        //if undefined
+        return
+      }
+      if (pointInsideCircle(pos, marker, DOT_RADIUS / props.modelValue.zoom)) {
+        landmarkDragged.value = landmark
+      }
+    })
   }
 }
 
 function mousemove(event: MouseEvent) {
   if (dragging.value == true) {
-    if (landmarkDragged.value < 0) {
+    if (landmarkDragged.value == null) {
       // no marker to drag => pan image
       updateOffset(event.movementX, event.movementY)
     }
@@ -291,32 +310,43 @@ function mousemove(event: MouseEvent) {
 }
 
 function stopDrag(event: MouseEvent) {
-  dragging.value = false
+  if (!contextMenuOpen.value) {
+    dragging.value = false
+    if (landmarkDragged.value != null) {
+      //update pos of landmark
+      landmarkDragged.value.addPose(props.modelValue.name, getPos(event))
 
-  if (landmarkDragged.value >= 0) {
-    //update pos of landmark
-    landmarksStore.landmarks[landmarkDragged.value].addPose(props.modelValue.name, getPos(event))
+      //triangulate landmark
+      landmarkDragged.value.triangulatePosition(imageStore.objectPath)
 
-    //triangulate landmark
-    landmarksStore.landmarks[landmarkDragged.value].triangulatePosition(imageStore.objectPath)
+      // reinit landmarkDrag
+      reinitDraggedLandmark()
 
-    // reinit landmarkDrag
-    landmarkDragged.value = -1
-    draggedPos.value = { x: -1, y: -1 }
-
+    }
+    update()
   }
+}
 
+function closeContextMenu(){
+  console.log("close context menu")
+  contextMenuOpen.value = false
+  reinitDraggedLandmark()
+}
 
+function reinitDraggedLandmark(){
+  landmarkDragged.value = null
+  draggedPos.value = { x: -1, y: -1 }
+}
+
+function printPos(event: MouseEvent) {
+  let pos = getPos(event)
+  console.log("Position = ", pos.x, " : ", pos.y)
 }
 
 function pointInsideCircle(pointCoord: Coordinates, circleCoord: Coordinates, radius: number) {
   const distance =
     Math.sqrt((pointCoord.x - circleCoord.x) ** 2 + (pointCoord.y - circleCoord.y) ** 2);
   return distance < radius;
-}
-function printPos(event: MouseEvent) {
-  let pos = getPos(event)
-  console.log("Position = ", pos.x, " : ", pos.y)
 }
 
 function onImage(pos: Coordinates): boolean {
@@ -325,13 +355,27 @@ function onImage(pos: Coordinates): boolean {
   }
   return false
 }
-function addMarker(event: MouseEvent) {
+
+function openContextMenu(event: MouseEvent) {
+  console.log("Start context")
+  contextMenuOpen.value = true
   posContextMenu.value = getPos(event)
   if (!onImage(posContextMenu.value)) {
     // Don't show context menu if image not clicked
     event.preventDefault()
     return;
   }
+  let pos = getPos(event)
+  landmarksStore.landmarks.forEach((landmark, index) => {
+      let marker = landmark.getPoses().get(props.modelValue.name)
+      if (!marker) {
+        //if undefined
+        return
+      }
+      if (pointInsideCircle(pos, marker, DOT_RADIUS / props.modelValue.zoom)) {
+        landmarkDragged.value = landmark
+      }
+  })
 
 }
 
@@ -340,6 +384,8 @@ function clickContext(landmark: Landmark) {
   //triangulate landmark
   landmark.triangulatePosition(imageStore.objectPath)
   update()
+  // reinit landmarkDrag
+  reinitDraggedLandmark()
 }
 
 function addLandmark() {
@@ -358,29 +404,42 @@ function addLandmark() {
     @wheel.prevent>
     <ContextMenu>
       <ContextMenuTrigger class="flex w-full h-full">
-        <canvas ref="canvas" :class="(landmarkDragged >= 0) ? 'cursor-none' : 'cursor-pointer'" @mousedown="startDrag"
-          @mouseup="stopDrag" @mouseout="stopDrag" @mousemove="mousemove" @wheel="zoomWithWheel"
-          @contextmenu="addMarker">
+        <canvas ref="canvas" :class="(landmarkDragged != null) ? 'cursor-none' : 'cursor-pointer'" @mousedown="startDrag"
+          @mouseup="stopDrag" @mousemove="mousemove" @mouseout="stopDrag"  @wheel="zoomWithWheel"
+          @contextmenu="openContextMenu">
         </canvas>
       </ContextMenuTrigger>
-      <ContextMenuContent class="w-64">
+      <ContextMenuContent class="w-64" @closeAutoFocus="closeContextMenu">
         <ContextMenuLabel>
-          Landmarks
+          Place landmark
         </ContextMenuLabel>
         <ContextMenuSeparator />
         <ContextMenuItem v-for="landmark in landmarksStore.landmarks" class="block" inset
           @select="clickContext(landmark as Landmark)">
-          <div class="flex space-x-4">
+          <div class="flex space-x-2 items-center">
             <svg class="h-4 w-4" viewBox="0 0 8 8" stroke="currentColor" stroke-width="1" :fill="landmark.getColorHEX()"
               xmlns="http://www.w3.org/2000/svg">
               <circle cx="4" cy="4" r="3" />
             </svg>
-            <div>{{ landmark.getLabel() }}</div>
+            <div class="flex item-centers">{{ landmark.getLabel() }}</div>
           </div>
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem class="block" inset @select="addLandmark">
           Add Landmark
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem v-if="landmarkDragged != null">
+          <div class="flex space-x-4 items-center">
+            <span class="inline-block align-middle">Delete :</span>
+            <div class="flex space-x-2 inline-block items-center">
+              <svg class="h-4 w-4" viewBox="0 0 8 8" stroke="currentColor" stroke-width="1" :fill="landmarkDragged.getColorHEX()"
+                xmlns="http://www.w3.org/2000/svg">
+                <circle cx="4" cy="4" r="3" />
+              </svg>
+              <span class="inline-flex items-center align-middle">{{ landmarkDragged.getLabel() }}</span>
+            </div>
+          </div>
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

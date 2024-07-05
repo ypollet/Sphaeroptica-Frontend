@@ -135,9 +135,11 @@ export class Landmark {
     }
     
     triangulatePosition(objectPath : string) {
-        if(! this.checkTriangulation()){
+        console.log("triangulatePos for ", this.label, " : ", this.checkTriangulation())
+        if(!this.checkTriangulation()){
             //not enough poses for triangulation, set position to undefined
             this.position = undefined
+            this.version++
             return
         }
         console.log('Triangulate : ', this.label)

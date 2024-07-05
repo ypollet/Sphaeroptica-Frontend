@@ -36,8 +36,10 @@ function checkVersions(){
       props.modelValue.versions.set(landmark.id, landmark.getVersion())
       
       if(landmark.position != null){
+        console.log("compute reprojection")
         computeReprojection(landmark)
       }else{
+        console.log("delete reprojection")
         // automatically delete key just in case
         props.modelValue.reprojections.delete(landmark.id)
       }
@@ -396,6 +398,12 @@ function addLandmark() {
   update()
 }
 
+function deleteLandmark(landmark : Landmark) {
+  landmark.removePose(props.modelValue.name)
+  landmark.triangulatePosition(imageStore.objectPath)
+  update()
+}
+
 </script>
 
 <template>
@@ -429,9 +437,9 @@ function addLandmark() {
           Add Landmark
         </ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuItem v-if="landmarkDragged != null">
+        <ContextMenuItem v-if="landmarkDragged != null" @select="deleteLandmark(landmarkDragged)">
           <div class="flex space-x-4 items-center">
-            <span class="inline-block align-middle">Delete :</span>
+            <span class="inline-block align-middle font-bold">Delete :</span>
             <div class="flex space-x-2 inline-block items-center">
               <svg class="h-4 w-4" viewBox="0 0 8 8" stroke="currentColor" stroke-width="1" :fill="landmarkDragged.getColorHEX()"
                 xmlns="http://www.w3.org/2000/svg">

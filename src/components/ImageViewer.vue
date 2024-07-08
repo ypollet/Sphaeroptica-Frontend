@@ -412,7 +412,7 @@ function deleteLandmark(landmark : Landmark) {
     @wheel.prevent>
     <ContextMenu>
       <ContextMenuTrigger class="flex w-full h-full">
-        <canvas ref="canvas" :class="(landmarkDragged != null) ? 'cursor-none' : 'cursor-pointer'" @mousedown="startDrag"
+        <canvas ref="canvas" :class="{'cursor-none':landmarkDragged, 'cursor-pointer':!landmarkDragged}" @mousedown="startDrag"
           @mouseup="stopDrag" @mousemove="mousemove" @mouseout="stopDrag"  @wheel="zoomWithWheel"
           @contextmenu="openContextMenu">
         </canvas>

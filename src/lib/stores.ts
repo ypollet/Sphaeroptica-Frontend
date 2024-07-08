@@ -1,10 +1,11 @@
 import * as math from 'mathjs'
 import { defineStore, type PiniaPluginContext, type StateTree } from 'pinia'
 import { degreesToRad } from '@/lib/utils'
-import { Landmark, LandmarkImage } from './types'
+import { DequeMax2, Landmark, LandmarkImage } from './types'
 import type { VirtualCameraImage } from './types'
 import Color from 'color'
 import axios from 'axios'
+import { objectPick } from '@vueuse/core'
 
 
 export const DEFAULT_TAB = "viewer"
@@ -56,7 +57,7 @@ export const useVCImagesStore = defineStore('vc_images', {
     latMin: Number.MAX_VALUE,
     latMax: Number.MIN_VALUE,
     images: Array<VirtualCameraImage>(),
-    objectPath: "papillon_big",
+    objectPath: "geonemus-geoffroyii",
     selectedImage: "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj",
     selectedImageName: "UCLouvain"
   }),
@@ -65,7 +66,7 @@ export const useVCImagesStore = defineStore('vc_images', {
       this.latMin = Number.MAX_VALUE
       this.latMax = Number.MIN_VALUE
       this.images = []
-      this.objectPath = "papillon_big"
+      this.objectPath = "geonemus-geoffroyii"
       this.selectedImage = "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj"
       this.selectedImageName = "UCLouvain"
     },
@@ -130,7 +131,9 @@ export const useVirtualCameraStore = defineStore('camera', {
 })
 
 export const useLandmarksStore = defineStore('landmarks', {
-  state: () => ({ landmarks: Array<Landmark>() }),
+  state: () => ({ landmarks: Array<Landmark>(),
+                  selectedGroup : new DequeMax2()
+                }),
   actions: {
     addLandmark(landmark: Landmark) {
       this.landmarks.push(landmark)
@@ -152,10 +155,19 @@ export const useLandmarksStore = defineStore('landmarks', {
     key: 'landmarks',
     afterRestore: (ctx: PiniaPluginContext) => {
       let landmarks = ctx.store.$state.landmarks.map((x: Landmark) => x)
-      console.log(landmarks)
       ctx.store.$state.landmarks = landmarks.map((jsonObject: Landmark) =>
         new Landmark(jsonObject.id, jsonObject.label, jsonObject.version, Color(jsonObject.color), new Map(Object.entries(jsonObject.poses)), jsonObject.position)
       )
+
+      let selectedGroup = new DequeMax2()
+      let deque = ctx.store.$state.selectedGroup
+      if(deque){
+        for(let i = 0; i < Object.values(deque.deque).length; i++){
+          selectedGroup.add(deque.deque[i])
+        }
+        ctx.store.$state.selectedGroup = selectedGroup
+      }
+      
     },
   },
 })

@@ -13,6 +13,7 @@ import { ref, nextTick, watch } from "vue";
 
 import { X, RefreshCcw } from "lucide-vue-next";
 import { cn } from "@/lib/utils";
+import { useDark } from "@vueuse/core";
 
 const imageStore = useVCImagesStore()
 const landmarksStore = useLandmarksStore()
@@ -86,6 +87,7 @@ function changeColor(event: Event, id: string) {
 
 function changeLabel(payload : string | number, landmark : Landmark) {
   landmark.setLabel(payload.toString())
+
 }
 
 function clearLandmark() {
@@ -96,6 +98,19 @@ function removeLandmark(id: string) {
   landmarksStore.landmarks = landmarksStore.landmarks.filter((el) => el.getId() != id)
 }
 
+function selectLandmark(id : string){
+  console.log("select")
+  if(landmarksStore.selectedGroup.selected(id)){
+    landmarksStore.selectedGroup.remove(id)
+  }else{
+    landmarksStore.selectedGroup.add(id)
+  }
+}
+
+function doubleClickLabel(event: Event, landmark: Landmark){
+  console.log('label')
+  landmark.setEdit(true)
+}
 getShortcuts();
 
 
@@ -150,7 +165,7 @@ getShortcuts();
             class="relative w-fit min-w-full"
             @start="scrollSnapType = false" @end="scrollSnapType = true">
             <template #item="{ element: landmark }: { element: Landmark }">
-              <div class="scroll-align border flex grow p-2">
+              <div class="scroll-align border flex grow p-2" :class="{ 'dark:bg-purple-800 bg-purple-400': landmarksStore.selectedGroup.selected(landmark.id)}" @dblclick="selectLandmark(landmark.id)">
                 <div class="h-12 flex grow row justify-between items-center font-normal space-x-3 px-3 py-2">
                   <div class="flex items-center justify-start space-x-3 py-3">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"
@@ -164,11 +179,11 @@ getShortcuts();
                       class="h-8 w-8 block bg-white border border-gray-950 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-300"
                       id="hs-color-input" :value="landmark.getColorHEX()" title="Choose your color"
                       @change="changeColor($event, landmark.getId())">
-                    <Label v-show="!landmark.getEdit()" @dblclick="landmark.setEdit(true)">{{ landmark.label }}</Label>
-                    <Input v-show="landmark.getEdit()" type="text" :model-value="landmark.label" class="h-auto" @focusout="landmark.setEdit(false)"
+                    <Label v-show="!landmark.getEdit()" class="whitespace-nowrap" @dblclick.stop="doubleClickLabel($event, landmark)">{{ landmark.label }}</Label>
+                    <Input v-show="landmark.getEdit()" @dblclick.stop="" type="text" :model-value="landmark.label" class="h-auto" @focusout="landmark.setEdit(false)"
                     @keyup.enter="landmark.setEdit(false)" @update:model-value="changeLabel($event, landmark)"/>
                   </div>
-                  <div class="flex w-full h-full items-center justify-end space-x-4">
+                  <div class="flex items-center justify-end space-x-4">
                     <Button class="relative w-6 h-6 p-0" variant="secondary" @click="landmark.resetPoses()">
                       <RefreshCcw class="relative w-4 h-4 p-0"/>
                     </Button>

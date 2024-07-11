@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Viewer from "@/components/Viewer.vue";
+import CameraViewer from "@/components/ui/camera-viewer/CameraViewer.vue";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Button from "./ui/button/Button.vue";
 import { X } from "lucide-vue-next";
 import { useLandmarkImagesStore, DEFAULT_TAB } from "@/lib/stores";
-import ImageViewer from "./ImageViewer.vue";
+import ImageViewer from "@/components/ui/image-viewer/ImageViewer.vue";
 import { storeToRefs } from "pinia";
 import { ScrollBar, ScrollArea } from "./ui/scroll-area/";
 
@@ -51,7 +51,7 @@ function onTabChange(value: string) {
     </ScrollArea>
     <TabsContent value="viewer" class="image m-0">
       <div class=" h-full w-full flex items-center justify-center">
-        <Viewer />
+        <CameraViewer />
       </div>
     </TabsContent>
       <TabsContent :value="image.name" class="image m-0" v-for="image in imageStore.images">
@@ -73,4 +73,4 @@ function onTabChange(value: string) {
 .image {
   height: calc(100% - 70px);
 }
-</style>
+</style>@/components/ui/camera-viewer/CameraViewer.vue@/components/ui/camera-viewer/ImageViewer.vue

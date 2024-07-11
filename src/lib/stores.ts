@@ -1,7 +1,7 @@
 import * as math from 'mathjs'
 import { defineStore, type PiniaPluginContext, type StateTree } from 'pinia'
 import { degreesToRad } from '@/lib/utils'
-import { DequeMax2, Landmark, LandmarkImage } from './types'
+import { DequeMax2, Distance, Landmark, LandmarkImage } from './types'
 import type { VirtualCameraImage } from './types'
 import Color from 'color'
 import axios from 'axios'
@@ -132,7 +132,8 @@ export const useVirtualCameraStore = defineStore('camera', {
 
 export const useLandmarksStore = defineStore('landmarks', {
   state: () => ({ landmarks: Array<Landmark>(),
-                  selectedGroup : new DequeMax2()
+                  selectedGroup : new DequeMax2(),
+                  distances: Array<Distance>()
                 }),
   actions: {
     addLandmark(landmark: Landmark) {
@@ -148,17 +149,26 @@ export const useLandmarksStore = defineStore('landmarks', {
         }
       }
       return id;
+    },
+    addDistance(left : Landmark, right : Landmark){
+      let distance : Distance = new Distance("distance_"+this.distances.length, left, right)
+      if(this.distances.filter((x) => x.equals(distance)).length == 0){
+        this.distances.push(distance)
+      }
     }
   },
   persist: {
     storage: sessionStorage,
     key: 'landmarks',
     afterRestore: (ctx: PiniaPluginContext) => {
+      // restore landmarks
       let landmarks = ctx.store.$state.landmarks.map((x: Landmark) => x)
-      ctx.store.$state.landmarks = landmarks.map((jsonObject: Landmark) =>
+      let landmarksToKeep = landmarks.map((jsonObject: Landmark) =>
         new Landmark(jsonObject.id, jsonObject.label, jsonObject.version, Color(jsonObject.color), new Map(Object.entries(jsonObject.poses)), jsonObject.position)
       )
+      ctx.store.$state.landmarks = landmarksToKeep
 
+      // restore selectedGroup
       let selectedGroup = new DequeMax2()
       let deque = ctx.store.$state.selectedGroup
       if(deque){
@@ -167,6 +177,17 @@ export const useLandmarksStore = defineStore('landmarks', {
         }
         ctx.store.$state.selectedGroup = selectedGroup
       }
+
+      // restore distances
+      landmarksToKeep.forEach((x : Landmark) => {
+        console.log(x.id)
+      })
+      let distances = ctx.store.$state.distances.map((x : Distance) => x)
+
+      ctx.store.$state.distances = distances.map((jsonObject: Distance) => 
+        new Distance(jsonObject.label, landmarksToKeep[landmarksToKeep.map((e : Landmark) => e.id).indexOf(jsonObject.landmarkLeft.id)], 
+          landmarksToKeep[landmarksToKeep.map((e : Landmark) => e.id).indexOf(jsonObject.landmarkRight.id)])
+      )
       
     },
   },

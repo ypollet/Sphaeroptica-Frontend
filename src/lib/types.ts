@@ -2,6 +2,7 @@ import Color from "color"
 import { useVCImagesStore } from "./stores"
 import axios from "axios"
 import { type Matrix }  from "mathjs"
+import * as math from "mathjs"
 
 export type Coordinates = {
     x: number,
@@ -41,6 +42,10 @@ export class DequeMax2{
     selected(landmark: string){
         return this.deque.indexOf(landmark) >= 0
     }
+
+    fullSelected(){
+        return this.deque.length == 2
+    }
 }
 
 export class LandmarkImage  {
@@ -74,9 +79,25 @@ export class Distance {
     landmarkRight : Landmark
     
     constructor(label: string, left: Landmark, right : Landmark){
+        console.log("Creation Distance : " + left.id + " " + right.id)
         this.label = label
         this.landmarkLeft = left
         this.landmarkRight = right
+    }
+
+    get distance(){
+        if(this.landmarkLeft.position == undefined || this.landmarkRight.position == undefined){
+            return undefined
+        }
+        return math.distance(this.landmarkLeft.position, this.landmarkRight.position)
+    }
+
+    equals(other : Distance){
+        console.log("Equals DIstance")
+        console.log(this.landmarkLeft.equals(other.landmarkLeft) && this.landmarkRight.equals(other.landmarkRight))
+        console.log(this.landmarkLeft.equals(other.landmarkRight) && this.landmarkRight.equals(other.landmarkLeft))
+        return (this.landmarkLeft.equals(other.landmarkLeft) && this.landmarkRight.equals(other.landmarkRight))
+            || (this.landmarkLeft.equals(other.landmarkRight) && this.landmarkRight.equals(other.landmarkLeft))
     }
 }
 

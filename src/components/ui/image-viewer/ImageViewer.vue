@@ -30,16 +30,13 @@ function computeReprojection(landmark : Landmark){
 }
 
 function checkVersions(){
-  console.log("Check Versions")
   landmarksStore.landmarks.forEach((landmark, index) => {
     if(props.modelValue.versions.get(landmark.id) == null || props.modelValue.versions.get(landmark.id) !== landmark.getVersion()){
       props.modelValue.versions.set(landmark.id, landmark.getVersion())
       
       if(landmark.position != null){
-        console.log("compute reprojection")
         computeReprojection(landmark)
       }else{
-        console.log("delete reprojection")
         // automatically delete key just in case
         props.modelValue.reprojections.delete(landmark.id)
       }

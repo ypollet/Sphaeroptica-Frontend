@@ -2,6 +2,7 @@
 import { LandmarkList } from "@/components/ui/landmark";
 import { DistanceList } from "@/components/ui/distance";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
@@ -10,6 +11,7 @@ import {
 import axios from "axios";
 import { useVirtualCameraStore, useLandmarksStore, useVCImagesStore } from "@/lib/stores";
 import { Landmark } from "@/lib/types";
+import { Scale } from "@/lib/utils";
 
 const imageStore = useVCImagesStore()
 const landmarksStore = useLandmarksStore()
@@ -75,6 +77,10 @@ function addDistance(){
   let right : Landmark = landmarksStore.landmarks.find((x) => x.id == id_right) as Landmark
   landmarksStore.addDistance(left, right)
 }
+
+function resetScale(){
+  landmarksStore.adjustFactor = 1
+}
 getShortcuts();
 
 
@@ -132,9 +138,29 @@ getShortcuts();
           </ContextMenu>
       </div>
       <div class="px-3 py-2">
-        <h2 class="relative px-7 text-lg font-semibold tracking-tight">
-          Distances
-        </h2>
+        <div class="flex row">
+          <h2 class="relative px-7 text-lg font-semibold tracking-tight">
+            Distances
+          </h2>
+          <div class="w-full h-full flex justify-end space-x-2">
+            <Select v-model="landmarksStore.scale">
+              <SelectTrigger class="w-16">
+                <SelectValue placeholder="Pick a scale" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Scale</SelectLabel>
+                  <SelectItem v-for="scale in Object.keys(Scale).filter((v) => isNaN(Number(v)))" :value="scale">
+                    {{ scale }}
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <Button variant="secondary" @click="resetScale">
+              Reset Scale
+            </Button>
+          </div>
+        </div>
         <DistanceList/>
       </div>
     </div>

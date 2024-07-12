@@ -74,22 +74,26 @@ export type Marker = {
 }
 
 export class Distance {
-    label:string
+    label : string
     landmarkLeft : Landmark
     landmarkRight : Landmark
+    edit_label: boolean
+    edit_distance: boolean
     
     constructor(label: string, left: Landmark, right : Landmark){
         console.log("Creation Distance : " + left.id + " " + right.id)
         this.label = label
         this.landmarkLeft = left
         this.landmarkRight = right
+        this.edit_label = false
+        this.edit_distance = false
     }
 
-    get distance(){
+    get distance() : number | undefined{
         if(this.landmarkLeft.position == undefined || this.landmarkRight.position == undefined){
             return undefined
         }
-        return math.distance(this.landmarkLeft.position, this.landmarkRight.position)
+        return math.number(math.distance(this.landmarkLeft.position, this.landmarkRight.position))
     }
 
     equals(other : Distance){

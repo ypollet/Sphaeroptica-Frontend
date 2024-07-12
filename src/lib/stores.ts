@@ -1,6 +1,6 @@
 import * as math from 'mathjs'
 import { defineStore, type PiniaPluginContext, type StateTree } from 'pinia'
-import { degreesToRad } from '@/lib/utils'
+import { degreesToRad, Scale } from '@/lib/utils'
 import { DequeMax2, Distance, Landmark, LandmarkImage } from './types'
 import type { VirtualCameraImage } from './types'
 import Color from 'color'
@@ -133,7 +133,9 @@ export const useVirtualCameraStore = defineStore('camera', {
 export const useLandmarksStore = defineStore('landmarks', {
   state: () => ({ landmarks: Array<Landmark>(),
                   selectedGroup : new DequeMax2(),
-                  distances: Array<Distance>()
+                  distances: Array<Distance>(),
+                  adjustFactor: 1,
+                  scale: Scale.m
                 }),
   actions: {
     addLandmark(landmark: Landmark) {

@@ -43,11 +43,6 @@ function selectLandmark(id: string) {
   }
 }
 
-function doubleClickLabel(event: Event, landmark: Landmark) {
-  console.log('label')
-  landmark.setEdit(true)
-}
-
 function checkSelection(event : MouseEvent){
   if(!landmarksStore.selectedGroup.fullSelected()){
     event.preventDefault()
@@ -82,7 +77,7 @@ function checkSelection(event : MouseEvent){
                 id="hs-color-input" :value="landmark.getColorHEX()" title="Choose your color"
                 @change="changeColor($event, landmark.getId())">
               <Label v-show="!landmark.getEdit()" class="whitespace-nowrap"
-                @dblclick.stop="doubleClickLabel($event, landmark)">{{ landmark.label }}</Label>
+                @dblclick.stop="landmark.setEdit(true)">{{ landmark.label }}</Label>
               <Input v-show="landmark.getEdit()" @dblclick.stop="" type="text" :model-value="landmark.label"
                 class="h-auto" @focusout="landmark.setEdit(false)" @keyup.enter="landmark.setEdit(false)"
                 @update:model-value="changeLabel($event, landmark)" />

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, type HTMLAttributes, watch, version } from 'vue'
-import { cn, ZOOM_MAX, ZOOM_MIN } from '@/lib/utils'
+import { cn, ZOOM_MAX, ZOOM_MIN, DOT_RADIUS, SPACE_TARGET } from '@/lib/utils'
 import { type Coordinates, type LandmarkImage, Landmark, type Marker } from '@/lib/types'
 import { useLandmarksStore, useVCImagesStore } from '@/lib/stores'
 import {
@@ -47,12 +47,6 @@ landmarksStore.$subscribe((mutation, state) => {
   checkVersions()
   update()
 })
-
-
-const ZOOM_DELTA = 0.5
-
-const DOT_RADIUS = 4
-const SPACE_TARGET = 0.2
 
 const props = defineProps<{
   modelValue: LandmarkImage

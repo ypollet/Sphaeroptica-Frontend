@@ -1,109 +1,7 @@
 import Color from "color"
-import { useVCImagesStore } from "./stores"
 import axios from "axios"
 import { type Matrix }  from "mathjs"
-import * as math from "mathjs"
-
-export type Coordinates = {
-    x: number,
-    y: number
-}
-
-export type VirtualCameraImage = {
-    name: string,
-    format: string,
-    longitude: number,
-    latitude: number,
-    image: string,
-}
-
-export class DequeMax2{
-    deque : Array<string>
-
-    constructor(){
-        this.deque= new Array()
-    }
-
-    add(landmark : string){
-        if(this.selected(landmark) || landmark == null){
-            return;
-        }
-        if(this.deque.length == 2){
-            this.deque.shift()
-        }
-        this.deque.push(landmark)
-    }
-    
-    remove(landmark: string){
-        let index : number = this.deque.indexOf(landmark)
-        this.deque.splice(index, 1)
-    }
-
-    selected(landmark: string){
-        return this.deque.indexOf(landmark) >= 0
-    }
-
-    fullSelected(){
-        return this.deque.length == 2
-    }
-}
-
-export class LandmarkImage  {
-    name: string
-    image: string
-    zoom: number
-    offset: Coordinates
-    versions : Map<string, number>
-    reprojections : Map<string, Coordinates>
-
-    constructor(name : string, image : string, zoom: number = 1, offset : Coordinates = {x:0, y:0}, versions : Map<string, number>= new Map(), reprojections : Map<string, Coordinates> = new Map()){
-        this.name = name
-        this.image = image
-        this.zoom = zoom
-        this.offset = offset
-        this.versions = versions
-        this.reprojections = reprojections
-    }
-}
-
-
-export type Marker = {
-    id : string,
-    pos : Coordinates,
-    color : Color
-}
-
-export class Distance {
-    label : string
-    landmarkLeft : Landmark
-    landmarkRight : Landmark
-    edit_label: boolean
-    edit_distance: boolean
-    
-    constructor(label: string, left: Landmark, right : Landmark){
-        console.log("Creation Distance : " + left.id + " " + right.id)
-        this.label = label
-        this.landmarkLeft = left
-        this.landmarkRight = right
-        this.edit_label = false
-        this.edit_distance = false
-    }
-
-    get distance() : number | undefined{
-        if(this.landmarkLeft.position == undefined || this.landmarkRight.position == undefined){
-            return undefined
-        }
-        return math.number(math.distance(this.landmarkLeft.position, this.landmarkRight.position))
-    }
-
-    equals(other : Distance){
-        console.log("Equals DIstance")
-        console.log(this.landmarkLeft.equals(other.landmarkLeft) && this.landmarkRight.equals(other.landmarkRight))
-        console.log(this.landmarkLeft.equals(other.landmarkRight) && this.landmarkRight.equals(other.landmarkLeft))
-        return (this.landmarkLeft.equals(other.landmarkLeft) && this.landmarkRight.equals(other.landmarkRight))
-            || (this.landmarkLeft.equals(other.landmarkRight) && this.landmarkRight.equals(other.landmarkLeft))
-    }
-}
+import type { Coordinates } from "@/data/models/coordinates"
 
 export class Landmark {
     id: string
@@ -188,8 +86,9 @@ export class Landmark {
         return this.position
     }
 
-    setPosition(position : Matrix){
+    setPosition(position : Matrix | undefined){
         this.position = position
+        this.version++
     }
     getEdit() : boolean{
         return this.edit
@@ -202,8 +101,7 @@ export class Landmark {
         console.log("triangulatePos for ", this.label, " : ", this.checkTriangulation())
         if(!this.checkTriangulation()){
             //not enough poses for triangulation, set position to undefined
-            this.position = undefined
-            this.version++
+            this.setPosition(undefined)
             return
         }
         console.log('Triangulate : ', this.label)

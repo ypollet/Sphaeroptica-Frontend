@@ -16,7 +16,6 @@ import {
   MenubarTrigger,
 } from '@/components/ui/menubar'
 
-import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 
 import { MoonStar, Sun } from 'lucide-vue-next'

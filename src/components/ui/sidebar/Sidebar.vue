@@ -10,25 +10,19 @@ import {
 
 import axios from "axios";
 import { useVirtualCameraStore, useLandmarksStore, useVCImagesStore } from "@/lib/stores";
-import { Landmark } from "@/lib/types";
+import { Landmark } from "@/data/models/landmark";
+import { type Shortcut } from "@/data/models/shortcut";
 import { Scale } from "@/lib/utils";
 
 const imageStore = useVCImagesStore()
 const landmarksStore = useLandmarksStore()
-
-type Shortcut = {
-  name: string;
-  longitude: number;
-  latitude: number;
-};
 
 const camera = useVirtualCameraStore();
 var mapShortcuts: Map<string, Shortcut> = new Map();
 
 function getShortcuts() {
   const path = "http://localhost:5000/shortcuts";
-  axios
-    .get(path, {
+  axios.get(path, {
       params: {
         study: imageStore.objectPath,
       }

@@ -1,12 +1,12 @@
 import * as math from 'mathjs'
 import { defineStore, type PiniaPluginContext, type StateTree } from 'pinia'
 import { degreesToRad, Scale } from '@/lib/utils'
-import { DequeMax2, Distance, Landmark, LandmarkImage } from './types'
-import type { VirtualCameraImage } from './types'
+import { DequeMax2 } from '@/data/models/dequeMax2'
+import { Distance } from '@/data/models/distance'
+import { Landmark } from '@/data/models/landmark'
+import { LandmarkImage } from '@/data/models/landmark_image'
+import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 import Color from 'color'
-import axios from 'axios'
-import { objectPick } from '@vueuse/core'
-
 
 export const DEFAULT_TAB = "viewer"
 
@@ -135,7 +135,7 @@ export const useLandmarksStore = defineStore('landmarks', {
                   selectedGroup : new DequeMax2(),
                   distances: Array<Distance>(),
                   adjustFactor: 1,
-                  scale: Scale.m
+                  scale: "m"
                 }),
   actions: {
     addLandmark(landmark: Landmark) {

@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
+
 import axios from 'axios';
 import { storeToRefs } from 'pinia';
+
 import { useLandmarkImagesStore, useVCImagesStore, useVirtualCameraStore, useLandmarksStore } from '@/lib/stores';
-import type { Coordinates, LandmarkImage, VirtualCameraImage } from '@/lib/types';
+
+import type { Coordinates } from '@/data/models/coordinates'
+import { LandmarkImage } from '@/data/models/landmark_image'
+import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 
 const LONG_MAX = 360
 const LONG_MIN = 0

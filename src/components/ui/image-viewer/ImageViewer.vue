@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, type HTMLAttributes, watch, version } from 'vue'
 import { cn, ZOOM_MAX, ZOOM_MIN, DOT_RADIUS, SPACE_TARGET } from '@/lib/utils'
-import { type Coordinates, type LandmarkImage, Landmark, type Marker } from '@/lib/types'
+import  { type Coordinates } from "@/data/models/coordinates"
+import  { LandmarkImage } from "@/data/models/landmark_image"
+import  { Landmark } from "@/data/models/landmark"
 import { useLandmarksStore, useVCImagesStore } from '@/lib/stores'
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuTrigger,

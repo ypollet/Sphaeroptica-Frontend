@@ -1,7 +1,7 @@
 import type { Landmark } from "@/data/models/landmark"
 import * as math from "mathjs"
 
-class Distance {
+export class Distance {
     label : string
     landmarkLeft : Landmark
     landmarkRight : Landmark

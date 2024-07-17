@@ -1,82 +1,47 @@
 import type { Matrix } from "mathjs";
-import type { Repository } from ".";
+import type { Repository } from "./repository";
 import type { Coordinates } from "../models/coordinates";
 import type { Landmark } from "../models/landmark";
 import type { Shortcut } from "../models/shortcut";
 import type { VirtualCameraImage } from "../models/virtual_camera_image";
 
-import axios from "axios";
+import type { DataProvider } from "../providers";
+import { WebProvider } from "../providers/web_providers";
 
 export class WebRepository implements Repository {
-    server: string;
+    webProvider: DataProvider;
 
     constructor(server: string) {
-        this.server = server
+        this.webProvider = new WebProvider(server)
     }
 
-    getImages(objectPath: string): Array<Shortcut> {
-        const path = this.server + '/images';
-        axios.get(path, {
-            params: {
-                study: objectPath,
-            }
-        }).then((res) => {
+    async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
+        return this.webProvider.getImages(objectPath).then((res) => {
             let images = res.data.result.images as VirtualCameraImage[]
             return images
-
-        }).catch((error) => {
-            console.error(error);
-        });
-        return []
+        })
     }
 
-    getShorcuts(objectPath: string): Array<VirtualCameraImage> {
-        const path = this.server + "/shortcuts";
-        axios.get(path, {
-            params: {
-                study: objectPath,
-            }
-        }).then((res) => {
+    async getShorcuts(objectPath: string): Promise<Array<Shortcut>> {
+        return this.webProvider.getShorcuts(objectPath).then((res) => {
             let shortcuts = res.data.result.commands as Shortcut[];
             return shortcuts
-        }).catch((error) => {
-            console.error(error);
-        });
-        return []
+        })
     }
 
-    computeReprojection(objectPath: string, position: Matrix, image: string): Promise<void | Coordinates> {
-        const path = this.server+'/reproject';
-        return axios.post(path, {
-            study: objectPath,
-            position: position,
-            image: image
-        }).then((res) => {
-                let pose: Coordinates = res.data.result.pose
-                return pose
-            }).catch((error) => {
-                console.error(error);
-            });
-        
+    async computeReprojection(objectPath: string, position: Matrix, image: string): Promise<Coordinates> {
+        return this.webProvider.computeReprojection(objectPath, position, image).then((res) => {
+            let pose: Coordinates = res.data.result.pose
+            return pose
+        })
     }
 
-    triangulate(objectPath: string, landmark: Landmark): Matrix | undefined {
-        console.log("triangulatePos for ", landmark.label, " : ", landmark.checkTriangulation())
-        if (!landmark.checkTriangulation()) {
-            //not enough poses for triangulation, set position to undefined
-            landmark.setPosition(undefined)
-            return
-        }
-        const path = this.server + '/triangulate';
-        axios.post(path, {
-            study: objectPath,
-            poses: Object.fromEntries(landmark.poses)
-        }).then((res) => {
+    async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<Matrix | undefined> {
+        return this.webProvider.triangulate(objectPath, poses).then((res) => {
             let position = res.data.result.position
-            landmark.setPosition(position)
-        }).catch((error) => {
-            console.error(error);
-        });
+            return position
+        })
+
     }
 
 }

@@ -83,6 +83,7 @@ function resetScale(){
 }
 getShortcuts();
 
+console.log("Scale " + landmarksStore.scale)
 
 </script>
 

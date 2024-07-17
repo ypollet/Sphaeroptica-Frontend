@@ -9,6 +9,7 @@ import * as math from "mathjs"
 import { Scale } from "@/lib/utils";
 
 const STEP = 0.01
+const ROUND = 5
 const landmarksStore = useLandmarksStore()
 
 function changeLabel(payload: string | number, distance: Distance) {
@@ -18,7 +19,7 @@ function changeLabel(payload: string | number, distance: Distance) {
 
 function changeScale(payload: string | number, distance: Distance) {
   console.log(distance.distance)
-  landmarksStore.adjustFactor = math.number(payload)/distance.distance!* math.number(Scale[landmarksStore.scale])
+  landmarksStore.adjustFactor = math.number(payload)/distance.distance!* (Scale[landmarksStore.scale as keyof typeof Scale])
 
   console.log(landmarksStore.adjustFactor)
 }
@@ -35,8 +36,8 @@ function changeScale(payload: string | number, distance: Distance) {
                     @update:model-value="changeLabel($event, distance)" />
                 <span>:</span>
                 <Label v-show="!distance.edit_distance" class="flex whitespace-nowrap w-36"
-                    @dblclick="distance.edit_distance = true">{{ (distance.distance) ? distance.distance * landmarksStore.adjustFactor / math.number(Scale[landmarksStore.scale]) : "" }}</Label>
-                <Input v-show="distance.edit_distance" type="number" :min="0" :step="STEP" :model-value="(distance.distance) ? distance.distance * landmarksStore.adjustFactor / math.number(Scale[landmarksStore.scale]) : 0"
+                    @dblclick="distance.edit_distance = true">{{ (distance.distance) ? math.round(distance.distance * landmarksStore.adjustFactor / math.number(Scale[landmarksStore.scale as keyof typeof Scale]), ROUND) : "" }}</Label>
+                <Input v-show="distance.edit_distance" type="number" :min="0" :step="STEP" :model-value="(distance.distance) ? distance.distance * landmarksStore.adjustFactor / math.number(Scale[landmarksStore.scale as keyof typeof Scale]) : 0"
                     class="flex h-auto w-36 px-0" @focusout="distance.edit_distance= false" @keyup.enter="distance.edit_distance= false"
                     @update:model-value="changeScale($event, distance)" />
             </div>

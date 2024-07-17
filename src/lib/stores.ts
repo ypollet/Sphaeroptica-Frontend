@@ -4,8 +4,6 @@ import { degreesToRad, Scale } from '@/lib/utils'
 import { DequeMax2, Distance, Landmark, LandmarkImage } from './types'
 import type { VirtualCameraImage } from './types'
 import Color from 'color'
-import axios from 'axios'
-import { objectPick } from '@vueuse/core'
 
 
 export const DEFAULT_TAB = "viewer"
@@ -135,7 +133,7 @@ export const useLandmarksStore = defineStore('landmarks', {
                   selectedGroup : new DequeMax2(),
                   distances: Array<Distance>(),
                   adjustFactor: 1,
-                  scale: Scale.m
+                  scale: "m"
                 }),
   actions: {
     addLandmark(landmark: Landmark) {

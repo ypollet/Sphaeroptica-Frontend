@@ -2,6 +2,7 @@ import Color from "color"
 import axios from "axios"
 import { type Matrix }  from "mathjs"
 import type { Coordinates } from "@/data/models/coordinates"
+import { webRepository } from "../repositories/repository_factory"
 
 export class Landmark {
     id: string
@@ -97,31 +98,17 @@ export class Landmark {
         this.edit = edit
     }
     
-    triangulatePosition(objectPath : string) {
+    async triangulatePosition(objectPath : string) {
         console.log("triangulatePos for ", this.label, " : ", this.checkTriangulation())
         if(!this.checkTriangulation()){
             //not enough poses for triangulation, set position to undefined
             this.setPosition(undefined)
             return
         }
-        console.log('Triangulate : ', this.label)
-        console.log(this.poses)
-        console.log(Object.fromEntries(this.poses))
-        const path = 'http://localhost:5000/triangulate';
-        axios.post(path, {
-          study: objectPath,
-          poses: Object.fromEntries(this.poses)
+        let position = await webRepository.triangulate(objectPath, this.poses).then((pos) => {
+            return pos
         })
-          .then((res) => {
-            console.log(res.data)
-            let position = res.data.result.position 
-            console.log("Position = " + position)
-            this.position = position
-            this.version++
-          })
-          .catch((error) => {
-            console.error(error);
-          });
+        this.setPosition(position)
       }
 
     checkTriangulation() {

@@ -8,11 +8,12 @@ import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
 } from '@/components/ui/context-menu'
 
-import axios from "axios";
 import { useVirtualCameraStore, useLandmarksStore, useVCImagesStore } from "@/lib/stores";
 import { Landmark } from "@/data/models/landmark";
 import { type Shortcut } from "@/data/models/shortcut";
 import { Scale } from "@/lib/utils";
+
+import { webRepository } from '@/data/repositories/repository_factory'
 
 const imageStore = useVCImagesStore()
 const landmarksStore = useLandmarksStore()
@@ -21,14 +22,7 @@ const camera = useVirtualCameraStore();
 var mapShortcuts: Map<string, Shortcut> = new Map();
 
 function getShortcuts() {
-  const path = "http://localhost:5000/shortcuts";
-  axios.get(path, {
-      params: {
-        study: imageStore.objectPath,
-      }
-    })
-    .then((res) => {
-      let shortcuts = res.data.result.commands as Shortcut[];
+  webRepository.getShorcuts(imageStore.objectPath).then((shortcuts) => {
       shortcuts.forEach((item) => {
         mapShortcuts.set(item.name, item);
       });

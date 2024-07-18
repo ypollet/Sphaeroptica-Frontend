@@ -1,6 +1,5 @@
 import type { Matrix } from "mathjs";
-import type { DataProvider } from ".";
-import type { Landmark } from "@/data/models/landmark";
+import type { DataProvider } from "./providers";
 
 import axios, { type AxiosResponse } from "axios";
 import type { Coordinates } from "../models/coordinates";
@@ -21,6 +20,11 @@ export class WebProvider implements DataProvider {
         })
     }
 
+    async getImage(objectPath: string, imageName : string): Promise<string> {
+        const path = this.server + '/image?study='+objectPath+'&image='+imageName
+        return path
+    }
+
     async getShorcuts(objectPath: string): Promise<AxiosResponse> {
         const path = this.server + "/shortcuts";
         return axios.get(path, {
@@ -30,12 +34,12 @@ export class WebProvider implements DataProvider {
         })
     }
 
-    async computeReprojection(objectPath: string, position: Matrix, image: string): Promise<AxiosResponse> {
+    async computeReprojection(objectPath: string, position: Matrix, imageName: string): Promise<AxiosResponse> {
         const path = this.server + '/reproject';
         return axios.post(path, {
             study: objectPath,
             position: position,
-            image: image
+            image: imageName
         })
 
     }

@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 
-import axios from 'axios';
-import { storeToRefs } from 'pinia';
-
 import { useLandmarkImagesStore, useVCImagesStore, useVirtualCameraStore, useLandmarksStore } from '@/lib/stores';
 
 import type { Coordinates } from '@/data/models/coordinates'
 import { LandmarkImage } from '@/data/models/landmark_image'
 import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
+
+import { webRepository } from '@/data/repositories/repository_factory'
 
 const LONG_MAX = 360
 const LONG_MIN = 0
@@ -28,14 +27,8 @@ cameraStore.$subscribe(() => {
 var isPressed: boolean = false
 
 function getImages() {
-  const path = 'http://localhost:5000/images';
-  axios.get(path, {
-            params: {
-              study: imageStore.objectPath,
-            }
-    })
-    .then((res) => {
-      imageStore.images = res.data.result.images as VirtualCameraImage[]
+  webRepository.getImages(imageStore.objectPath).then((images) => {
+      imageStore.images = images
       console.log("images : length = " + imageStore.images.length)
       
       imageStore.images.forEach((image: VirtualCameraImage) => {
@@ -69,16 +62,8 @@ function mouseLeave() {
   isPressed = false
 }
 
-function selectImage(){
-  const path = 'http://localhost:5000/image';
-  let image : LandmarkImage = {
-    name: imageStore.selectedImageName,
-    image: 'http://localhost:5000/image?study='+imageStore.objectPath+"&image="+imageStore.selectedImageName,
-    zoom: -1,
-    offset: {x:0, y:0},
-    versions : new Map(),
-    reprojections : new Map()
-  }
+async function selectImage(){
+  let image : LandmarkImage = await webRepository.getImage(imageStore.objectPath, imageStore.selectedImageName)
   landmarksImageStore.addImage(image)
 }
 

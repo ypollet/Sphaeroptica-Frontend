@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useLandmarksStore } from "@/lib/stores";
-import { Landmark } from "@/lib/types";
+
+import { Landmark } from "@/data/models/landmark";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";

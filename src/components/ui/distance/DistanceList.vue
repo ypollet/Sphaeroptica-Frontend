@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useLandmarksStore } from "@/lib/stores";
-import type { Distance } from "@/lib/types";
-import { Separator } from '@/components/ui/separator'
 
+import { Distance } from "@/data/models/distance";
+
+import { Separator } from '@/components/ui/separator'
 import { Label } from "@/components/ui/label";
 import { Input } from '@/components/ui/input'
 import * as math from "mathjs"
@@ -19,7 +20,7 @@ function changeLabel(payload: string | number, distance: Distance) {
 
 function changeScale(payload: string | number, distance: Distance) {
   console.log(distance.distance)
-  landmarksStore.adjustFactor = math.number(payload)/distance.distance!* (Scale[landmarksStore.scale as keyof typeof Scale])
+  landmarksStore.adjustFactor = math.number(payload)/distance.distance!* math.number(Scale[landmarksStore.scale as keyof typeof Scale])
 
   console.log(landmarksStore.adjustFactor)
 }
@@ -36,7 +37,7 @@ function changeScale(payload: string | number, distance: Distance) {
                     @update:model-value="changeLabel($event, distance)" />
                 <span>:</span>
                 <Label v-show="!distance.edit_distance" class="flex whitespace-nowrap w-36"
-                    @dblclick="distance.edit_distance = true">{{ (distance.distance) ? math.round(distance.distance * landmarksStore.adjustFactor / math.number(Scale[landmarksStore.scale as keyof typeof Scale]), ROUND) : "" }}</Label>
+                    @dblclick="distance.edit_distance = true">{{ (distance.distance) ? distance.distance * landmarksStore.adjustFactor / math.number(Scale[landmarksStore.scale as keyof typeof Scale]) : "" }}</Label>
                 <Input v-show="distance.edit_distance" type="number" :min="0" :step="STEP" :model-value="(distance.distance) ? distance.distance * landmarksStore.adjustFactor / math.number(Scale[landmarksStore.scale as keyof typeof Scale]) : 0"
                     class="flex h-auto w-36 px-0" @focusout="distance.edit_distance= false" @keyup.enter="distance.edit_distance= false"
                     @update:model-value="changeScale($event, distance)" />

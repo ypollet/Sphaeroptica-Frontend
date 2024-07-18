@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LandmarkImage } from '@/lib/types';
+import  { LandmarkImage } from '@/data/models/landmark_image';
 import { cn } from '@/lib/utils';
 import type { HTMLAttributes } from 'vue';
 import { ref } from 'vue';

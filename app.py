@@ -132,9 +132,8 @@ def image():
   except Exception as error:
     print(error)
     
-  #return jsonify({'result': image_data})
-  print(f"")
-  return send_from_directory(DATA_FOLDER, f"{path}/{image_name}")
+#  return send_from_directory(DATA_FOLDER, f"{path}/{image_name}")
+  return image_data["image"]
 
 # send_shortcuts page
 @app.route('/shortcuts')

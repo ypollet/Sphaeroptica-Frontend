@@ -8,6 +8,8 @@ import type { DataProvider } from "../providers/providers";
 import { WebProvider } from "../providers/web_providers";
 import type { LandmarkImage } from "../models/landmark_image";
 
+import { Buffer } from 'buffer';
+
 export class WebRepository implements Repository {
     webProvider: DataProvider;
 
@@ -23,16 +25,17 @@ export class WebRepository implements Repository {
     }
 
     async getImage(objectPath: string, imageName : string): Promise<LandmarkImage> {
-        let image_src : string = await this.webProvider.getImage(objectPath, imageName)
-        let image : LandmarkImage = {
-            name: imageName,
-            image: image_src,
-            zoom: -1,
-            offset: {x:0, y:0},
-            versions : new Map(),
-            reprojections : new Map()
-          }
-        return image
+        return this.webProvider.getImage(objectPath, imageName).then((response) => {
+            return{
+                name: imageName,
+                image: response.data,
+                zoom: -1,
+                offset: {x:0, y:0},
+                versions : new Map(),
+                reprojections : new Map()
+              }
+        })
+
     }
 
     async getShorcuts(objectPath: string): Promise<Array<Shortcut>> {

@@ -20,9 +20,9 @@ export class WebProvider implements DataProvider {
         })
     }
 
-    async getImage(objectPath: string, imageName : string): Promise<string> {
+    async getImage(objectPath: string, imageName : string): Promise<AxiosResponse> {
         const path = this.server + '/image?study='+objectPath+'&image='+imageName
-        return path
+        return axios.get(path)
     }
 
     async getShorcuts(objectPath: string): Promise<AxiosResponse> {

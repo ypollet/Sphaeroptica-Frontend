@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/context-menu'
 import { webRepository } from '@/data/repositories/repository_factory'
 
+
 const landmarksStore = useLandmarksStore()
 const imageStore = useVCImagesStore()
 

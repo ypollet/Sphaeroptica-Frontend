@@ -1,11 +1,21 @@
 <script setup lang="ts">
+import {useRoute} from 'vue-router'
+
 import { ref } from "vue";
 import Menu from "@/components/Menu.vue";
 import Tabs from "@/components/Tabs.vue";
 import { Separator } from "@/components/ui/separator";
 import { Sidebar } from "@/components/ui/sidebar";
+import { useVCImagesStore } from "@/lib/stores";
 
+const route=useRoute();
 const isLeft = ref(false)
+const imageStore = useVCImagesStore()
+
+
+
+console.log("Params : " + route.params)
+imageStore.setPath(route.params.id as string)
 </script>
 
 <template>

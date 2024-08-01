@@ -1,11 +1,10 @@
 import * as math from 'mathjs'
 import { defineStore, type PiniaPluginContext, type StateTree } from 'pinia'
-import { degreesToRad, Scale } from '@/lib/utils'
+import { degreesToRad } from '@/lib/utils'
 import { DequeMax2 } from '@/data/models/dequeMax2'
 import { Distance } from '@/data/models/distance'
 import { Landmark } from '@/data/models/landmark'
 import { LandmarkImage } from '@/data/models/landmark_image'
-import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 import Color from 'color'
 
 export const DEFAULT_TAB = "viewer"
@@ -56,42 +55,14 @@ export const useVCImagesStore = defineStore('vc_images', {
   state: () => ({
     latMin: Number.MAX_VALUE,
     latMax: Number.MIN_VALUE,
-    images: Array<VirtualCameraImage>(),
-    objectPath: "geonemus-geoffroyii",
-    selectedImage: "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj",
-    selectedImageName: "UCLouvain"
+    objectPath: "",
   }),
   actions: {
-    reset() {
+    setPath(path : string) {
       this.latMin = Number.MAX_VALUE
       this.latMax = Number.MIN_VALUE
-      this.images = []
-      this.objectPath = "geonemus-geoffroyii"
-      this.selectedImage = "https://cdn.uclouvain.be/groups/cms-editors-arec/charte-graphique-uclouvain/UCLouvain_Logo_Pos_CMJN.png?itok=0Vz8FOqj"
-      this.selectedImageName = "UCLouvain"
+      this.objectPath = path
     },
-    setNearestImage(radPos: number[]) {
-      let bestAngle: Number = Infinity;
-      let bestImage: VirtualCameraImage | null = null
-
-      this.images.forEach((imageData: VirtualCameraImage) => {
-        let imgPos: [number, number] = [degreesToRad(imageData.longitude), degreesToRad(imageData.latitude)]
-        let sinus: number = math.sin(imgPos[1]) * math.sin(radPos[1])
-        let cosinus: number = math.cos(imgPos[1]) * math.cos(radPos[1]) * math.cos(math.abs(imgPos[0] - radPos[0]))
-        let centAngle: Number = math.acos(sinus + cosinus) as Number
-        if (centAngle < bestAngle) {
-          bestAngle = centAngle
-          bestImage = imageData
-        }
-      })
-
-      if (bestImage === null) {
-        return;
-      }
-      var imageData: VirtualCameraImage = bestImage
-      this.selectedImage = imageData.image
-      this.selectedImageName = imageData.name
-    }
   },
   persist: {
     storage: sessionStorage,

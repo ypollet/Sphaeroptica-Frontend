@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask import Flask, render_template, jsonify, request, send_from_directory, abort
 
 from flask_cors import CORS, cross_origin
 
@@ -42,8 +42,8 @@ site_data = {
 }
 
 # landing page
-@app.route('/')
-def welcome():
+@app.route('/<id>')
+def welcome(id):
   return render_template('index.html', **site_data)
 
 
@@ -154,9 +154,10 @@ def shortcuts():
 @app.route('/images')
 @cross_origin()
 def images():
-  path = request.args['study']
-
-  directory = f"{DATA_FOLDER}/{path}"
+  path_dict = request.args['study']
+  directory = f"{DATA_FOLDER}/{path_dict}"
+  if not os.path.exists(directory):
+    abort(404)
   with open(f"{directory}/calibration.json", "r") as f:
             calib_file = json.load(f)
   to_jsonify = {}

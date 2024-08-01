@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import * as math from 'mathjs'
+import { degreesToRad } from '@/lib/utils'
+
+import { ref, watch, onMounted, type Ref } from 'vue';
+
+import { Loader2 } from 'lucide-vue-next';
+
+import { useQuery } from '@tanstack/vue-query'
 
 import { useLandmarkImagesStore, useVCImagesStore, useVirtualCameraStore, useLandmarksStore } from '@/lib/stores';
 
@@ -13,39 +20,72 @@ const LONG_MAX = 360
 const LONG_MIN = 0
 
 const landmarksImageStore = useLandmarkImagesStore()
-const landmarksStore = useLandmarksStore()
 const imageStore = useVCImagesStore()
 const cameraStore = useVirtualCameraStore()
 
 const imageContainer = ref<HTMLDivElement | null>(null)
 
+const selectedImage: Ref<string> = ref("")
+const selectedImageName: Ref<string> = ref("")
+
 cameraStore.$subscribe(() => {
   console.log("Change Camera")
-  imageStore.setNearestImage(cameraStore.toRad)
+  setNearestImage(cameraStore.toRad)
+})
+
+const { isPending, isError, data, error } = useQuery({
+  queryKey: ['all_images'],
+  queryFn: () => getImages(),
+})
+console.log(data.value)
+watch(data, () => {
+  setNearestImage(cameraStore.toRad)
 })
 
 var isPressed: boolean = false
 
-function getImages() {
-  webRepository.getImages(imageStore.objectPath).then((images) => {
-      imageStore.images = images
-      console.log("images : length = " + imageStore.images.length)
-      
-      imageStore.images.forEach((image: VirtualCameraImage) => {
-        if (image.latitude < imageStore.latMin) {
-          imageStore.latMin = image.latitude
-        }
-        if (image.latitude > imageStore.latMax) {
-          imageStore.latMax = image.latitude
-        }
-      })
-      cameraStore.reset()
-      imageStore.setNearestImage(cameraStore.toRad)
+function getImages(): Promise<Array<VirtualCameraImage>> {
+  return webRepository.getImages(imageStore.objectPath).then((images) => {
+    console.log("images : length = " + images.length)
 
+    // Set Latitude Values
+    images.forEach((image: VirtualCameraImage) => {
+      if (image.latitude < imageStore.latMin) {
+        imageStore.latMin = image.latitude
+      }
+      if (image.latitude > imageStore.latMax) {
+        imageStore.latMax = image.latitude
+      }
     })
-    .catch((error) => {
-      console.error(error);
-    });
+    return images
+
+  })
+}
+
+function setNearestImage(radPos: number[]) {
+  if (data.value) {
+    let bestAngle: Number = Infinity;
+    let bestImage: VirtualCameraImage | null = null
+
+    data.value.forEach((imageData: VirtualCameraImage) => {
+      let imgPos: [number, number] = [degreesToRad(imageData.longitude), degreesToRad(imageData.latitude)]
+      let sinus: number = math.sin(imgPos[1]) * math.sin(radPos[1])
+      let cosinus: number = math.cos(imgPos[1]) * math.cos(radPos[1]) * math.cos(math.abs(imgPos[0] - radPos[0]))
+      let centAngle: Number = math.acos(sinus + cosinus) as Number
+      if (centAngle < bestAngle) {
+        bestAngle = centAngle
+        bestImage = imageData
+      }
+    })
+
+    if (bestImage === null) {
+      return;
+    }
+    var imageData: VirtualCameraImage = bestImage
+    selectedImage.value = imageData.image
+    selectedImageName.value = imageData.name
+  }
+
 }
 
 function mouseEnter(event: MouseEvent) {
@@ -56,27 +96,33 @@ function mouseMove(event: MouseEvent) {
     let pos: Coordinates = { x: event.movementX, y: event.movementY }
     cameraStore.setLongitude(((pos.x) / 5), LONG_MIN, LONG_MAX)
     cameraStore.setLatitude(((pos.y) / 5), imageStore.latMin, imageStore.latMax)
-   }
+  }
 }
 function mouseLeave() {
   isPressed = false
 }
 
-async function selectImage(){
-  let image : LandmarkImage = await webRepository.getImage(imageStore.objectPath, imageStore.selectedImageName)
+async function selectImage() {
+  let image: LandmarkImage = await webRepository.getImage(imageStore.objectPath, selectedImageName.value)
   landmarksImageStore.addImage(image)
 }
 
-if (imageStore.images.length == 0){
-  getImages()
-}
-imageStore.setNearestImage(cameraStore.toRad)
+setNearestImage(cameraStore.toRad)
 
 </script>
 <template>
-  <div ref="imageContainer" class="w-full h-full border flex justify-center items-center">
-    <img class="object-fit" @mousedown="mouseEnter" @mouseup="mouseLeave" @mousemove="mouseMove" @mouseleave="mouseLeave" @dblclick="selectImage()"
-      :src="imageStore.selectedImage" alt="album.name" aspect-ratio="auto" draggable="false">
+  <div class="w-full h-full border flex justify-center items-center">
+    <div v-if="isPending" class="w-full h-full flex justify-center items-center">
+      <Loader2 class="animate-spin mr-10" width="10%" height="10%" />
+    </div>
+    <div v-if="isError" class="w-full h-full flex justify-center items-center">
+      <div class="text-red-600">{{ error }}</div>
+    </div>
+    <div v-if="data" ref="imageContainer" class="w-full h-full flex justify-center items-center">
+      <img class="object-fit" @mousedown="mouseEnter" @mouseup="mouseLeave" @mousemove="mouseMove"
+        @mouseleave="mouseLeave" @dblclick="selectImage()" :src="selectedImage" alt="album.name" aspect-ratio="auto"
+        draggable="false">
+    </div>
   </div>
 </template>
 
@@ -85,8 +131,8 @@ imageStore.setNearestImage(cameraStore.toRad)
   object-fit: contain;
   max-width: 100%;
   max-height: 100%;
-  width:100%;
-  height:100%;
-  display:block;
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 </style>

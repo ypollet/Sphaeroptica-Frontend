@@ -8,8 +8,6 @@ import type { DataProvider } from "../providers/providers";
 import { WebProvider } from "../providers/web_providers";
 import type { LandmarkImage } from "../models/landmark_image";
 
-import { Buffer } from 'buffer';
-
 export class WebRepository implements Repository {
     webProvider: DataProvider;
 

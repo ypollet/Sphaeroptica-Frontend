@@ -16,6 +16,8 @@ import {
   MenubarTrigger,
 } from '@/components/ui/menubar'
 
+import { Switch } from '@/components/ui/switch'
+
 import { Button } from '@/components/ui/button'
 
 import { MoonStar, Sun } from 'lucide-vue-next'
@@ -31,13 +33,7 @@ const toggleDark = useToggle(isDark)
 
 <template>
   <Menubar class="rounded border-b z-100 h-10">
-    <Button variant="ghost" @click="toggleDark()" class="px-3 py-1.5">
-      <MoonStar
-        class="h-[1rem] w-[1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Sun
-        class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      <span class="sr-only">Toggle theme</span>
-    </Button>
+
     <MenubarMenu>
       <MenubarTrigger class="relative">
         File
@@ -183,6 +179,9 @@ const toggleDark = useToggle(isDark)
       </MenubarTrigger>
       <MenubarContent>
         <MenubarLabel inset>
+          <div class="h-full inline-block align-middle space-x-2"><span>Dark Mode :</span><Switch :checked="isDark" @update:checked="toggleDark" class="inline-block align-middle"></Switch>  </div>
+        </MenubarLabel>
+        <MenubarLabel inset>
           Switch Account
         </MenubarLabel>
         <MenubarSeparator />
@@ -199,7 +198,7 @@ const toggleDark = useToggle(isDark)
         </MenubarRadioGroup>
         <MenubarSeparator />
         <MenubarItem inset>
-          Manage Famliy...
+          Manage Family...
         </MenubarItem>
         <MenubarSeparator />
         <MenubarItem inset>

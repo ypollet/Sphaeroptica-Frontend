@@ -9,6 +9,20 @@ import Color from 'color'
 
 export const DEFAULT_TAB = "viewer"
 
+export const useSettingsStore = defineStore('settings', {
+  state: () => ({ isLeft : false }),
+  actions: {
+    useToggleLeft(value : boolean){
+      this.isLeft = value
+    },
+  },
+
+  persist: {
+    storage: localStorage,
+    key: 'settings',
+  }
+})
+
 export const useLandmarkImagesStore = defineStore('landmarks_images', {
   state: () => ({ images: Array<LandmarkImage>(), selected: -1 }),
   getters: {

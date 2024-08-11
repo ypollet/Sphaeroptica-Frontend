@@ -6,10 +6,10 @@ import Menu from "@/components/Menu.vue";
 import Tabs from "@/components/Tabs.vue";
 import { Separator } from "@/components/ui/separator";
 import { Sidebar } from "@/components/ui/sidebar";
-import { useVCImagesStore } from "@/lib/stores";
+import { useSettingsStore, useVCImagesStore } from "@/lib/stores";
 
+const settingsStore = useSettingsStore()
 const route=useRoute();
-const isLeft = ref(false)
 const imageStore = useVCImagesStore()
 
 
@@ -23,7 +23,7 @@ imageStore.setPath(route.params.id as string)
     <Menu class="sticky menu top-0 flex flex-row grow z-50"></Menu>
     <Separator></Separator>
     <div class="h-full flex"
-    :class="isLeft ? 'flex-row' : 'flex-row-reverse'">
+    :class="settingsStore.isLeft ? 'flex-row' : 'flex-row-reverse'">
       <div class="rest_height overflow-auto sidebar rounded-md border p-4">
         <Sidebar />
       </div>

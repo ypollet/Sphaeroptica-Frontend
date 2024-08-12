@@ -18,10 +18,6 @@ import {
 
 import { Switch } from '@/components/ui/switch'
 
-import { Button } from '@/components/ui/button'
-
-import { MoonStar, Sun } from 'lucide-vue-next'
-
 import { useToggle, useDark } from '@vueuse/core'
 import { useSettingsStore } from '@/lib/stores'
 
@@ -32,6 +28,8 @@ const isDark = useDark({
 })
 
 const toggleDark = useToggle(isDark)
+
+
 
 </script>
 

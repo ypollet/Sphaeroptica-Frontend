@@ -50,7 +50,7 @@ export class WebRepository implements Repository {
         })
     }
 
-    async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<Matrix | undefined> {
+    async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<Array<number> | undefined> {
         return this.webProvider.triangulate(objectPath, poses).then((res) => {
             let position = res.data.result.position
             return position

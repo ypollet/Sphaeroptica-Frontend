@@ -3,6 +3,8 @@ import axios from "axios"
 import { type Matrix }  from "mathjs"
 import type { Coordinates } from "@/data/models/coordinates"
 import { webRepository } from "../repositories/repository_factory"
+import * as math from 'mathjs'
+
 
 export class Landmark {
     id: string
@@ -10,10 +12,10 @@ export class Landmark {
     label: string
     poses: Map<string, Coordinates>
     color: Color
-    position: Matrix | undefined
+    position: Array<number> | undefined
     edit: boolean
 
-    constructor(id: string, label: string, version : number = 1,color: Color | null = null, poses: Map<string, Coordinates> = new Map(), position: Matrix | undefined = undefined) {
+    constructor(id: string, label: string, version : number = 1,color: Color | null = null, poses: Map<string, Coordinates> = new Map(), position: Array<number> | undefined = undefined) {
         this.id = id
         this.version = version
         this.label = label
@@ -87,7 +89,7 @@ export class Landmark {
         return this.position
     }
 
-    setPosition(position : Matrix | undefined){
+    setPosition(position : Array<number> | undefined){
         this.position = position
         this.version++
     }

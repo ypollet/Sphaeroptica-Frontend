@@ -18,10 +18,16 @@ import {
 
 import { Switch } from '@/components/ui/switch'
 
+import { Landmark } from '@/data/models/landmark'
+
 import { useToggle, useDark } from '@vueuse/core'
-import { useSettingsStore } from '@/lib/stores'
+import { useSettingsStore, useLandmarksStore, useVCImagesStore } from '@/lib/stores'
+import saveAs from 'file-saver';
+import * as math from 'mathjs'
 
 const settingsStore = useSettingsStore()
+const landmarksStore = useLandmarksStore()
+const imageStore = useVCImagesStore()
 
 const isDark = useDark({
   storageKey: 'localStorage'
@@ -29,6 +35,43 @@ const isDark = useDark({
 
 const toggleDark = useToggle(isDark)
 
+
+function downloadCsv(){
+  const rows = [
+    ["Label", "Color", "X", "Y", "Z", "X_adjused", "Y_adjusted", "Z_adjusted"]
+  ];
+
+  landmarksStore.landmarks.filter((landmark) => landmark.position != undefined).forEach((landmark) => {
+    landmark = landmark as Landmark
+    let ajdusted_pos : Array<number> = landmark.position!.map((input) => input * landmarksStore.adjustFactor)
+    let row : Array<string> = [landmark.label, landmark.getColorHEX(), landmark.position![0].toString(), landmark.position![1].toString(), landmark.position![2].toString(), ajdusted_pos[0].toString(), ajdusted_pos[1].toString(), ajdusted_pos[2].toString()]
+    rows.push(row)
+  })
+
+  let csvContent = rows.map(e => e.join(";")).join("\n");
+
+  let blob : Blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  saveAs(blob, "landmarks_" + imageStore.objectPath + ".csv")
+}
+
+function downloadJSON(){
+  const data : Map<string, any> = new Map()
+
+  data.set('scale_factor', landmarksStore.adjustFactor)
+  data.set('landmarks', new Map<string, Object>())
+
+  landmarksStore.landmarks.forEach((landmark) => {
+    data.get("landmarks")!.set(landmark.label,  {
+      "color": landmark.getColorHEX(), 
+      "position": landmark.position,
+      "poses": Object.fromEntries(landmark.poses)
+    })
+  })
+  data.set('landmarks', Object.fromEntries(data.get('landmarks')!.entries()))
+
+  var blob = new Blob([JSON.stringify(Object.fromEntries(data.entries()))], {type: "application/json;charset=utf-8"});
+  saveAs(blob, "landmarks_" + imageStore.objectPath + ".json");
+}
 
 
 </script>
@@ -45,10 +88,10 @@ const toggleDark = useToggle(isDark)
         <MenubarSub>
           <MenubarSubTrigger>Export Landmarks</MenubarSubTrigger>
           <MenubarSubContent>
-            <MenubarItem>
+            <MenubarItem @select="downloadCsv">
               CSV
             </MenubarItem>
-            <MenubarItem>
+            <MenubarItem @select="downloadJSON">
               JSON
             </MenubarItem>
           </MenubarSubContent>

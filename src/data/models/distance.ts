@@ -24,6 +24,11 @@ export class Distance {
         return math.number(math.distance(this.landmarkLeft.position, this.landmarkRight.position))
     }
 
+    in(landmark : Landmark | string) : boolean{
+        console.log(this.landmarkLeft.equals(landmark) || this.landmarkRight.equals(landmark))
+        return this.landmarkLeft.equals(landmark) || this.landmarkRight.equals(landmark)
+    }
+
     equals(other : Distance){
         console.log("Equals DIstance")
         console.log(this.landmarkLeft.equals(other.landmarkLeft) && this.landmarkRight.equals(other.landmarkRight))

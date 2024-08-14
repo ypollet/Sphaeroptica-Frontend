@@ -137,8 +137,8 @@ export const useLandmarksStore = defineStore('landmarks', {
       }
       return id;
     },
-    addDistance(left : Landmark, right : Landmark){
-      let distance : Distance = new Distance("distance_"+this.distances.length, left, right)
+    addDistance(left : Landmark, right : Landmark, label:string | null = null){
+      let distance : Distance = new Distance(label || "distance_"+this.distances.length, left, right)
       if(this.distances.filter((x) => x.equals(distance)).length == 0){
         this.distances.push(distance)
       }

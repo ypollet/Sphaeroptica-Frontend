@@ -33,7 +33,8 @@ function changeLabel(payload: string | number, landmark: Landmark) {
 }
 
 function removeLandmark(id: string) {
-  landmarksStore.landmarks = landmarksStore.landmarks.filter((el) => el.getId() != id)
+  landmarksStore.distances = landmarksStore.distances.filter((distance) => !distance.in(id))
+  landmarksStore.landmarks = landmarksStore.landmarks.filter((el) => !el.equals(id))
 }
 
 function selectLandmark(id: string) {

@@ -43,7 +43,7 @@ export class WebRepository implements Repository {
         })
     }
 
-    async computeReprojection(objectPath: string, position: Matrix, imageName: string): Promise<Coordinates> {
+    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Coordinates> {
         return this.webProvider.computeReprojection(objectPath, position, imageName).then((res) => {
             let pose: Coordinates = res.data.result.pose
             return pose

@@ -34,7 +34,7 @@ export class WebProvider implements DataProvider {
         })
     }
 
-    async computeReprojection(objectPath: string, position: Matrix, imageName: string): Promise<AxiosResponse> {
+    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<AxiosResponse> {
         const path = this.server + '/reproject';
         return axios.post(path, {
             study: objectPath,

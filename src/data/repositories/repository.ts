@@ -1,4 +1,3 @@
-import type { Matrix } from "mathjs";
 import type { VirtualCameraImage } from "@/data/models/virtual_camera_image";
 import type { Coordinates } from "@/data/models/coordinates";
 import type { Shortcut } from "@/data/models/shortcut";

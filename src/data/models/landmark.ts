@@ -2,9 +2,12 @@ import Color from "color"
 import axios from "axios"
 import { type Matrix }  from "mathjs"
 import type { Coordinates } from "@/data/models/coordinates"
-import { webRepository } from "../repositories/repository_factory"
+import { RepositoryFactory } from "../repositories/repository_factory"
+import { repositorySettings } from "@/config/appSettings"
+
 import * as math from 'mathjs'
 
+const repository = RepositoryFactory.get(repositorySettings.type)
 
 export class Landmark {
     id: string
@@ -107,7 +110,7 @@ export class Landmark {
             this.setPosition(undefined)
             return
         }
-        let position = await webRepository.triangulate(objectPath, this.poses).then((pos) => {
+        let position = await repository.triangulate(objectPath, this.poses).then((pos) => {
             return pos
         })
         this.setPosition(position)

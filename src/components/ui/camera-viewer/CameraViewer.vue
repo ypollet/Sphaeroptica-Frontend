@@ -14,7 +14,9 @@ import type { Coordinates } from '@/data/models/coordinates'
 import { LandmarkImage } from '@/data/models/landmark_image'
 import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 
-import { webRepository } from '@/data/repositories/repository_factory'
+import { RepositoryFactory } from '@/data/repositories/repository_factory'
+import { repositorySettings } from "@/config/appSettings"
+
 
 const LONG_MAX = 360
 const LONG_MIN = 0
@@ -44,8 +46,10 @@ watch(data, () => {
 
 var isPressed: boolean = false
 
+const repository = RepositoryFactory.get(repositorySettings.type)
+
 function getImages(): Promise<Array<VirtualCameraImage>> {
-  return webRepository.getImages(imageStore.objectPath).then((images) => {
+  return repository.getImages(imageStore.objectPath).then((images) => {
     console.log("images : length = " + images.length)
 
     // Set Latitude Values
@@ -103,7 +107,7 @@ function mouseLeave() {
 }
 
 async function selectImage() {
-  let image: LandmarkImage = await webRepository.getImage(imageStore.objectPath, selectedImageName.value)
+  let image: LandmarkImage = await repository.getImage(imageStore.objectPath, selectedImageName.value)
   landmarksImageStore.addImage(image)
 }
 

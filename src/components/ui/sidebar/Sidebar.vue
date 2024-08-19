@@ -13,7 +13,10 @@ import { Landmark } from "@/data/models/landmark";
 import { type Shortcut } from "@/data/models/shortcut";
 import { Scale } from "@/lib/utils";
 
-import { webRepository } from '@/data/repositories/repository_factory'
+import { RepositoryFactory } from '@/data/repositories/repository_factory'
+import { repositorySettings } from "@/config/appSettings"
+
+const repository = RepositoryFactory.get(repositorySettings.type)
 
 const imageStore = useVCImagesStore()
 const landmarksStore = useLandmarksStore()
@@ -22,7 +25,7 @@ const camera = useVirtualCameraStore();
 var mapShortcuts: Map<string, Shortcut> = new Map();
 
 function getShortcuts() {
-  webRepository.getShorcuts(imageStore.objectPath).then((shortcuts) => {
+  repository.getShorcuts(imageStore.objectPath).then((shortcuts) => {
       shortcuts.forEach((item) => {
         mapShortcuts.set(item.name, item);
       });

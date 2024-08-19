@@ -8,8 +8,11 @@ import { useLandmarksStore, useVCImagesStore } from '@/lib/stores'
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuTrigger,
 } from '@/components/ui/context-menu'
-import { webRepository } from '@/data/repositories/repository_factory'
+import { RepositoryFactory } from '@/data/repositories/repository_factory'
+import { repositorySettings } from "@/config/appSettings"
 
+
+const repository = RepositoryFactory.get(repositorySettings.type)
 
 const landmarksStore = useLandmarksStore()
 const imageStore = useVCImagesStore()
@@ -18,7 +21,7 @@ function computeReprojection(landmark: Landmark) {
   const path = 'http://localhost:5000/reproject';
   console.log("Reprojection for " + landmark.id)
   if (landmark.position) {
-    webRepository.computeReprojection(imageStore.objectPath, landmark.position, props.modelValue.name).then((pose) => {
+    repository.computeReprojection(imageStore.objectPath, landmark.position, props.modelValue.name).then((pose) => {
       props.modelValue.reprojections.set(landmark.id, pose)
       update()
     }).catch((error) => {

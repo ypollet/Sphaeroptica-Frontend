@@ -12,32 +12,23 @@ export class WebProvider implements DataProvider {
     }
 
     async getImages(objectPath: string): Promise<AxiosResponse> {
-        const path = this.server + '/images';
-        return axios.get(path, {
-            params: {
-                study: objectPath,
-            }
-        })
+        const path = this.server + "/" + objectPath +'/images';
+        return axios.get(path)
     }
 
     async getImage(objectPath: string, imageName : string): Promise<AxiosResponse> {
-        const path = this.server + '/image?study='+objectPath+'&image='+imageName
+        const path = this.server + "/" + objectPath + '/' + imageName
         return axios.get(path)
     }
 
     async getShorcuts(objectPath: string): Promise<AxiosResponse> {
-        const path = this.server + "/shortcuts";
-        return axios.get(path, {
-            params: {
-                study: objectPath,
-            }
-        })
+        const path = this.server + "/" + objectPath + "/shortcuts";
+        return axios.get(path)
     }
 
     async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<AxiosResponse> {
-        const path = this.server + '/reproject';
+        const path = this.server + "/" + objectPath + '/reproject';
         return axios.post(path, {
-            study: objectPath,
             position: position,
             image: imageName
         })
@@ -45,9 +36,8 @@ export class WebProvider implements DataProvider {
     }
 
     async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<AxiosResponse> {
-        const path = this.server + '/triangulate';
+        const path = this.server + "/" + objectPath + '/triangulate';
         return axios.post(path, {
-            study: objectPath,
             poses: Object.fromEntries(poses)
         })
     }

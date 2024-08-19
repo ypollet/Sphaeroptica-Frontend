@@ -47,14 +47,12 @@ def welcome(id):
   return render_template('index.html', **site_data)
 
 
-@app.route('/triangulate', methods=['POST'])
-def triangulate():
+@app.route('/<id>/triangulate', methods=['POST'])
+def triangulate(id):
   if request.method == 'POST':
     data = request.get_json()
-    path = data['study']
     poses = data['poses']
-
-    directory = f"{DATA_FOLDER}/{path}"
+    directory = f"{DATA_FOLDER}/{id}"
     with open(f"{directory}/calibration.json", "r") as f:
       calib_file = json.load(f)
 
@@ -68,10 +66,6 @@ def triangulate():
     
     # Triangulation computation with all the undistorted landmarks
     landmark_pos = reconstruction.triangulate_point(proj_points)      
-    
-    print(data)
-    print(path)
-    print(proj_points)
   
     return {"result": {
           "position": landmark_pos.tolist()
@@ -79,16 +73,15 @@ def triangulate():
     }
           
 
-@app.route('/reproject', methods=['POST'])
-def reproject():
+@app.route('/<id>/reproject', methods=['POST'])
+def reproject(id):
   if request.method == 'POST':
     data = request.get_json()
-    path = data["study"]
     position = np.array(data["position"])
     print(position.shape)
     image_name = data['image']
     
-    directory = f"{DATA_FOLDER}/{path}"
+    directory = f"{DATA_FOLDER}/{id}"
     with open(f"{directory}/calibration.json", "r") as f:
       calib_file = json.load(f)
 
@@ -118,12 +111,11 @@ def get_response_image(image_path):
 
 
 # send single image
-@app.route('/image')
+@app.route('/<id>/<image_name>')
 @cross_origin()
-def image():
-  path = request.args['study']
-  image_name = request.args['image']
-  directory = f"{DATA_FOLDER}/{path}"
+def image(id, image_name):
+  print(f"Image for {id}/{image_name}")
+  directory = f"{DATA_FOLDER}/{id}"
   image_data = {}
   try:
     image_data = get_response_image(f"{directory}/{image_name}")
@@ -136,11 +128,10 @@ def image():
   return image_data["image"]
 
 # send_shortcuts page
-@app.route('/shortcuts')
+@app.route('/<id>/shortcuts')
 @cross_origin()
-def shortcuts():
-  path = request.args['study']
-  directory = f"{DATA_FOLDER}/{path}"
+def shortcuts(id):
+  directory = f"{DATA_FOLDER}/{id}"
   with open(f"{directory}/calibration.json", "r") as f:
     calib_file = json.load(f)
   to_jsonify = {}
@@ -151,11 +142,10 @@ def shortcuts():
     
   return jsonify({'result': to_jsonify})
 # send images
-@app.route('/images')
+@app.route('/<id>/images')
 @cross_origin()
-def images():
-  path_dict = request.args['study']
-  directory = f"{DATA_FOLDER}/{path_dict}"
+def images(id):
+  directory = f"{DATA_FOLDER}/{id}"
   if not os.path.exists(directory):
     abort(404)
   with open(f"{directory}/calibration.json", "r") as f:

@@ -8,6 +8,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import tailwind from "tailwindcss"
 import autoprefixer from "autoprefixer"
 
+
 // https://vitejs.dev/config/
 export default defineConfig({
   css: {
@@ -26,5 +27,22 @@ export default defineConfig({
   },
   build: {
     assetsDir: "static",
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('/node_modules/vuedraggable')) {
+            return 'vendor_vuedraggable';
+          } else if (id.includes('/node_modules/mathjs')) {
+            return 'vendor_mathjs';
+          }else if (id.includes('/node_modules/@vue')) {
+            return 'vendor_@vue';
+          } else if (id.includes('/node_modules/')) {
+            return 'vendor';
+          } else {
+            return 'index';
+          }
+        },
+      },
+    },
   },
 })

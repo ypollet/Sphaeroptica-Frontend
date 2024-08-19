@@ -27,9 +27,9 @@ function removeTab(index: number) {
   imageStore.selected = index
 }
 
-function onTabChange(value: string) {
+function onTabChange(value: string | number) {
   console.log("New val : " + value)
-  imageStore.setTab(value)
+  imageStore.setTab(value.toString())
 }
 </script>
 <template>

@@ -1,2 +1,2 @@
-# Sphaeroptica-Orthanc
-Orthanc Plugin for Sphaeroptica
+# Sphaeroptica-Frontend
+Vue Frontend of Sphaeroptica

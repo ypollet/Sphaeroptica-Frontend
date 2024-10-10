@@ -246,7 +246,7 @@ function updateOffset(movementX: number, movementY: number) {
 
 function updateZoom(zoomDelta: number) {
 
-  props.modelValue.zoom = +(props.modelValue.zoom + (zoomDelta / 50)).toFixed(2)
+  props.modelValue.zoom = +(props.modelValue.zoom * (1 + zoomDelta / 20)).toFixed(2)
 
   //check value
   props.modelValue.zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, props.modelValue.zoom))

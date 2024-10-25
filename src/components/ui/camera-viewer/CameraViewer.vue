@@ -39,7 +39,6 @@ const { isPending, isError, data, error } = useQuery({
   queryKey: ['all_images'],
   queryFn: () => getImages(),
 })
-console.log(data.value)
 watch(data, () => {
   setNearestImage(cameraStore.toRad)
 })
@@ -54,6 +53,8 @@ function getImages(): Promise<Array<VirtualCameraImage>> {
 
     // Set Latitude Values
     images.forEach((image: VirtualCameraImage) => {
+      console.log("images : " + cameraStore.images.keys())
+      cameraStore.images.set(image.name, image)
       if (image.latitude < imageStore.latMin) {
         imageStore.latMin = image.latitude
       }
@@ -107,7 +108,9 @@ function mouseLeave() {
 }
 
 async function selectImage() {
-  let image: LandmarkImage = await repository.getImage(imageStore.objectPath, selectedImageName.value)
+  console.log("Image selected = " + selectedImageName.value)
+  let image: LandmarkImage = repository.getImage(imageStore.objectPath, selectedImageName.value)
+  console.log(image)
   landmarksImageStore.addImage(image)
 }
 
@@ -124,7 +127,7 @@ setNearestImage(cameraStore.toRad)
     </div>
     <div v-if="data" ref="imageContainer" class="w-full h-full flex justify-center items-center">
       <img class="object-fit" @mousedown="mouseEnter" @mouseup="mouseLeave" @mousemove="mouseMove"
-        @mouseleave="mouseLeave" @dblclick="selectImage()" :src="selectedImage" alt="album.name" aspect-ratio="auto"
+        @mouseleave="mouseLeave" @dblclick="selectImage()" :src="selectedImage" :alt="selectedImageName" aspect-ratio="auto"
         draggable="false">
     </div>
   </div>

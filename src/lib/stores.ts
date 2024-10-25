@@ -6,6 +6,7 @@ import { Distance } from '@/data/models/distance'
 import { Landmark } from '@/data/models/landmark'
 import { LandmarkImage } from '@/data/models/landmark_image'
 import Color from 'color'
+import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 
 export const DEFAULT_TAB = "viewer"
 
@@ -19,40 +20,46 @@ export const useSettingsStore = defineStore('settings', {
 
   persist: {
     storage: localStorage,
-    key: 'settings',
   }
 })
 
 export const useLandmarkImagesStore = defineStore('landmarks_images', {
-  state: () => ({ images: Array<LandmarkImage>(), selected: -1 }),
+  state: () => ({ landmark_images: Array<LandmarkImage>(), selected: -1 }),
   getters: {
-    getTabName: (state) => (state.selected >= 0 && state.selected < state.images.length) ? state.images[state.selected].name : DEFAULT_TAB,
+    getTabName: (state) => (state.selected >= 0 && state.selected < state.landmark_images.length) ? state.landmark_images[state.selected].name : DEFAULT_TAB,
   },
   actions: {
     reset() {
-      this.images = []
+      console.log("Reset Landmark images")
+      this.landmark_images = new Array<LandmarkImage>()
       this.selected = -1
     },
     setTab(value: string) {
-      this.selected = this.images.findIndex((image) => image.name == value)
+      this.selected = this.landmark_images.findIndex((image) => image.name == value)
     },
     removeImage(index: number) {
-      this.images.splice(index, 1)
+      this.landmark_images.splice(index, 1)
     },
     addImage(image: LandmarkImage) {
-      if (this.images.filter((el) => el.name == image.name).length == 0) {
-        this.images.push(image)
+      if (this.landmark_images.filter((el) => el.name == image.name).length == 0) {
+        this.landmark_images.push(image)
       }
+      console.log(this.landmark_images)
     }
   },
   persist: {
     storage: sessionStorage,
-    key: 'landmarks_images',
-    afterRestore: (ctx: PiniaPluginContext) => {
-      let images = ctx.store.$state.images.map((x: LandmarkImage) => x)
+    debug: true,
+    beforeHydrate: (ctx : PiniaPluginContext) => {
+      console.log("Before Restore LandmarkImages")
+      console.log(ctx.store.$state)
+    },
+    afterHydrate: (ctx: PiniaPluginContext) => {
       console.log("Restore LandmarkImages")
-      console.log(images)
-      ctx.store.$state.images = images.map((jsonObject: LandmarkImage) =>
+      console.log(ctx.store.$state)
+      let landmark_images = ctx.store.$state.landmark_images.map((x: LandmarkImage) => x)
+      console.log(landmark_images)
+      ctx.store.$state.landmark_images = landmark_images.map((jsonObject: LandmarkImage) =>
           new LandmarkImage(jsonObject.name, 
             jsonObject.image, 
             jsonObject.zoom, 
@@ -60,7 +67,6 @@ export const useLandmarkImagesStore = defineStore('landmarks_images', {
             new Map(Object.entries(jsonObject.versions)), 
             new Map(Object.entries(jsonObject.reprojections)))
       )
-      console.log(ctx.store.$state.images)
     },
   },
 })
@@ -80,11 +86,11 @@ export const useVCImagesStore = defineStore('vc_images', {
   },
   persist: {
     storage: sessionStorage,
-    key: 'vc_images',
   },
 })
 export const useVirtualCameraStore = defineStore('camera', {
   state: () => ({
+    images : new Map<string, VirtualCameraImage>(),
     longitude: 0,
     latitude: 0,
   }),
@@ -93,6 +99,7 @@ export const useVirtualCameraStore = defineStore('camera', {
   },
   actions: {
     reset() {
+      this.images = new Map<string, VirtualCameraImage>()
       this.longitude = 0
       this.latitude = 0
     },
@@ -111,7 +118,12 @@ export const useVirtualCameraStore = defineStore('camera', {
 
   persist: {
     storage: sessionStorage,
-    key: 'camera',
+    afterHydrate: (ctx: PiniaPluginContext) => {
+      console.log("Restore CameraImages")
+      let images : Map<string, VirtualCameraImage> = new Map(Object.entries(ctx.store.$state.images))
+      console.log(images)
+      ctx.store.$state.images = images
+    },
   },
 })
 
@@ -146,10 +158,11 @@ export const useLandmarksStore = defineStore('landmarks', {
   },
   persist: {
     storage: sessionStorage,
-    key: 'landmarks',
-    afterRestore: (ctx: PiniaPluginContext) => {
+    afterHydrate: (ctx: PiniaPluginContext) => {
+      console.log("Restore landmarks")
       // restore landmarks
       let landmarks = ctx.store.$state.landmarks.map((x: Landmark) => x)
+      console.log(landmarks)
       let landmarksToKeep = landmarks.map((jsonObject: Landmark) =>
         new Landmark(jsonObject.id, jsonObject.label, jsonObject.version, Color(jsonObject.color), new Map(Object.entries(jsonObject.poses)), jsonObject.position)
       )

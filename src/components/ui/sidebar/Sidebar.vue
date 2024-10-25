@@ -10,6 +10,7 @@ import {
 
 import { useVirtualCameraStore, useLandmarksStore, useVCImagesStore } from "@/lib/stores";
 import { Landmark } from "@/data/models/landmark";
+import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 import { type Shortcut } from "@/data/models/shortcut";
 import { Scale } from "@/lib/utils";
 
@@ -19,20 +20,21 @@ import { repositorySettings } from "@/config/appSettings"
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 const imageStore = useVCImagesStore()
+const cameraStore = useVirtualCameraStore()
 const landmarksStore = useLandmarksStore()
 
 const camera = useVirtualCameraStore();
-var mapShortcuts: Map<string, Shortcut> = new Map();
+var mapShortcuts: Map<string, string> = new Map();
 
 function getShortcuts() {
   repository.getShorcuts(imageStore.objectPath).then((shortcuts) => {
       shortcuts.forEach((item) => {
-        mapShortcuts.set(item.name, item);
+        mapShortcuts.set(item.name, item.image);
       });
     })
     .catch((error) => {
       console.error(error);
-    });
+    }); 
 }
 const map: Map<string, string> = new Map();
 map.set("top", "SUPERIOR");
@@ -51,13 +53,18 @@ function shortcut(event: Event) {
     return;
   }
   // TODO : It's ugly there's a triple Map !!
-  let newPos: Shortcut | undefined = mapShortcuts.get(
+  let newPos: string | undefined = mapShortcuts.get(
     map.get(target.attributes.getNamedItem("data-key")?.value!)!
   );
+  console.log(mapShortcuts)
+  console.log(target.attributes.getNamedItem("data-key")?.value!)
+  console.log(map.get(target.attributes.getNamedItem("data-key")?.value!)!)
+  console.log(newPos)
 
   if (newPos != undefined) {
-    camera.longitude = newPos.longitude;
-    camera.latitude = newPos.latitude;
+    let image : VirtualCameraImage = cameraStore.images.get(newPos)!
+    camera.longitude = image.longitude;
+    camera.latitude = image.latitude;
   }
 }
 

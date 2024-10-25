@@ -23,7 +23,7 @@
     "lucide-vue-next": "^0.341.0",
     "mathjs": "^12.4.3",
     "pinia": "^2.1.7",
-    "pinia-plugin-persistedstate": "^3.2.1",
+    "pinia-plugin-persistedstate": "^4.1.1",
     "radix-vue": "^1.5.3",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",

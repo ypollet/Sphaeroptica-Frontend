@@ -20,23 +20,26 @@ export class DataRepository implements Repository {
         })
     }
 
-    async getImage(objectPath: string, imageName : string): Promise<LandmarkImage> {
-        return this.provider.getImage(objectPath, imageName).then((response) => {
-            return{
-                name: imageName,
-                image: response.data,
-                zoom: -1,
-                offset: {x:0, y:0},
-                versions : new Map(),
-                reprojections : new Map()
-              }
-        })
+    getImage(objectPath: string, imageName : string): LandmarkImage {
+        return {
+            name: imageName,
+            image: this.provider.getImage(objectPath, imageName),
+            zoom: -1,
+            offset: {x:0, y:0},
+            versions : new Map(),
+            reprojections : new Map()
+          }
 
     }
 
     async getShorcuts(objectPath: string): Promise<Array<Shortcut>> {
         return this.provider.getShorcuts(objectPath).then((res) => {
-            let shortcuts = res.data.result.commands as Shortcut[];
+            let shortcuts = new Array<Shortcut>()
+            let map : Map<string, string> = new Map(Object.entries(res.data.commands))
+            map.forEach((val : string, key : string) => {
+                shortcuts.push({name: key, image : val})
+            });
+            
             return shortcuts
         })
     }

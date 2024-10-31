@@ -97,7 +97,7 @@ function downloadJSON() {
   })
   data.set('distances', arrayDistance)
 
-  var blob = new Blob([JSON.stringify(Object.fromEntries(data.entries()))], { type: "application/json;charset=utf-8" });
+  var blob = new Blob([JSON.stringify(Object.fromEntries(data.entries()), null, 2)], { type: "application/json;charset=utf-8" });
   saveAs(blob, "landmarks_" + imageStore.objectPath + "_" + new Date().getTime() + ".json");
 }
 

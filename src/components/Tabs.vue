@@ -9,26 +9,26 @@ import { storeToRefs } from "pinia";
 import { ScrollBar, ScrollArea } from "./ui/scroll-area/";
 import { round } from "mathjs";
 
-const imageStore = useLandmarkImagesStore()
-const vcImageStore = useVirtualCameraStore()
-const { getTabName } = storeToRefs(imageStore)
+const landmarkImageStore = useLandmarkImagesStore()
+
+const { getTabName } = storeToRefs(landmarkImageStore)
 
 function removeTab(index: number) {
-  imageStore.landmark_images.splice(index, 1)
-  if (imageStore.landmark_images.length == 0) {
-    imageStore.selected = -1
+  landmarkImageStore.images.splice(index, 1)
+  if (landmarkImageStore.images.length == 0) {
+    landmarkImageStore.selected = -1
     return;
   }
-  if (index >= imageStore.landmark_images.length) {
-    imageStore.selected = imageStore.landmark_images.length - 1
+  if (index >= landmarkImageStore.images.length) {
+    landmarkImageStore.selected = landmarkImageStore.images.length - 1
     return;
   }
-  imageStore.selected = index
+  landmarkImageStore.selected = index
 }
 
 function onTabChange(value: string | number) {
   console.log("New val : " + value)
-  imageStore.setTab(value.toString())
+  landmarkImageStore.setTab(value.toString())
 }
 </script>
 <template>
@@ -38,7 +38,7 @@ function onTabChange(value: string | number) {
         <TabsTrigger :value="DEFAULT_TAB" class="flex justify-center items-end p-2">
           Virtual Camera
         </TabsTrigger>
-        <TabsTrigger v-for="(image, index) in imageStore.landmark_images" :value="image.name"
+        <TabsTrigger v-for="(image, index) in landmarkImageStore.images" :value="image.name"
           class="flex justify-center items-end p-2">
           {{ image.name }}
           <Button variant="ghost" class="h-4 w-4 p-0 ml-2" @click="removeTab(index)">
@@ -53,7 +53,7 @@ function onTabChange(value: string | number) {
         <CameraViewer />
       </div>
     </TabsContent>
-      <TabsContent :value="image.name" class="image m-0" v-for="image in imageStore.landmark_images">
+      <TabsContent :value="image.name" class="image m-0" v-for="image in landmarkImageStore.images">
           <ImageViewer :model-value="image" />
       </TabsContent>
   </Tabs>

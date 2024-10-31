@@ -19,15 +19,14 @@ import { repositorySettings } from "@/config/appSettings"
 
 const repository = RepositoryFactory.get(repositorySettings.type)
 
-const imageStore = useVCImagesStore()
-const cameraStore = useVirtualCameraStore()
+const vcImageStore = useVCImagesStore()
 const landmarksStore = useLandmarksStore()
+const cameraStore = useVirtualCameraStore();
 
-const camera = useVirtualCameraStore();
 var mapShortcuts: Map<string, string> = new Map();
 
 function getShortcuts() {
-  repository.getShorcuts(imageStore.objectPath).then((shortcuts) => {
+  repository.getShorcuts(vcImageStore.objectPath).then((shortcuts) => {
       shortcuts.forEach((item) => {
         mapShortcuts.set(item.name, item.image);
       });
@@ -56,15 +55,11 @@ function shortcut(event: Event) {
   let newPos: string | undefined = mapShortcuts.get(
     map.get(target.attributes.getNamedItem("data-key")?.value!)!
   );
-  console.log(mapShortcuts)
-  console.log(target.attributes.getNamedItem("data-key")?.value!)
-  console.log(map.get(target.attributes.getNamedItem("data-key")?.value!)!)
-  console.log(newPos)
 
   if (newPos != undefined) {
-    let image : VirtualCameraImage = cameraStore.images.get(newPos)!
-    camera.longitude = image.longitude;
-    camera.latitude = image.latitude;
+    let image : VirtualCameraImage = vcImageStore.images.get(newPos)!
+    cameraStore.longitude = image.longitude;
+    cameraStore.latitude = image.latitude;
   }
 }
 
@@ -80,9 +75,6 @@ function resetScale(){
   landmarksStore.adjustFactor = 1
 }
 getShortcuts();
-
-console.log("Scale " + landmarksStore.scale)
-
 </script>
 
 <template>

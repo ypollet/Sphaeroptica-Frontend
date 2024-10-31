@@ -12,10 +12,9 @@ const settingsStore = useSettingsStore()
 const route=useRoute();
 const imageStore = useVCImagesStore()
 
+console.log(route.query.series as string)
 
-
-console.log("Params : " + route.params)
-imageStore.setPath(route.params.id as string)
+imageStore.setPath(route.query.series as string)
 </script>
 
 <template>

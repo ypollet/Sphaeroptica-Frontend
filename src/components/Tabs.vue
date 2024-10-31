@@ -27,9 +27,9 @@ function removeTab(index: number) {
 }
 
 function onTabChange(value: string | number) {
-  console.log("New val : " + value)
   landmarkImageStore.setTab(value.toString())
 }
+
 </script>
 <template>
   <Tabs :model-value="getTabName" @update:model-value="onTabChange" class="w-full h-full">
@@ -40,7 +40,7 @@ function onTabChange(value: string | number) {
         </TabsTrigger>
         <TabsTrigger v-for="(image, index) in landmarkImageStore.landmark_images" :value="image.name"
           class="flex justify-center items-end p-2">
-          {{ image.name }}
+          ({{ round(image.longLat.x, 2) }}, {{ round(image.longLat.y, 2)}})
           <Button variant="ghost" class="h-4 w-4 p-0 ml-2" @click="removeTab(index)">
             <X />
           </Button>
@@ -72,4 +72,4 @@ function onTabChange(value: string | number) {
 .image {
   height: calc(100% - 70px);
 }
-</style>@/components/ui/camera-viewer/CameraViewer.vue@/components/ui/camera-viewer/ImageViewer.vue
+</style>

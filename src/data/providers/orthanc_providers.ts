@@ -1,4 +1,3 @@
-import type { Matrix } from "mathjs";
 import type { DataProvider } from "./providers";
 
 import axios, { type AxiosResponse } from "axios";
@@ -16,9 +15,9 @@ export class WebProvider implements DataProvider {
         return axios.get(path)
     }
 
-    async getImage(objectPath: string, imageName : string): Promise<AxiosResponse> {
+    getImage(objectPath: string, imageName : string): string {
         const path = this.server + "/" + objectPath + '/' + imageName
-        return axios.get(path)
+        return path
     }
 
     async getShorcuts(objectPath: string): Promise<AxiosResponse> {

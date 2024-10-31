@@ -20,10 +20,11 @@ export class DataRepository implements Repository {
         })
     }
 
-    getImage(objectPath: string, imageName : string): LandmarkImage {
+    getImage(objectPath: string, imageName : string, longLat : Coordinates): LandmarkImage {
         return {
             name: imageName,
             image: this.provider.getImage(objectPath, imageName),
+            longLat : longLat,
             zoom: -1,
             offset: {x:0, y:0},
             versions : new Map(),

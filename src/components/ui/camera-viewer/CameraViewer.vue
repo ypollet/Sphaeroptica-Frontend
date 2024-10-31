@@ -22,7 +22,7 @@ const LONG_MAX = 360
 const LONG_MIN = 0
 
 const landmarksImageStore = useLandmarkImagesStore()
-const imageStore = useVCImagesStore()
+const vcImageStore = useVCImagesStore()
 const cameraStore = useVirtualCameraStore()
 
 const imageContainer = ref<HTMLDivElement | null>(null)
@@ -31,7 +31,6 @@ const selectedImage: Ref<string> = ref("")
 const selectedImageName: Ref<string> = ref("")
 
 cameraStore.$subscribe(() => {
-  console.log("Change Camera")
   setNearestImage(cameraStore.toRad)
 })
 
@@ -41,25 +40,23 @@ const { isPending, isError, data, error } = useQuery({
 })
 watch(data, () => {
   setNearestImage(cameraStore.toRad)
-})
+}) 
 
 var isPressed: boolean = false
 
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 function getImages(): Promise<Array<VirtualCameraImage>> {
-  return repository.getImages(imageStore.objectPath).then((images) => {
-    console.log("images : length = " + images.length)
+  return repository.getImages(vcImageStore.objectPath).then((images) => {
 
     // Set Latitude Values
     images.forEach((image: VirtualCameraImage) => {
-      console.log("images : " + cameraStore.images.keys())
-      cameraStore.images.set(image.name, image)
-      if (image.latitude < imageStore.latMin) {
-        imageStore.latMin = image.latitude
+      vcImageStore.images.set(image.name, image)
+      if (image.latitude < vcImageStore.latMin) {
+        vcImageStore.latMin = image.latitude
       }
-      if (image.latitude > imageStore.latMax) {
-        imageStore.latMax = image.latitude
+      if (image.latitude > vcImageStore.latMax) {
+        vcImageStore.latMax = image.latitude
       }
     })
     return images
@@ -100,7 +97,7 @@ function mouseMove(event: MouseEvent) {
   if (isPressed) {
     let pos: Coordinates = { x: event.movementX, y: event.movementY }
     cameraStore.setLongitude(((pos.x) / 5), LONG_MIN, LONG_MAX)
-    cameraStore.setLatitude(((pos.y) / 5), imageStore.latMin, imageStore.latMax)
+    cameraStore.setLatitude(((pos.y) / 5), vcImageStore.latMin, vcImageStore.latMax)
   }
 }
 function mouseLeave() {
@@ -108,9 +105,8 @@ function mouseLeave() {
 }
 
 async function selectImage() {
-  console.log("Image selected = " + selectedImageName.value)
-  let image: LandmarkImage = repository.getImage(imageStore.objectPath, selectedImageName.value)
-  console.log(image)
+  let vcImage = vcImageStore.images.get(selectedImageName.value)
+  let image: LandmarkImage = repository.getImage(vcImageStore.objectPath, selectedImageName.value, { x : vcImage!.longitude, y : vcImage!.latitude})
   landmarksImageStore.addImage(image)
 }
 

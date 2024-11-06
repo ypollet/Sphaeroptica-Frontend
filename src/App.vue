@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import ViewerView from './views/ViewerView.vue';
 </script>
 
 <template>
-  <div class="overflow-hidden"> <RouterView/></div>
+  <div class="overflow-hidden"> <ViewerView/></div>
 </template>
 

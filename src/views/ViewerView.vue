@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import {useRoute} from 'vue-router'
-
-import { ref } from "vue";
 import Menu from "@/components/Menu.vue";
 import Tabs from "@/components/Tabs.vue";
 import { Separator } from "@/components/ui/separator";
@@ -9,12 +6,14 @@ import { Sidebar } from "@/components/ui/sidebar";
 import { useSettingsStore, useVCImagesStore } from "@/lib/stores";
 
 const settingsStore = useSettingsStore()
-const route=useRoute();
 const imageStore = useVCImagesStore()
 
-console.log(route.query.series as string)
+let urlParams = new URLSearchParams(window.location.search);
+console.log(urlParams.get('series') as string)
 
-imageStore.setPath(route.query.series as string)
+if(urlParams.has('series')){
+  imageStore.setPath(urlParams.get('series') as string)
+}
 </script>
 
 <template>

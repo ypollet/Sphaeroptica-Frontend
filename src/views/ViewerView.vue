@@ -3,16 +3,26 @@ import Menu from "@/components/Menu.vue";
 import Tabs from "@/components/Tabs.vue";
 import { Separator } from "@/components/ui/separator";
 import { Sidebar } from "@/components/ui/sidebar";
-import { useSettingsStore, useVCImagesStore } from "@/lib/stores";
+import { useLandmarkImagesStore, useLandmarksStore, useSettingsStore, useVCImagesStore, useVirtualCameraStore } from "@/lib/stores";
 
 const settingsStore = useSettingsStore()
 const imageStore = useVCImagesStore()
+const landmarksStore = useLandmarksStore()
+const landmarkImagesStore = useLandmarkImagesStore()
+const cameraStore = useVirtualCameraStore()
 
 let urlParams = new URLSearchParams(window.location.search);
 console.log(urlParams.get('series') as string)
 
 if(urlParams.has('series')){
-  imageStore.setPath(urlParams.get('series') as string)
+  let seriesId = urlParams.get('series') as string
+  if(imageStore.objectPath != seriesId){
+    imageStore.setPath(seriesId)
+    landmarksStore.$reset()
+    landmarkImagesStore.$reset()
+    cameraStore.$reset()
+  }
+  
 }
 </script>
 

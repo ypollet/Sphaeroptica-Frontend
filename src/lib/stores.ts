@@ -42,6 +42,7 @@ export const useVCImagesStore = defineStore('vc_images', {
     storage: localStorage,
   },
 })
+
 export const useVirtualCameraStore = defineStore('camera', {
   state: () => ({
     longitude: 0,
@@ -51,10 +52,6 @@ export const useVirtualCameraStore = defineStore('camera', {
     toRad: (state) => [degreesToRad(state.longitude), degreesToRad(state.latitude)],
   },
   actions: {
-    reset() {
-      this.longitude = 0
-      this.latitude = 0
-    },
     setLongitude(move: number, longMin: number, longMax: number) {
       let difference: number = longMax - longMin
       this.longitude -= longMin + move
@@ -86,7 +83,7 @@ export const useLandmarksStore = defineStore('landmarks', {
                   selectedGroup : new DequeMax2(),
                   distances: Array<Distance>(),
                   adjustFactor: 1,
-                  scale: "m"
+                  scale: "m",
                 }),
   actions: {
     addLandmark(landmark: Landmark) {
@@ -153,11 +150,6 @@ export const useLandmarkImagesStore = defineStore('landmarks_images', {
     getTabName: (state) => (state.selected >= 0 && state.selected < state.landmark_images.length) ? state.landmark_images[state.selected].name : DEFAULT_TAB,
   },
   actions: {
-    reset() {
-      console.log("Reset Landmark images")
-      this.landmark_images = new Array<LandmarkImage>()
-      this.selected = -1
-    },
     setTab(value: string) {
       this.selected = this.landmark_images.findIndex((image) => image.name == value)
     },

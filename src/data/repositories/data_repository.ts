@@ -14,8 +14,9 @@ export class DataRepository implements Repository {
     }
 
     async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
+        console.log("Getting images for " + objectPath)
         return this.provider.getImages(objectPath).then((res) => {
-            let images = res.data.result.images as VirtualCameraImage[]
+            let images = res.data.images as VirtualCameraImage[]
             return images
         })
     }
@@ -47,14 +48,14 @@ export class DataRepository implements Repository {
 
     async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Coordinates> {
         return this.provider.computeReprojection(objectPath, position, imageName).then((res) => {
-            let pose: Coordinates = res.data.result.pose
+            let pose: Coordinates = res.data.pose
             return pose
         })
     }
 
     async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<Array<number> | undefined> {
         return this.provider.triangulate(objectPath, poses).then((res) => {
-            let position = res.data.result.position
+            let position = res.data.position
             return position
         })
 

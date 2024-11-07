@@ -392,10 +392,11 @@ function addLandmark() {
 
 function deleteLandmark(landmark: Landmark) {
   landmark.removePose(props.modelValue.name)
-  landmark.triangulatePosition(imageStore.objectPath)
   update()
+  landmark.triangulatePosition(imageStore.objectPath).then(() => {
+    update()
+  })
 }
-
 </script>
 
 <template>

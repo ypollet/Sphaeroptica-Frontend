@@ -13,6 +13,7 @@ export class WebProvider implements DataProvider {
 
     async getImages(objectPath: string): Promise<AxiosResponse> {
         const path = this.server + "/" + objectPath +'/images';
+        console.log("path to get images : " + path)
         return axios.get(path)
     }
 

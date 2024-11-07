@@ -48,7 +48,6 @@ const repository = RepositoryFactory.get(repositorySettings.type)
 
 function getImages(): Promise<Array<VirtualCameraImage>> {
   return repository.getImages(vcImageStore.objectPath).then((images) => {
-
     // Set Latitude Values
     images.forEach((image: VirtualCameraImage) => {
       vcImageStore.images.set(image.name, image)

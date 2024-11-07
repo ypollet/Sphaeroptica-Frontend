@@ -19,7 +19,6 @@ const imageStore = useVCImagesStore()
 
 function computeReprojection(landmark: Landmark) {
   const path = 'http://localhost:5000/reproject';
-  console.log("Reprojection for " + landmark.id)
   if (landmark.position) {
     repository.computeReprojection(imageStore.objectPath, landmark.position, props.modelValue.name).then((pose) => {
       props.modelValue.reprojections.set(landmark.id, pose)
@@ -111,6 +110,7 @@ function drawImage() {
       let radius = DOT_RADIUS / props.modelValue.zoom
       if (!marker && !landmark.equals(landmarkDragged.value)) {
         //if there  is no pose on the image, check position
+
         marker = props.modelValue.reprojections.get(landmark.id)
         if (marker != undefined) {
           // draw reprojections already computed
@@ -321,12 +321,6 @@ function stopDrag(event: MouseEvent) {
   }
 }
 
-function closeContextMenu() {
-  console.log("close context menu")
-  contextMenuOpen.value = false
-  reinitDraggedLandmark()
-}
-
 function reinitDraggedLandmark() {
   landmarkDragged.value = null
   draggedPos.value = { x: -1, y: -1 }
@@ -351,7 +345,6 @@ function onImage(pos: Coordinates): boolean {
 }
 
 function openContextMenu(event: MouseEvent) {
-  console.log("Start context")
   contextMenuOpen.value = true
   posContextMenu.value = getPos(event)
   if (!onImage(posContextMenu.value)) {
@@ -373,6 +366,12 @@ function openContextMenu(event: MouseEvent) {
 
 }
 
+function closeContextMenu() {
+  contextMenuOpen.value = false
+  reinitDraggedLandmark()
+  update()
+}
+
 function clickContext(landmark: Landmark) {
   landmark.addPose(props.modelValue.name, { x: posContextMenu.value.x, y: posContextMenu.value.y })
   //triangulate landmark
@@ -392,9 +391,8 @@ function addLandmark() {
 
 function deleteLandmark(landmark: Landmark) {
   landmark.removePose(props.modelValue.name)
-  update()
   landmark.triangulatePosition(imageStore.objectPath).then(() => {
-    update()
+    computeReprojection(landmark)
   })
 }
 </script>

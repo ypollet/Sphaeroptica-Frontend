@@ -38,7 +38,7 @@ import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
 } from '@/components/ui/context-menu'
 
-import { useVirtualCameraStore, useLandmarksStore, useVCImagesStore } from "@/lib/stores";
+import { useVirtualCameraStore, useLandmarksStore} from "@/lib/stores";
 import { Landmark } from "@/data/models/landmark";
 import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 import { type Shortcut } from "@/data/models/shortcut";
@@ -49,14 +49,13 @@ import { repositorySettings } from "@/config/appSettings"
 
 const repository = RepositoryFactory.get(repositorySettings.type)
 
-const vcImageStore = useVCImagesStore()
 const landmarksStore = useLandmarksStore()
 const cameraStore = useVirtualCameraStore();
 
 var mapShortcuts: Map<string, string> = new Map();
 
 function getShortcuts() {
-  repository.getShorcuts(vcImageStore.objectPath).then((shortcuts) => {
+  repository.getShorcuts(cameraStore.objectPath).then((shortcuts) => {
       shortcuts.forEach((item) => {
         mapShortcuts.set(item.name, item.image);
       });
@@ -87,7 +86,7 @@ function shortcut(event: Event) {
   );
 
   if (newPos != undefined) {
-    let image : VirtualCameraImage = vcImageStore.images.get(newPos)!
+    let image : VirtualCameraImage = cameraStore.images.get(newPos)!
     cameraStore.longitude = image.longitude;
     cameraStore.latitude = image.latitude;
   }

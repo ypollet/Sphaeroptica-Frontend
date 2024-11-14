@@ -66,13 +66,13 @@ import { Distance } from '@/data/models/distance'
 
 
 import { useToggle, useDark } from '@vueuse/core'
-import { useSettingsStore, useLandmarksStore, useVCImagesStore } from '@/lib/stores'
+import { useSettingsStore, useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
 import saveAs from 'file-saver';
 import * as math from 'mathjs'
 
 const settingsStore = useSettingsStore()
 const landmarksStore = useLandmarksStore()
-const imageStore = useVCImagesStore()
+const cameraStore = useVirtualCameraStore()
 
 const isDark = useDark({
   storageKey: 'localStorage'
@@ -96,7 +96,7 @@ function downloadCsv() {
   let csvContent = rows.map(e => e.join(";")).join("\n");
 
   let blob: Blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  saveAs(blob, "landmarks_" + imageStore.objectPath + ".csv")
+  saveAs(blob, "landmarks_" + cameraStore.objectPath + ".csv")
 }
 
 function downloadJSON() {
@@ -127,7 +127,7 @@ function downloadJSON() {
   data.set('distances', arrayDistance)
 
   var blob = new Blob([JSON.stringify(Object.fromEntries(data.entries()), null, 2)], { type: "application/json;charset=utf-8" });
-  saveAs(blob, "landmarks_" + imageStore.objectPath + "_" + new Date().getTime() + ".json");
+  saveAs(blob, "landmarks_" + cameraStore.objectPath + "_" + new Date().getTime() + ".json");
 }
 
 function onSubmit(event: Event) {

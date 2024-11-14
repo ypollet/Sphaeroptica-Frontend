@@ -32,13 +32,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 import * as math from 'mathjs'
 import { degreesToRad } from '@/lib/utils'
 
-import { ref, watch, onMounted, type Ref } from 'vue';
+import { ref, watch, type Ref, nextTick } from 'vue';
 
 import { Loader2 } from 'lucide-vue-next';
 
 import { useQuery } from '@tanstack/vue-query'
 
-import { useLandmarkImagesStore, useVCImagesStore, useVirtualCameraStore, useLandmarksStore } from '@/lib/stores';
+import { useLandmarkImagesStore, useVirtualCameraStore } from '@/lib/stores';
 
 import type { Coordinates } from '@/data/models/coordinates'
 import { LandmarkImage } from '@/data/models/landmark_image'
@@ -47,12 +47,7 @@ import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 import { RepositoryFactory } from '@/data/repositories/repository_factory'
 import { repositorySettings } from "@/config/appSettings"
 
-
-const LONG_MAX = 360
-const LONG_MIN = 0
-
 const landmarksImageStore = useLandmarkImagesStore()
-const vcImageStore = useVCImagesStore()
 const cameraStore = useVirtualCameraStore()
 
 const imageContainer = ref<HTMLDivElement | null>(null)
@@ -77,17 +72,29 @@ var isPressed: boolean = false
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 function getImages(): Promise<Array<VirtualCameraImage>> {
-  return repository.getImages(vcImageStore.objectPath).then((images) => {
+  if(cameraStore.images && cameraStore.images.size > 0){
+    return nextTick(() => {
+      return Array.from(cameraStore.images.values())
+    })
+
+  }
+  return repository.getImages(cameraStore.objectPath).then((images) => {
     // Set Latitude Values
+    let dict_images : Map<string, VirtualCameraImage> = new Map()
+    let latMin = Number.MAX_VALUE
+    let latMax = Number.MIN_VALUE
     images.forEach((image: VirtualCameraImage) => {
-      vcImageStore.images.set(image.name, image)
-      if (image.latitude < vcImageStore.latMin) {
-        vcImageStore.latMin = image.latitude
+      dict_images.set(image.name, image)
+      if (image.latitude < latMin) {
+        latMin = image.latitude
       }
-      if (image.latitude > vcImageStore.latMax) {
-        vcImageStore.latMax = image.latitude
+      if (image.latitude > latMax) {
+        latMax = image.latitude
       }
     })
+    cameraStore.images = dict_images
+    cameraStore.latMin = latMin
+    cameraStore.latMax = latMax
     return images
 
   })
@@ -125,8 +132,8 @@ function mouseEnter(event: MouseEvent) {
 function mouseMove(event: MouseEvent) {
   if (isPressed) {
     let pos: Coordinates = { x: event.movementX, y: event.movementY }
-    cameraStore.setLongitude(((pos.x) / 5), LONG_MIN, LONG_MAX)
-    cameraStore.setLatitude(((pos.y) / 5), vcImageStore.latMin, vcImageStore.latMax)
+    cameraStore.setLongitude(((pos.x) / 5))
+    cameraStore.setLatitude(((pos.y) / 5))
   }
 }
 function mouseLeave() {
@@ -134,8 +141,8 @@ function mouseLeave() {
 }
 
 async function selectImage() {
-  let vcImage = vcImageStore.images.get(selectedImageName.value)
-  let image: LandmarkImage = repository.getImage(vcImageStore.objectPath, selectedImageName.value, { x : vcImage!.longitude, y : vcImage!.latitude})
+  let vcImage = cameraStore.images.get(selectedImageName.value)
+  let image: LandmarkImage = repository.getImage(cameraStore.objectPath, selectedImageName.value, { x : vcImage!.longitude, y : vcImage!.latitude})
   landmarksImageStore.addImage(image)
 }
 

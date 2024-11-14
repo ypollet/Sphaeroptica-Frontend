@@ -34,7 +34,7 @@ import { cn, ZOOM_MAX, ZOOM_MIN, DOT_RADIUS, SPACE_TARGET } from '@/lib/utils'
 import { type Coordinates } from "@/data/models/coordinates"
 import { LandmarkImage } from "@/data/models/landmark_image"
 import { Landmark } from "@/data/models/landmark"
-import { useLandmarksStore, useVCImagesStore } from '@/lib/stores'
+import { useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuTrigger,
 } from '@/components/ui/context-menu'
@@ -45,12 +45,12 @@ import { repositorySettings } from "@/config/appSettings"
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 const landmarksStore = useLandmarksStore()
-const imageStore = useVCImagesStore()
+const cameraStore = useVirtualCameraStore()
 
 function computeReprojection(landmark: Landmark) {
   const path = 'http://localhost:5000/reproject';
   if (landmark.position) {
-    repository.computeReprojection(imageStore.objectPath, landmark.position, props.modelValue.name).then((pose) => {
+    repository.computeReprojection(cameraStore.objectPath, landmark.position, props.modelValue.name).then((pose) => {
       props.modelValue.reprojections.set(landmark.id, pose)
       update()
     }).catch((error) => {
@@ -341,7 +341,7 @@ function stopDrag(event: MouseEvent) {
       landmarkDragged.value.addPose(props.modelValue.name, getPos(event))
 
       //triangulate landmark
-      landmarkDragged.value.triangulatePosition(imageStore.objectPath)
+      landmarkDragged.value.triangulatePosition(cameraStore.objectPath)
 
       // reinit landmarkDrag
       reinitDraggedLandmark()
@@ -405,7 +405,7 @@ function closeContextMenu() {
 function clickContext(landmark: Landmark) {
   landmark.addPose(props.modelValue.name, { x: posContextMenu.value.x, y: posContextMenu.value.y })
   //triangulate landmark
-  landmark.triangulatePosition(imageStore.objectPath)
+  landmark.triangulatePosition(cameraStore.objectPath)
   update()
   // reinit landmarkDrag
   reinitDraggedLandmark()
@@ -421,7 +421,7 @@ function addLandmark() {
 
 function deleteLandmark(landmark: Landmark) {
   landmark.removePose(props.modelValue.name)
-  landmark.triangulatePosition(imageStore.objectPath).then(() => {
+  landmark.triangulatePosition(cameraStore.objectPath).then(() => {
     computeReprojection(landmark)
   })
 }

@@ -37,6 +37,10 @@ import { Landmark } from '@/data/models/landmark'
 import { LandmarkImage } from '@/data/models/landmark_image'
 import Color from 'color'
 import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
+import { destr } from "destr";
+
+const LONG_MAX = 360
+const LONG_MIN = 0
 
 export const DEFAULT_TAB = "viewer"
 
@@ -53,28 +57,13 @@ export const useSettingsStore = defineStore('settings', {
   }
 })
 
-export const useVCImagesStore = defineStore('vc_images', {
-  state: () => ({
-    images : new Map<string, VirtualCameraImage>(),
-    latMin: Number.MAX_VALUE,
-    latMax: Number.MIN_VALUE,
-    objectPath: "",
-  }),
-  actions: {
-    setPath(path : string) {
-      this.images = new Map<string, VirtualCameraImage>()
-      this.latMin = Number.MAX_VALUE
-      this.latMax = Number.MIN_VALUE
-      this.objectPath = path
-    },
-  },
-  persist: {
-    storage: localStorage,
-  },
-})
 
 export const useVirtualCameraStore = defineStore('camera', {
   state: () => ({
+    objectPath: "",
+    images : new Map<string, VirtualCameraImage>(),
+    latMin: Number.MAX_VALUE,
+    latMax: Number.MIN_VALUE,
     longitude: 0,
     latitude: 0,
   }),
@@ -82,27 +71,48 @@ export const useVirtualCameraStore = defineStore('camera', {
     toRad: (state) => [degreesToRad(state.longitude), degreesToRad(state.latitude)],
   },
   actions: {
-    setLongitude(move: number, longMin: number, longMax: number) {
-      let difference: number = longMax - longMin
-      this.longitude -= longMin + move
-      while (this.longitude < 0) {
+    home() {
+      this.longitude = 0
+      this.latitude = 0
+    },
+    setPath(path : string) {
+      this.images = new Map<string, VirtualCameraImage>()
+      this.latMin = Number.MAX_VALUE
+      this.latMax = Number.MIN_VALUE
+      this.objectPath = path
+      this.longitude = 0
+      this.latitude = 0
+    },
+    setLongitude(move: number) {
+      let difference: number = LONG_MAX - LONG_MIN
+      this.longitude -= LONG_MIN + move
+      while (this.longitude < LONG_MIN) {
         this.longitude += difference
       }
-      this.longitude = ((this.longitude) % difference) + longMin
+      this.longitude = ((this.longitude) % difference) + LONG_MIN
     },
-    setLatitude(move: number, latMin: number, latMax: number) {
-      this.latitude = math.min(math.max(this.latitude + move, latMin), latMax)
+    setLatitude(move: number) {
+      this.latitude = math.min(math.max(this.latitude + move, this.latMin), this.latMax)
     },
+    setup() {
+      console.log("set up")
+      if(this.images == undefined){
+        console.log("IMAGES is null")
+        this.images = new Map<string, VirtualCameraImage>()
+        this.latMin = Number.MAX_VALUE
+        this.latMax = Number.MIN_VALUE
+      }
+      else{
+        console.log(this.images)
+      }
+    }
   },
 
   persist: {
     storage: sessionStorage,
     afterHydrate: (ctx: PiniaPluginContext) => {
-      console.log("Restore CameraImages")
-      console.log(ctx.store.$state.images)
-      console.log(Object.entries(ctx.store.$state.images))
-      let images : Map<string, VirtualCameraImage> = new Map(Object.entries(ctx.store.$state.images))
-      console.log(images)
+      console.log("Restore Camera images")
+      let images : Map<string, VirtualCameraImage> = new Map()
       ctx.store.$state.images = images
     },
   },
@@ -142,6 +152,7 @@ export const useLandmarksStore = defineStore('landmarks', {
     afterHydrate: (ctx: PiniaPluginContext) => {
       console.log("Restore landmarks")
       // restore landmarks
+      console.log(ctx.store.$state.landmarks)
       let landmarks = ctx.store.$state.landmarks.map((x: Landmark) => x)
       console.log(landmarks)
       let landmarksToKeep = landmarks.map((jsonObject: Landmark) =>

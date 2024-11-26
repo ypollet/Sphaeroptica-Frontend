@@ -49,12 +49,12 @@ const landmarksElements = ref<InstanceType<typeof draggable> | null>(null)
 const landmarksScroll = ref<HTMLElement | null>(null)
 
 
-function changeColor(event: Event, id: string) {
+function changeColor(event: Event, landmark : Landmark) {
   let target = event.currentTarget as HTMLButtonElement;
   if (target == null) {
     return;
   }
-  landmarksStore.landmarks.find(x => x.getId() == id)!.setColorHEX(target.value)
+  landmark.setColorHEX(target.value)
 }
 
 
@@ -107,7 +107,7 @@ function checkSelection(event : MouseEvent){
               <input type="color"
                 class="h-8 w-8 block bg-white border border-gray-950 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-300"
                 id="hs-color-input" :value="landmark.getColorHEX()" title="Choose your color"
-                @change="changeColor($event, landmark.getId())">
+                @change="changeColor($event, landmark)">
               <Label v-show="!landmark.getEdit()" class="whitespace-nowrap"
                 @dblclick.stop="landmark.setEdit(true)">{{ landmark.label }}</Label>
               <Input v-show="landmark.getEdit()" @dblclick.stop="" type="text" :model-value="landmark.label"

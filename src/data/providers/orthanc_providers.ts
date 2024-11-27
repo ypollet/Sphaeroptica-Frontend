@@ -50,6 +50,11 @@ export class OrthancProvider implements DataProvider {
         return path
     }
 
+    getThumbnail(objectPath: string, imageName : string) {
+        const path = this.server + "/sphaeroptica/" + imageName + "/thumbnail"
+        return path
+    }
+
     async getShorcuts(objectPath: string): Promise<AxiosResponse> {
         const path = this.server + "/sphaeroptica/" + objectPath + "/shortcuts";
         return axios.get(path)

@@ -94,26 +94,24 @@ export const useVirtualCameraStore = defineStore('camera', {
     setLatitude(move: number) {
       this.latitude = math.min(math.max(this.latitude + move, this.latMin), this.latMax)
     },
-    setup() {
-      console.log("set up")
-      if(this.images == undefined){
-        console.log("IMAGES is null")
-        this.images = new Map<string, VirtualCameraImage>()
-        this.latMin = Number.MAX_VALUE
-        this.latMax = Number.MIN_VALUE
-      }
-      else{
-        console.log(this.images)
-      }
-    }
+
   },
 
   persist: {
     storage: sessionStorage,
-    afterHydrate: (ctx: PiniaPluginContext) => {
-      console.log("Restore Camera images")
-      let images : Map<string, VirtualCameraImage> = new Map()
-      ctx.store.$state.images = images
+    debug: true,
+    serializer: {
+      deserialize: (value : string) => {
+        let state = destr<StateTree>(value)
+        let stateCopy = Object.assign({}, state)
+        stateCopy.images = new Map(Object.entries(state.images))
+        return stateCopy
+      },
+      serialize: (state: StateTree) => {
+        let stateCopy = Object.assign({}, state)
+        stateCopy.images = Object.fromEntries(state.images)
+        return JSON.stringify(stateCopy)
+      }
     },
   },
 })
@@ -148,7 +146,7 @@ export const useLandmarksStore = defineStore('landmarks', {
     }
   },
   persist: {
-    storage: localStorage,
+    storage: sessionStorage,
     afterHydrate: (ctx: PiniaPluginContext) => {
       console.log("Restore landmarks")
       // restore landmarks

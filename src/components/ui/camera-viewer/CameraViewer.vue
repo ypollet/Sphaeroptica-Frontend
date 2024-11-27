@@ -72,7 +72,10 @@ var isPressed: boolean = false
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 function getImages(): Promise<Array<VirtualCameraImage>> {
+  console.log("Get Images")
+  console.log(cameraStore.images)
   if(cameraStore.images && cameraStore.images.size > 0){
+    console.log("oui")
     return nextTick(() => {
       return Array.from(cameraStore.images.values())
     })
@@ -83,7 +86,8 @@ function getImages(): Promise<Array<VirtualCameraImage>> {
     let dict_images : Map<string, VirtualCameraImage> = new Map()
     let latMin = Number.MAX_VALUE
     let latMax = Number.MIN_VALUE
-    images.forEach((image: VirtualCameraImage) => {
+    try{
+      images.forEach((image: VirtualCameraImage) => {
       dict_images.set(image.name, image)
       if (image.latitude < latMin) {
         latMin = image.latitude
@@ -95,6 +99,11 @@ function getImages(): Promise<Array<VirtualCameraImage>> {
     cameraStore.images = dict_images
     cameraStore.latMin = latMin
     cameraStore.latMax = latMax
+    }catch(e){
+      console.log("Orthanc sent the data but there's an error, we'll reset and start again : " + (e as Error).message)
+      cameraStore.$reset()
+      throw new Error((e as Error).message)
+    }
     return images
 
   })
@@ -141,6 +150,7 @@ function mouseLeave() {
 }
 
 async function selectImage() {
+  console.log(cameraStore.images)
   let vcImage = cameraStore.images.get(selectedImageName.value)
   let image: LandmarkImage = repository.getImage(cameraStore.objectPath, selectedImageName.value, { x : vcImage!.longitude, y : vcImage!.latitude})
   landmarksImageStore.addImage(image)

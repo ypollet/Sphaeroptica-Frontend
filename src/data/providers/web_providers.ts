@@ -47,7 +47,12 @@ export class WebProvider implements DataProvider {
     }
 
     getImage(objectPath: string, imageName : string): string {
-        const path = this.server + "/" + objectPath + "/" + imageName
+        const path = this.server + "/" + objectPath + "/" + imageName + "/full-image"
+        return path
+    }
+
+    getThumbnail(objectPath: string, imageName : string): string {
+        const path = this.server + "/" + objectPath + "/" + imageName + "/thumbnail"
         return path
     }
 

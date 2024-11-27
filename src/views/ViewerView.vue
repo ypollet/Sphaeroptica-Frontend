@@ -46,11 +46,11 @@ console.log(urlParams.get('series') as string)
 if(urlParams.has('series')){
   let seriesId = urlParams.get('series') as string
   if(cameraStore.objectPath != seriesId){
+    console.log("Different Object")
     landmarksStore.$reset()
     landmarkImagesStore.$reset()
     cameraStore.setPath(seriesId)
   }else{
-    cameraStore.setup()
     console.log("Test URL")
   }
   

@@ -47,6 +47,9 @@ export class DataRepository implements Repository {
         console.log("Getting images for " + objectPath)
         return this.provider.getImages(objectPath).then((res) => {
             let images = res.data.images as VirtualCameraImage[]
+            images.forEach((image) => {
+                image.image = this.provider.getThumbnail(objectPath, image.name)
+            })
             console.log("Got " + images.length + " images")
             return images
         })

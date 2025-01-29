@@ -28,14 +28,15 @@
 
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import type { AxiosResponse } from "axios";
 import type { Coordinates } from "../models/coordinates";
+import type { VirtualCameraImage } from "../models/virtual_camera_image";
+import type { Shortcut } from "../models/shortcut";
 
 export interface DataProvider {
-        getImages: (objectPath: string) => Promise<AxiosResponse>;
+        getImages: (objectPath: string) => Promise<Array<VirtualCameraImage>>;
         getImage : (objectPath:string, imageName : string) => string;
         getThumbnail : (objectPath: string, imageName : string) => string;
-        getShorcuts: (objectPath: string) => Promise<AxiosResponse>;
-        computeReprojection: (objectPath: string, position: Array<number>, image: string) => Promise<AxiosResponse>;
-        triangulate: (objectPath: string, poses: Map<string, Coordinates>) => Promise<AxiosResponse>
+        getShorcuts: (objectPath: string) => Promise<Array<Shortcut>>;
+        computeReprojection: (objectPath: string, position: Array<number>, image: string) => Promise<Coordinates>;
+        triangulate: (objectPath: string, poses: Map<string, Coordinates>) => Promise<Array<number> | undefined>
 }

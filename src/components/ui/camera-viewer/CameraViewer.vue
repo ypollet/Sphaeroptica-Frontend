@@ -73,9 +73,7 @@ const repository = RepositoryFactory.get(repositorySettings.type)
 
 function getImages(): Promise<Array<VirtualCameraImage>> {
   console.log("Get Images")
-  console.log(cameraStore.images)
   if(cameraStore.images && cameraStore.images.size > 0){
-    console.log("oui")
     return nextTick(() => {
       return Array.from(cameraStore.images.values())
     })
@@ -83,6 +81,7 @@ function getImages(): Promise<Array<VirtualCameraImage>> {
   }
   return repository.getImages(cameraStore.objectPath).then((images) => {
     // Set Latitude Values
+    console.log(images)
     let dict_images : Map<string, VirtualCameraImage> = new Map()
     let latMin = Number.MAX_VALUE
     let latMax = Number.MIN_VALUE
@@ -96,6 +95,7 @@ function getImages(): Promise<Array<VirtualCameraImage>> {
         latMax = image.latitude
       }
     })
+    console.log(dict_images)
     cameraStore.images = dict_images
     cameraStore.latMin = latMin
     cameraStore.latMax = latMax

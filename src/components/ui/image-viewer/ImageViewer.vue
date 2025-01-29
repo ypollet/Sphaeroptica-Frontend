@@ -48,6 +48,7 @@ const landmarksStore = useLandmarksStore()
 const cameraStore = useVirtualCameraStore()
 
 function computeReprojection(landmark: Landmark) {
+  console.log("Reproject Please")
   const path = 'http://localhost:5000/reproject';
   if (landmark.position) {
     repository.computeReprojection(cameraStore.objectPath, landmark.position, props.modelValue.name).then((pose) => {
@@ -61,6 +62,10 @@ function computeReprojection(landmark: Landmark) {
 
 function checkVersions() {
   landmarksStore.landmarks.forEach((landmark, index) => {
+    console.log("Check Versions")
+    console.log(props.modelValue.versions.get(landmark.id) == null)
+    console.log(props.modelValue.versions.get(landmark.id) !== landmark.getVersion())
+    console.log(landmark.position != null)
     if (props.modelValue.versions.get(landmark.id) == null || props.modelValue.versions.get(landmark.id) !== landmark.getVersion()) {
       props.modelValue.versions.set(landmark.id, landmark.getVersion())
 

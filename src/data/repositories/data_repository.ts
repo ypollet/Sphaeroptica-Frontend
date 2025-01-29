@@ -45,8 +45,7 @@ export class DataRepository implements Repository {
 
     async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
         console.log("Getting images for " + objectPath)
-        return this.provider.getImages(objectPath).then((res) => {
-            let images = res.data.images as VirtualCameraImage[]
+        return this.provider.getImages(objectPath).then((images) => {
             images.forEach((image) => {
                 image.image = this.provider.getThumbnail(objectPath, image.name)
             })
@@ -69,30 +68,15 @@ export class DataRepository implements Repository {
     }
 
     async getShorcuts(objectPath: string): Promise<Array<Shortcut>> {
-        return this.provider.getShorcuts(objectPath).then((res) => {
-            let shortcuts = new Array<Shortcut>()
-            let map : Map<string, string> = new Map(Object.entries(res.data.commands))
-            map.forEach((val : string, key : string) => {
-                shortcuts.push({name: key, image : val})
-            });
-            
-            return shortcuts
-        })
+        return this.provider.getShorcuts(objectPath)
     }
 
     async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Coordinates> {
-        return this.provider.computeReprojection(objectPath, position, imageName).then((res) => {
-            let pose: Coordinates = res.data.pose
-            return pose
-        })
+        return this.provider.computeReprojection(objectPath, position, imageName)
     }
 
     async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<Array<number> | undefined> {
-        return this.provider.triangulate(objectPath, poses).then((res) => {
-            let position = res.data.position
-            return position
-        })
-
+        return this.provider.triangulate(objectPath, poses)
     }
 
 }

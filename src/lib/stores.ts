@@ -60,7 +60,7 @@ export const useSettingsStore = defineStore('settings', {
 
 export const useVirtualCameraStore = defineStore('camera', {
   state: () => ({
-    objectPath: "",
+    objectPath: "/home/psadmin/Numerisation/Sphaeroptica/desktop/data/papillon_big/calibration.json",
     images : new Map<string, VirtualCameraImage>(),
     latMin: Number.MAX_VALUE,
     latMax: Number.MIN_VALUE,

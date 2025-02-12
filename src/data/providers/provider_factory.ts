@@ -32,6 +32,7 @@ import type { DataProvider } from "./providers";
 import { WebProvider } from "./web_providers";
 import { OrthancProvider } from "./orthanc_providers";
 import { providerSettings } from "@/config/appSettings"
+import { DesktopProvider } from "./desktop_providers";
 
 export class ProviderFactory{
     private static _instances = new Map<string, DataProvider>()
@@ -44,6 +45,10 @@ export class ProviderFactory{
             if(type == "ORTHANC"){
                 return new OrthancProvider(providerSettings.url)
             }
+            if(type == "DESKTOP"){
+                return new DesktopProvider()
+            }
+            return new WebProvider(providerSettings.url)
         }
         return this._instances.get(type)!
     }

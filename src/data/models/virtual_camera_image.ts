@@ -32,5 +32,6 @@ export type VirtualCameraImage = {
     name: string,
     longitude: number,
     latitude: number,
-    image: string,
+    fullImage: string,
+    thumbnail: string
 }

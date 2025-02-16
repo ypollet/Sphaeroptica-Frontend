@@ -52,7 +52,7 @@ const cameraStore = useVirtualCameraStore()
 
 const imageContainer = ref<HTMLDivElement | null>(null)
 
-const selectedImage: Ref<string> = ref("")
+const selectedImage: Ref<VirtualCameraImage> = ref({name:"", fullImage : "", thumbnail : "", longitude: 0, latitude : 0})
 const selectedImageName: Ref<string> = ref("")
 
 cameraStore.$subscribe(() => {
@@ -73,12 +73,7 @@ const repository = RepositoryFactory.get(repositorySettings.type)
 
 function getImages(): Promise<Array<VirtualCameraImage>> {
   console.log("Get Images")
-  if(cameraStore.images && cameraStore.images.size > 0){
-    return nextTick(() => {
-      return Array.from(cameraStore.images.values())
-    })
 
-  }
   return repository.getImages(cameraStore.objectPath).then((images) => {
     // Set Latitude Values
     console.log(images)
@@ -129,8 +124,7 @@ function setNearestImage(radPos: number[]) {
       return;
     }
     var imageData: VirtualCameraImage = bestImage
-    selectedImage.value = imageData.image
-    selectedImageName.value = imageData.name
+    selectedImage.value = imageData
   }
 
 }
@@ -150,9 +144,7 @@ function mouseLeave() {
 }
 
 async function selectImage() {
-  console.log(cameraStore.images)
-  let vcImage = cameraStore.images.get(selectedImageName.value)
-  let image: LandmarkImage = repository.getImage(cameraStore.objectPath, selectedImageName.value, { x : vcImage!.longitude, y : vcImage!.latitude})
+  let image: LandmarkImage = repository.getImage(selectedImage.value)
   landmarksImageStore.addImage(image)
 }
 
@@ -169,7 +161,7 @@ setNearestImage(cameraStore.toRad)
     </div>
     <div v-if="data" ref="imageContainer" class="w-full h-full flex justify-center items-center">
       <img class="object-fit" @mousedown="mouseEnter" @mouseup="mouseLeave" @mousemove="mouseMove"
-        @mouseleave="mouseLeave" @dblclick="selectImage()" :src="selectedImage" :alt="selectedImageName" aspect-ratio="auto"
+        @mouseleave="mouseLeave" @dblclick="selectImage()" :src="selectedImage.thumbnail" :alt="selectedImageName" aspect-ratio="auto"
         draggable="false">
     </div>
   </div>

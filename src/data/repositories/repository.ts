@@ -35,7 +35,7 @@ import type { LandmarkImage } from "../models/landmark_image";
 
 export interface Repository {
     getImages : (objectPath:string) => Promise<Array<VirtualCameraImage>>;
-    getImage : (objectPath:string, imageName : string, longLat : Coordinates) => LandmarkImage;
+    getImage : (vcImage : VirtualCameraImage) => LandmarkImage;
     getShorcuts : (objectPath:string) => Promise<Array<Shortcut>>;
     computeReprojection : (objectPath:string, position: Array<number>, imageName: string) => Promise<Coordinates>;
     triangulate: (objectPath : string, poses: Map<string, Coordinates>) => Promise<Array<number> | undefined>

@@ -28,52 +28,45 @@
 
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import type { Repository } from "./repository";
+import type { DataProvider } from "./providers";
+
 import type { Coordinates } from "../models/coordinates";
-import type { Shortcut } from "../models/shortcut";
 import type { VirtualCameraImage } from "../models/virtual_camera_image";
+import type { Shortcut } from "../models/shortcut";
+import { Images, Shortcuts, Greet } from "../../../wailsjs/go/main/App.js";
 
-import type { DataProvider } from "../providers/providers";
-import type { LandmarkImage } from "../models/landmark_image";
-
-export class DataRepository implements Repository {
-    provider: DataProvider;
-
-    constructor(provider: DataProvider) {
-        this.provider = provider
-    }
+export class DesktopProvider implements DataProvider {
 
     async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
-        console.log("Getting images for " + objectPath)
-        return this.provider.getImages(objectPath).then((images) => {
-            console.log("Got " + images.length + " images")
-            return images
-        })
-    }
-
-    getImage(vcImage : VirtualCameraImage): LandmarkImage {
-        return {
-            name: vcImage.name,
-            image: vcImage.fullImage,
-            longLat : {x:vcImage.longitude, y:vcImage.latitude},
-            zoom: -1,
-            offset: {x:0, y:0},
-            versions : new Map(),
-            reprojections : new Map()
-          }
-
+      return Images(objectPath).then((res) => {
+        console.log(res)
+        return res.images as Array<VirtualCameraImage>
+      })
     }
 
     async getShorcuts(objectPath: string): Promise<Array<Shortcut>> {
-        return this.provider.getShorcuts(objectPath)
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve([]);
+            }, 500);
+          });
     }
 
     async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Coordinates> {
-        return this.provider.computeReprojection(objectPath, position, imageName)
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve({ x: 0, y:0});
+            }, 500);
+          });
+
     }
 
     async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<Array<number> | undefined> {
-        return this.provider.triangulate(objectPath, poses)
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve(undefined);
+            }, 500);
+          });
     }
 
 }

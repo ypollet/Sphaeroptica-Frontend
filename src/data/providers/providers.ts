@@ -34,8 +34,6 @@ import type { Shortcut } from "../models/shortcut";
 
 export interface DataProvider {
         getImages: (objectPath: string) => Promise<Array<VirtualCameraImage>>;
-        getImage : (objectPath:string, imageName : string) => string;
-        getThumbnail : (objectPath: string, imageName : string) => string;
         getShorcuts: (objectPath: string) => Promise<Array<Shortcut>>;
         computeReprojection: (objectPath: string, position: Array<number>, image: string) => Promise<Coordinates>;
         triangulate: (objectPath: string, poses: Map<string, Coordinates>) => Promise<Array<number> | undefined>

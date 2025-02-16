@@ -39,6 +39,7 @@ import { ScrollBar, ScrollArea } from "./ui/scroll-area/";
 import { round } from "mathjs";
 
 const landmarkImageStore = useLandmarkImagesStore()
+const cameraStore = useVirtualCameraStore()
 
 const { getTabName } = storeToRefs(landmarkImageStore)
 
@@ -65,7 +66,7 @@ function onTabChange(value: string | number) {
     <ScrollArea class="w-full tabs">
       <TabsList class="tabs-list space-x-2 p-2">
         <TabsTrigger :value="DEFAULT_TAB" class="flex justify-center items-end p-2">
-          Virtual Camera
+          ({{ round(cameraStore.longitude, 2) }}, {{ round(cameraStore.latitude, 2)}})
         </TabsTrigger>
         <TabsTrigger v-for="(image, index) in landmarkImageStore.landmark_images" :value="image.name"
           class="flex justify-center items-end p-2">

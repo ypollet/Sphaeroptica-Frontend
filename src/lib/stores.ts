@@ -60,7 +60,11 @@ export const useSettingsStore = defineStore('settings', {
 
 export const useVirtualCameraStore = defineStore('camera', {
   state: () => ({
+<<<<<<< HEAD
     objectPath: "",
+=======
+    objectPath : "data/geonemus-geoffroyii/calibration.json",
+>>>>>>> 3859631 (Changed code for wails)
     images : new Map<string, VirtualCameraImage>(),
     latMin: Number.MAX_VALUE,
     latMax: Number.MIN_VALUE,

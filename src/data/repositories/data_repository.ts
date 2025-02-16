@@ -46,19 +46,16 @@ export class DataRepository implements Repository {
     async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
         console.log("Getting images for " + objectPath)
         return this.provider.getImages(objectPath).then((images) => {
-            images.forEach((image) => {
-                image.image = this.provider.getThumbnail(objectPath, image.name)
-            })
             console.log("Got " + images.length + " images")
             return images
         })
     }
 
-    getImage(objectPath: string, imageName : string, longLat : Coordinates): LandmarkImage {
+    getImage(vcImage : VirtualCameraImage): LandmarkImage {
         return {
-            name: imageName,
-            image: this.provider.getImage(objectPath, imageName),
-            longLat : longLat,
+            name: vcImage.name,
+            image: vcImage.fullImage,
+            longLat : {x:vcImage.longitude, y:vcImage.latitude},
             zoom: -1,
             offset: {x:0, y:0},
             versions : new Map(),

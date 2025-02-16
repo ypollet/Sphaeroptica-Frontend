@@ -33,25 +33,15 @@ import type { DataProvider } from "./providers";
 import type { Coordinates } from "../models/coordinates";
 import type { VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
-import { Images, Shortcuts } from "../../../wailsjs/go/main/App.js";
+import { Images, Shortcuts, Greet } from "../../../wailsjs/go/main/App.js";
 
 export class DesktopProvider implements DataProvider {
 
     async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
-        return Images(objectPath).then((res) => {
-            console.log(res)
-            return res as Array<VirtualCameraImage>
-        })
-    }
-
-    getImage(objectPath: string, imageName: string): string {
-        const path = objectPath + "/" + imageName + "/full-image"
-        return path
-    }
-
-    getThumbnail(objectPath: string, imageName: string): string {
-        const path = objectPath + "/" + imageName + "/thumbnail"
-        return path
+      return Images(objectPath).then((res) => {
+        console.log(res)
+        return res.images as Array<VirtualCameraImage>
+      })
     }
 
     async getShorcuts(objectPath: string): Promise<Array<Shortcut>> {

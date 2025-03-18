@@ -31,7 +31,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { ref, onMounted, nextTick, type HTMLAttributes, watch, version } from 'vue'
 import { cn, ZOOM_MAX, ZOOM_MIN, DOT_RADIUS, SPACE_TARGET } from '@/lib/utils'
-import { type Coordinates } from "@/data/models/coordinates"
 import { LandmarkImage } from "@/data/models/landmark_image"
 import { Landmark } from "@/data/models/landmark"
 import { useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
@@ -40,6 +39,7 @@ import {
 } from '@/components/ui/context-menu'
 import { RepositoryFactory } from '@/data/repositories/repository_factory'
 import { repositorySettings } from "@/config/appSettings"
+import type { Pos } from '@/data/models/pos'
 
 
 const repository = RepositoryFactory.get(repositorySettings.type)
@@ -92,11 +92,11 @@ const imageContainer = ref<HTMLDivElement | null>(null)
 const base_image = ref<HTMLImageElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
 
-const shiftCanvas = ref<Coordinates>({ x: 0, y: 0 })
+const shiftCanvas = ref<Pos>({ x: 0, y: 0 })
 const dragging = ref<boolean>(false)
 const landmarkDragged = ref<Landmark | null>(null)
-const draggedPos = ref<Coordinates>({ x: -1, y: -1 })
-const posContextMenu = ref<Coordinates>({ x: -1, y: -1 })
+const draggedPos = ref<Pos>({ x: -1, y: -1 })
+const posContextMenu = ref<Pos>({ x: -1, y: -1 })
 const contextMenuOpen = ref<boolean>(false)
 
 const degrees_to_radians = (deg: number) => (deg * Math.PI) / 180.0; // Convert degrees to radians using the formula: radians = (degrees * Math.PI) / 180
@@ -173,8 +173,8 @@ function drawImage() {
 
         // draw white lines diagonals
         ctx.beginPath();
-        let start: Coordinates = posCircle(marker, 45, targetRadius, shiftCanvas.value);
-        let end: Coordinates = posCircle(marker, 45, targetRadius * SPACE_TARGET, shiftCanvas.value);
+        let start: Pos = posCircle(marker, 45, targetRadius, shiftCanvas.value);
+        let end: Pos = posCircle(marker, 45, targetRadius * SPACE_TARGET, shiftCanvas.value);
         ctx.moveTo(start.x, start.y)
         ctx.lineTo(end.x, end.y)
 
@@ -234,7 +234,7 @@ function drawImage() {
   }
 }
 
-function posCircle(center: Coordinates, angle: number, radius: number, translate: Coordinates = { x: 0, y: 0 }): Coordinates {
+function posCircle(center: Pos, angle: number, radius: number, translate: Pos = { x: 0, y: 0 }): Pos {
   return { x: (center.x + radius * Math.cos(degrees_to_radians(angle))) + translate.x, y: (center.y + radius * Math.sin(degrees_to_radians(angle))) + translate.y };
 }
 
@@ -260,9 +260,10 @@ function screenFit() {
   }
 }
 
-function getPos(event: MouseEvent): Coordinates {
+function getPos(event: MouseEvent): Pos {  
   const svgRect = canvas.value!.getBoundingClientRect();
   let x = ((event.pageX - svgRect.left) / props.modelValue.zoom) - props.modelValue.offset.x - shiftCanvas.value.x
+  console.log(((event.pageX - svgRect.left) / props.modelValue.zoom) - props.modelValue.offset.x - shiftCanvas.value.x)
   let y = ((event.pageY - svgRect.top) / props.modelValue.zoom) - props.modelValue.offset.y - shiftCanvas.value.y
 
   return { x: x, y: y }
@@ -307,7 +308,10 @@ function zoomWithWheel(event: WheelEvent) {
 }
 
 function startDrag(event: MouseEvent) {
+  
   if (event.button == 0) {
+    console.log("Start Drag")
+    printPos(event)
     dragging.value = true
     let pos = getPos(event)
     landmarksStore.landmarks.forEach((landmark, index) => {
@@ -324,7 +328,11 @@ function startDrag(event: MouseEvent) {
 }
 
 function mousemove(event: MouseEvent) {
+  
   if (dragging.value == true) {
+    console.log("Dragged")
+    console.log(event)
+    printPos(event)
     if (landmarkDragged.value == null) {
       // no marker to drag => pan image
       updateOffset(event.movementX, event.movementY)
@@ -366,13 +374,13 @@ function printPos(event: MouseEvent) {
   console.log("Position = ", pos.x, " : ", pos.y)
 }
 
-function pointInsideCircle(pointCoord: Coordinates, circleCoord: Coordinates, radius: number) {
+function pointInsideCircle(pointCoord: Pos, circleCoord: Pos, radius: number) {
   const distance =
     Math.sqrt((pointCoord.x - circleCoord.x) ** 2 + (pointCoord.y - circleCoord.y) ** 2);
   return distance < radius;
 }
 
-function onImage(pos: Coordinates): boolean {
+function onImage(pos: Pos): boolean {
   if (base_image.value) {
     return pos.x >= 0 && pos.y >= 0 && pos.x <= base_image.value.naturalWidth && pos.y <= base_image.value.naturalHeight
   }

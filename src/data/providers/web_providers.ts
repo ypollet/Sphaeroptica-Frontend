@@ -30,10 +30,11 @@
 
 import type { DataProvider } from "./providers";
 
-import axios, { type AxiosResponse } from "axios";
-import type { Coordinates } from "../models/coordinates";
+import axios from "axios";
 import type { VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
+import type { Pos } from "../models/pos";
+import type { Coordinates } from "../models/coordinates";
 
 export class WebProvider implements DataProvider {
     server: string;
@@ -66,28 +67,28 @@ export class WebProvider implements DataProvider {
         const path = this.server + "/" + objectPath + "/shortcuts";
         return axios.get(path).then((res) => {
             let shortcuts = new Array<Shortcut>()
-            let map: Map<string, string> = new Map(Object.entries(res.data.commands))
-            map.forEach((val: string, key: string) => {
-                shortcuts.push({ name: key, image: val })
+            let map: Map<string, Coordinates> = new Map(Object.entries(res.data.commands))
+            map.forEach((val: Coordinates, key: string) => {
+                shortcuts.push({ name: key, coordinates: val })
             });
 
             return shortcuts
         })
     }
 
-    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Coordinates> {
+    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Pos> {
         const path = this.server + "/" + objectPath + '/reproject';
         return axios.post(path, {
             position: position,
             image: imageName
         }).then((res) => {
-            let pose: Coordinates = res.data.pose
+            let pose: Pos = res.data.pose
             return pose
         })
 
     }
 
-    async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<Array<number> | undefined> {
+    async triangulate(objectPath: string, poses: Map<string, Pos>): Promise<Array<number> | undefined> {
         const path = this.server + "/" + objectPath + '/triangulate';
         return axios.post(path, {
             poses: Object.fromEntries(poses)

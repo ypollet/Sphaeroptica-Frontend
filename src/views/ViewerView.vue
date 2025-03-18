@@ -43,6 +43,9 @@ const cameraStore = useVirtualCameraStore()
 let urlParams = new URLSearchParams(window.location.search);
 console.log(urlParams.get('series') as string)
 
+landmarksStore.$reset()
+landmarkImagesStore.$reset()
+
 if(urlParams.has('series')){
   let seriesId = urlParams.get('series') as string
   if(cameraStore.objectPath != seriesId){

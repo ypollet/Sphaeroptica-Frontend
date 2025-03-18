@@ -40,19 +40,19 @@ import { useQuery } from '@tanstack/vue-query'
 
 import { useLandmarkImagesStore, useVirtualCameraStore } from '@/lib/stores';
 
-import type { Coordinates } from '@/data/models/coordinates'
 import { LandmarkImage } from '@/data/models/landmark_image'
 import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 
 import { RepositoryFactory } from '@/data/repositories/repository_factory'
 import { repositorySettings } from "@/config/appSettings"
+import type { Pos } from '@/data/models/pos';
 
 const landmarksImageStore = useLandmarkImagesStore()
 const cameraStore = useVirtualCameraStore()
 
 const imageContainer = ref<HTMLDivElement | null>(null)
 
-const selectedImage: Ref<VirtualCameraImage> = ref({name:"", fullImage : "", thumbnail : "", longitude: 0, latitude : 0})
+const selectedImage: Ref<VirtualCameraImage> = ref({name:"", fullImage : "", thumbnail : "", coordinates:{longitude: 0, latitude : 0}})
 const selectedImageName: Ref<string> = ref("")
 
 cameraStore.$subscribe(() => {
@@ -83,11 +83,11 @@ function getImages(): Promise<Array<VirtualCameraImage>> {
     try{
       images.forEach((image: VirtualCameraImage) => {
       dict_images.set(image.name, image)
-      if (image.latitude < latMin) {
-        latMin = image.latitude
+      if (image.coordinates.latitude < latMin) {
+        latMin = image.coordinates.latitude
       }
-      if (image.latitude > latMax) {
-        latMax = image.latitude
+      if (image.coordinates.latitude > latMax) {
+        latMax = image.coordinates.latitude
       }
     })
     console.log(dict_images)
@@ -110,7 +110,7 @@ function setNearestImage(radPos: number[]) {
     let bestImage: VirtualCameraImage | null = null
 
     data.value.forEach((imageData: VirtualCameraImage) => {
-      let imgPos: [number, number] = [degreesToRad(imageData.longitude), degreesToRad(imageData.latitude)]
+      let imgPos: [number, number] = [degreesToRad(imageData.coordinates.longitude), degreesToRad(imageData.coordinates.latitude)]
       let sinus: number = math.sin(imgPos[1]) * math.sin(radPos[1])
       let cosinus: number = math.cos(imgPos[1]) * math.cos(radPos[1]) * math.cos(math.abs(imgPos[0] - radPos[0]))
       let centAngle: Number = math.acos(sinus + cosinus) as Number
@@ -134,7 +134,7 @@ function mouseEnter(event: MouseEvent) {
 }
 function mouseMove(event: MouseEvent) {
   if (isPressed) {
-    let pos: Coordinates = { x: event.movementX, y: event.movementY }
+    let pos: Pos = { x: event.movementX, y: event.movementY }
     cameraStore.setLongitude(((pos.x) / 5))
     cameraStore.setLatitude(((pos.y) / 5))
   }
@@ -145,6 +145,7 @@ function mouseLeave() {
 
 async function selectImage() {
   let image: LandmarkImage = repository.getImage(selectedImage.value)
+  console.log("Select image : ", image)
   landmarksImageStore.addImage(image)
 }
 

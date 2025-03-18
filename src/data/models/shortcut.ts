@@ -1,5 +1,8 @@
 // Sphaeroptica - 3D Viewer on calibrated images - Frontend
 
+import type { Coordinates } from "./coordinates";
+import type { Pos } from "./pos";
+
 // Copyright (C) 2024 Yann Pollet, Royal Belgian Institute of Natural Sciences
 
 //
@@ -30,5 +33,5 @@
 
 export type Shortcut = {
     name: string;
-    image : string;
+    coordinates : Coordinates;
   };

@@ -1,5 +1,7 @@
 // Sphaeroptica - 3D Viewer on calibrated images - Frontend
 
+import type { Coordinates } from "./coordinates"
+
 // Copyright (C) 2024 Yann Pollet, Royal Belgian Institute of Natural Sciences
 
 //
@@ -30,8 +32,7 @@
 
 export type VirtualCameraImage = {
     name: string,
-    longitude: number,
-    latitude: number,
+    coordinates: Coordinates,
     fullImage: string,
     thumbnail: string
 }

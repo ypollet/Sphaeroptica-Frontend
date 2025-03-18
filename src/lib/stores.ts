@@ -45,9 +45,9 @@ const LONG_MIN = 0
 export const DEFAULT_TAB = "viewer"
 
 export const useSettingsStore = defineStore('settings', {
-  state: () => ({ isLeft : false }),
+  state: () => ({ isLeft: false }),
   actions: {
-    useToggleLeft(value : boolean){
+    useToggleLeft(value: boolean) {
       this.isLeft = value
     },
   },
@@ -60,39 +60,45 @@ export const useSettingsStore = defineStore('settings', {
 
 export const useVirtualCameraStore = defineStore('camera', {
   state: () => ({
-    objectPath : "data/geonemus-geoffroyii/calibration.json",
-    images : new Map<string, VirtualCameraImage>(),
+    objectPath: "data/papillon_big/calibration.json",
+    images: new Map<string, VirtualCameraImage>(),
     latMin: Number.MAX_VALUE,
     latMax: Number.MIN_VALUE,
-    longitude: 0,
-    latitude: 0,
+    coordinates: {
+      longitude: 0,
+      latitude: 0,
+    }
   }),
   getters: {
-    toRad: (state) => [degreesToRad(state.longitude), degreesToRad(state.latitude)],
+    toRad: (state) => [degreesToRad(state.coordinates.longitude), degreesToRad(state.coordinates.latitude)],
   },
   actions: {
     home() {
-      this.longitude = 0
-      this.latitude = 0
+      this.coordinates = {
+        longitude: 0,
+        latitude: 0,
+      }
     },
-    setPath(path : string) {
+    setPath(path: string) {
       this.images = new Map<string, VirtualCameraImage>()
       this.latMin = Number.MAX_VALUE
       this.latMax = Number.MIN_VALUE
       this.objectPath = path
-      this.longitude = 0
-      this.latitude = 0
+      this.coordinates = {
+        longitude: 0,
+        latitude: 0,
+      }
     },
     setLongitude(move: number) {
       let difference: number = LONG_MAX - LONG_MIN
-      this.longitude -= LONG_MIN + move
-      while (this.longitude < LONG_MIN) {
-        this.longitude += difference
+      this.coordinates.longitude -= LONG_MIN + move
+      while (this.coordinates.longitude < LONG_MIN) {
+        this.coordinates.longitude += difference
       }
-      this.longitude = ((this.longitude) % difference) + LONG_MIN
+      this.coordinates.longitude = ((this.coordinates.longitude) % difference) + LONG_MIN
     },
     setLatitude(move: number) {
-      this.latitude = math.min(math.max(this.latitude + move, this.latMin), this.latMax)
+      this.coordinates.latitude = math.min(math.max(this.coordinates.latitude + move, this.latMin), this.latMax)
     },
 
   },
@@ -101,7 +107,7 @@ export const useVirtualCameraStore = defineStore('camera', {
     storage: sessionStorage,
     debug: true,
     serializer: {
-      deserialize: (value : string) => {
+      deserialize: (value: string) => {
         let state = destr<StateTree>(value)
         let stateCopy = Object.assign({}, state)
         stateCopy.images = new Map(Object.entries(state.images))
@@ -117,12 +123,13 @@ export const useVirtualCameraStore = defineStore('camera', {
 })
 
 export const useLandmarksStore = defineStore('landmarks', {
-  state: () => ({ landmarks: Array<Landmark>(),
-                  selectedGroup : new DequeMax2(),
-                  distances: Array<Distance>(),
-                  adjustFactor: 1,
-                  scale: "m",
-                }),
+  state: () => ({
+    landmarks: Array<Landmark>(),
+    selectedGroup: new DequeMax2(),
+    distances: Array<Distance>(),
+    adjustFactor: 1,
+    scale: "m",
+  }),
   actions: {
     addLandmark(landmark: Landmark) {
       this.landmarks.push(landmark)
@@ -138,9 +145,9 @@ export const useLandmarksStore = defineStore('landmarks', {
       }
       return id;
     },
-    addDistance(left : Landmark, right : Landmark, label:string | null = null){
-      let distance : Distance = new Distance(label || "distance_"+this.distances.length, left, right)
-      if(this.distances.filter((x) => x.equals(distance)).length == 0){
+    addDistance(left: Landmark, right: Landmark, label: string | null = null) {
+      let distance: Distance = new Distance(label || "distance_" + this.distances.length, left, right)
+      if (this.distances.filter((x) => x.equals(distance)).length == 0) {
         this.distances.push(distance)
       }
     }
@@ -161,24 +168,24 @@ export const useLandmarksStore = defineStore('landmarks', {
       // restore selectedGroup
       let selectedGroup = new DequeMax2()
       let deque = ctx.store.$state.selectedGroup
-      if(deque){
-        for(let i = 0; i < Object.values(deque.deque).length; i++){
+      if (deque) {
+        for (let i = 0; i < Object.values(deque.deque).length; i++) {
           selectedGroup.add(deque.deque[i])
         }
         ctx.store.$state.selectedGroup = selectedGroup
       }
 
       // restore distances
-      landmarksToKeep.forEach((x : Landmark) => {
+      landmarksToKeep.forEach((x: Landmark) => {
         console.log(x.id)
       })
-      let distances = ctx.store.$state.distances.map((x : Distance) => x)
+      let distances = ctx.store.$state.distances.map((x: Distance) => x)
 
-      ctx.store.$state.distances = distances.map((jsonObject: Distance) => 
-        new Distance(jsonObject.label, landmarksToKeep[landmarksToKeep.map((e : Landmark) => e.id).indexOf(jsonObject.landmarkLeft.id)], 
-          landmarksToKeep[landmarksToKeep.map((e : Landmark) => e.id).indexOf(jsonObject.landmarkRight.id)])
+      ctx.store.$state.distances = distances.map((jsonObject: Distance) =>
+        new Distance(jsonObject.label, landmarksToKeep[landmarksToKeep.map((e: Landmark) => e.id).indexOf(jsonObject.landmarkLeft.id)],
+          landmarksToKeep[landmarksToKeep.map((e: Landmark) => e.id).indexOf(jsonObject.landmarkRight.id)])
       )
-      
+
     },
   },
 })
@@ -211,13 +218,13 @@ export const useLandmarkImagesStore = defineStore('landmarks_images', {
       let landmark_images = ctx.store.$state.landmark_images.map((x: LandmarkImage) => x)
       console.log(landmark_images)
       ctx.store.$state.landmark_images = landmark_images.map((jsonObject: LandmarkImage) =>
-          new LandmarkImage(jsonObject.name, 
-            jsonObject.image,
-            jsonObject.longLat, 
-            jsonObject.zoom, 
-            jsonObject.offset, 
-            new Map(Object.entries(jsonObject.versions)), 
-            new Map(Object.entries(jsonObject.reprojections)))
+        new LandmarkImage(jsonObject.name,
+          jsonObject.image,
+          jsonObject.longLat,
+          jsonObject.zoom,
+          jsonObject.offset,
+          new Map(Object.entries(jsonObject.versions)),
+          new Map(Object.entries(jsonObject.reprojections)))
       )
     },
   },

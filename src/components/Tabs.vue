@@ -58,6 +58,7 @@ function removeTab(index: number) {
 
 function onTabChange(value: string | number) {
   landmarkImageStore.setTab(value.toString())
+  console.log(landmarkImageStore.landmark_images)
 }
 
 </script>
@@ -66,11 +67,11 @@ function onTabChange(value: string | number) {
     <ScrollArea class="w-full tabs">
       <TabsList class="tabs-list space-x-2 p-2">
         <TabsTrigger :value="DEFAULT_TAB" class="flex justify-center items-end p-2">
-          ({{ round(cameraStore.longitude, 2) }}, {{ round(cameraStore.latitude, 2)}})
+          ({{ round(cameraStore.coordinates.longitude, 2) }}, {{ round(cameraStore.coordinates.latitude, 2)}})
         </TabsTrigger>
         <TabsTrigger v-for="(image, index) in landmarkImageStore.landmark_images" :value="image.name"
           class="flex justify-center items-end p-2">
-          ({{ round(image.longLat.x, 2) }}, {{ round(image.longLat.y, 2)}})
+          ({{ round(image.longLat.longitude, 2) }}, {{ round(image.longLat.latitude, 2)}})
           <Button variant="ghost" class="h-4 w-4 p-0 ml-2" @click="removeTab(index)">
             <X />
           </Button>

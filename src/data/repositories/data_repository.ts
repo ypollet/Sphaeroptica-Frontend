@@ -29,12 +29,12 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import type { Repository } from "./repository";
-import type { Coordinates } from "../models/coordinates";
 import type { Shortcut } from "../models/shortcut";
 import type { VirtualCameraImage } from "../models/virtual_camera_image";
 
 import type { DataProvider } from "../providers/providers";
 import type { LandmarkImage } from "../models/landmark_image";
+import type { Pos } from "../models/pos";
 
 export class DataRepository implements Repository {
     provider: DataProvider;
@@ -55,7 +55,7 @@ export class DataRepository implements Repository {
         return {
             name: vcImage.name,
             image: vcImage.fullImage,
-            longLat : {x:vcImage.longitude, y:vcImage.latitude},
+            longLat : vcImage.coordinates,
             zoom: -1,
             offset: {x:0, y:0},
             versions : new Map(),
@@ -68,11 +68,11 @@ export class DataRepository implements Repository {
         return this.provider.getShorcuts(objectPath)
     }
 
-    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Coordinates> {
+    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Pos> {
         return this.provider.computeReprojection(objectPath, position, imageName)
     }
 
-    async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<Array<number> | undefined> {
+    async triangulate(objectPath: string, poses: Map<string, Pos>): Promise<Array<number> | undefined> {
         return this.provider.triangulate(objectPath, poses)
     }
 

@@ -29,13 +29,11 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import Color from "color"
-import axios from "axios"
-import { type Matrix }  from "mathjs"
-import type { Coordinates } from "@/data/models/coordinates"
 import { RepositoryFactory } from "../repositories/repository_factory"
 import { repositorySettings } from "@/config/appSettings"
 
 import * as math from 'mathjs'
+import type { Pos } from "./pos"
 
 const repository = RepositoryFactory.get(repositorySettings.type)
 
@@ -43,12 +41,12 @@ export class Landmark {
     id: string
     version: number
     label: string
-    poses: Map<string, Coordinates>
+    poses: Map<string, Pos>
     color: Color
     position: Array<number> | undefined
     edit: boolean
 
-    constructor(id: string, label: string, version : number = 1,color: Color | null = null, poses: Map<string, Coordinates> = new Map(), position: Array<number> | undefined = undefined) {
+    constructor(id: string, label: string, version : number = 1,color: Color | null = null, poses: Map<string, Pos> = new Map(), position: Array<number> | undefined = undefined) {
         this.id = id
         this.version = version
         this.label = label
@@ -103,13 +101,13 @@ export class Landmark {
         this.color = Color.rgb(color[0], color[1], color[2])
     }
 
-    addPose(image: string, pose: Coordinates) {
+    addPose(image: string, pose: Pos) {
         this.poses.set(image, pose)
     }
     removePose(image: string) {
         this.poses.delete(image)
     }
-    getPoses() : Map<String, Coordinates>{
+    getPoses() : Map<String, Pos>{
         return this.poses
     }
     resetPoses(){

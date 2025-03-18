@@ -34,6 +34,7 @@ import axios, { type AxiosResponse } from "axios";
 import type { Coordinates } from "../models/coordinates";
 import type { VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
+import type { Pos } from "../models/pos";
 
 export class OrthancProvider implements DataProvider {
     server: string;
@@ -64,26 +65,26 @@ export class OrthancProvider implements DataProvider {
         const path = this.server + "/sphaeroptica/" + objectPath + "/shortcuts";
         return axios.get(path).then((res) => {
             let shortcuts = new Array<Shortcut>()
-            let map: Map<string, string> = new Map(Object.entries(res.data.commands))
-            map.forEach((val: string, key: string) => {
-                shortcuts.push({ name: key, image: val })
+            let map: Map<string, Coordinates> = new Map(Object.entries(res.data.commands))
+            map.forEach((val: Coordinates, key: string) => {
+                shortcuts.push({ name: key, coordinates: val })
             });
 
             return shortcuts
         })
     }
 
-    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Coordinates> {
+    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Pos> {
         const path = this.server + "/sphaeroptica/" + imageName + '/reproject?x=' + position[0]
             + "&y=" + position[1] + "&z=" + position[2] + "&w=" + position[3];
         return axios.get(path).then((res) => {
-            let pose: Coordinates = res.data.pose
+            let pose: Pos = res.data.pose
             return pose
         })
 
     }
 
-    async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<Array<number> | undefined> {
+    async triangulate(objectPath: string, poses: Map<string, Pos>): Promise<Array<number> | undefined> {
         const path = this.server + "/sphaeroptica/" + '/triangulate';
         return axios.post(path, {
             poses: Object.fromEntries(poses)

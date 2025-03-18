@@ -28,12 +28,7 @@
 
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import Color from "color"
-import type { Coordinates } from "@/data/models/coordinates"
-import type { Pos } from "./pos"
-
-export type Marker = {
-    id : string,
-    pos : Pos,
-    color : Color
+export type Pos = {
+    x: number,
+    y : number
 }

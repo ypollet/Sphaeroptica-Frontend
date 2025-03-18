@@ -1,4 +1,4 @@
-// Sphaeroptica - 3D Viewer on calibrated images - Frontend
+// Sphaeroptica - 3D Viewer on calibrated images - wails
 
 // Copyright (C) 2024 Yann Pollet, Royal Belgian Institute of Natural Sciences
 
@@ -33,7 +33,8 @@ import type { DataProvider } from "./providers";
 import type { Coordinates } from "../models/coordinates";
 import type { VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
-import { Images, Shortcuts, Greet } from "../../../wailsjs/go/main/App.js";
+import { Images, Shortcuts, Reproject, Triangulate } from "../../../wailsjs/go/main/App.js";
+import type { Pos } from "../models/pos";
 
 export class DesktopProvider implements DataProvider {
 
@@ -45,28 +46,24 @@ export class DesktopProvider implements DataProvider {
     }
 
     async getShorcuts(objectPath: string): Promise<Array<Shortcut>> {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-              resolve([]);
-            }, 500);
-          });
+        return Shortcuts(objectPath).then((res) => {
+          let shortcuts = new Array<Shortcut>()
+            let map: Map<string, Coordinates> = new Map(Object.entries(res))
+            map.forEach((val: Coordinates, key: string) => {
+                shortcuts.push({ name: key, coordinates: val })
+            });
+
+          return shortcuts
+        })
     }
 
-    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Coordinates> {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-              resolve({ x: 0, y:0});
-            }, 500);
-          });
-
+    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Pos> {
+        return Reproject(objectPath, imageName, position)
     }
 
-    async triangulate(objectPath: string, poses: Map<string, Coordinates>): Promise<Array<number> | undefined> {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-              resolve(undefined);
-            }, 500);
-          });
+    async triangulate(objectPath: string, poses: Map<string, Pos>): Promise<Array<number> | undefined> {
+        let posesObj = Object.fromEntries(poses)
+        return Triangulate(objectPath, posesObj);
     }
 
 }

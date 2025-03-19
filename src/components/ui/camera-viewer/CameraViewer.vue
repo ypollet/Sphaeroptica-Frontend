@@ -72,11 +72,9 @@ var isPressed: boolean = false
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 function getImages(): Promise<Array<VirtualCameraImage>> {
-  console.log("Get Images")
 
   return repository.getImages(cameraStore.objectPath).then((images) => {
     // Set Latitude Values
-    console.log(images)
     let dict_images : Map<string, VirtualCameraImage> = new Map()
     let latMin = Number.MAX_VALUE
     let latMax = Number.MIN_VALUE
@@ -90,12 +88,11 @@ function getImages(): Promise<Array<VirtualCameraImage>> {
         latMax = image.coordinates.latitude
       }
     })
-    console.log(dict_images)
     cameraStore.images = dict_images
     cameraStore.latMin = latMin
     cameraStore.latMax = latMax
     }catch(e){
-      console.log("Orthanc sent the data but there's an error, we'll reset and start again : " + (e as Error).message)
+      console.error("Orthanc sent the data but there's an error, we'll reset and start again : " + (e as Error).message)
       cameraStore.$reset()
       throw new Error((e as Error).message)
     }
@@ -145,7 +142,6 @@ function mouseLeave() {
 
 async function selectImage() {
   let image: LandmarkImage = repository.getImage(selectedImage.value)
-  console.log("Select image : ", image)
   landmarksImageStore.addImage(image)
 }
 

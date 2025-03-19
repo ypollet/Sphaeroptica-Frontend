@@ -44,9 +44,7 @@ export class DataRepository implements Repository {
     }
 
     async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
-        console.log("Getting images for " + objectPath)
         return this.provider.getImages(objectPath).then((images) => {
-            console.log("Got " + images.length + " images")
             return images
         })
     }

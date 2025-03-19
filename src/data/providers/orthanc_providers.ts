@@ -45,7 +45,7 @@ export class OrthancProvider implements DataProvider {
 
 
     async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
-        const path = this.server + "/sphaeroptica/" + objectPath + '/images'; console.log("path to get images : " + path)
+        const path = this.server + "/sphaeroptica/" + objectPath + '/images';
         return axios.get(path).then((res) => {
             return res.data.images as VirtualCameraImage[]
         })

@@ -45,10 +45,7 @@ export class WebProvider implements DataProvider {
 
     async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
         const path = this.server + "/" + objectPath + '/images';
-        console.log("path to get images : " + path)
         return axios.get(path).then((res) => {
-            console.log("Query all images")
-            console.log(res.data)
             let images = res.data.images as VirtualCameraImage[]
             images.map((image) => {
                 image.fullImage = this.getImage(objectPath, image.name)
@@ -56,8 +53,6 @@ export class WebProvider implements DataProvider {
                     image.thumbnail = this.getThumbnail(objectPath, image.name)
                 }
             })
-
-            console.log("Images = ", images)
             return images
         })
     }

@@ -155,11 +155,8 @@ export const useLandmarksStore = defineStore('landmarks', {
   persist: {
     storage: sessionStorage,
     afterHydrate: (ctx: PiniaPluginContext) => {
-      console.log("Restore landmarks")
       // restore landmarks
-      console.log(ctx.store.$state.landmarks)
       let landmarks = ctx.store.$state.landmarks.map((x: Landmark) => x)
-      console.log(landmarks)
       let landmarksToKeep = landmarks.map((jsonObject: Landmark) =>
         new Landmark(jsonObject.id, jsonObject.label, jsonObject.version, Color(jsonObject.color), new Map(Object.entries(jsonObject.poses)), jsonObject.position)
       )
@@ -175,10 +172,6 @@ export const useLandmarksStore = defineStore('landmarks', {
         ctx.store.$state.selectedGroup = selectedGroup
       }
 
-      // restore distances
-      landmarksToKeep.forEach((x: Landmark) => {
-        console.log(x.id)
-      })
       let distances = ctx.store.$state.distances.map((x: Distance) => x)
 
       ctx.store.$state.distances = distances.map((jsonObject: Distance) =>
@@ -206,17 +199,13 @@ export const useLandmarkImagesStore = defineStore('landmarks_images', {
       if (this.landmark_images.filter((el) => el.name == image.name).length == 0) {
         this.landmark_images.push(image)
       }
-      console.log(this.landmark_images)
     }
   },
   persist: {
     storage: localStorage,
     debug: true,
     afterHydrate: (ctx: PiniaPluginContext) => {
-      console.log("Restore LandmarkImages")
-      console.log(ctx.store.$state)
       let landmark_images = ctx.store.$state.landmark_images.map((x: LandmarkImage) => x)
-      console.log(landmark_images)
       ctx.store.$state.landmark_images = landmark_images.map((jsonObject: LandmarkImage) =>
         new LandmarkImage(jsonObject.name,
           jsonObject.image,

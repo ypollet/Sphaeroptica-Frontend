@@ -49,14 +49,10 @@ const landmarksStore = useLandmarksStore()
 
 function changeLabel(payload: string | number, distance: Distance) {
   distance.label = payload.toString() 
-  console.log(distance)
 }
 
 function changeScale(payload: string | number, distance: Distance) {
-  console.log(distance.distance)
   landmarksStore.adjustFactor = math.number(payload)/distance.distance!* math.number(Scale[landmarksStore.scale as keyof typeof Scale])
-
-  console.log(landmarksStore.adjustFactor)
 }
 </script>
 

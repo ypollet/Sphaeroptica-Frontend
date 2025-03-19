@@ -83,11 +83,8 @@ function shortcut(event: Event) {
   ) {
     return;
   }
-  console.log(target.attributes.getNamedItem("data-key")?.value!)
   // TODO : It's ugly there's a triple Map !!
   let newPos: Coordinates | undefined = mapShortcuts.get(map.get(target.attributes.getNamedItem("data-key")?.value!)!)!
-  console.log(newPos)
-  console.log(mapShortcuts)
   if (newPos != undefined) {
     cameraStore.coordinates = newPos;
   }

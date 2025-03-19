@@ -146,7 +146,6 @@ function onSubmit(event: Event) {
 function importLandmarks(jsonData: string) {
   let jsonObject = JSON.parse(jsonData)
   let mapData: Map<string, any> = new Map(Object.entries(jsonObject));
-  console.log(mapData)
   let oldIds = new Map<string, Landmark>()
   let mapLandmarks : Map<string, Object> = new Map(Object.entries(mapData.get("landmarks")))
   mapLandmarks.forEach((value: Object, key: string) => {

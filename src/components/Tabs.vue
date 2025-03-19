@@ -58,7 +58,6 @@ function removeTab(index: number) {
 
 function onTabChange(value: string | number) {
   landmarkImageStore.setTab(value.toString())
-  console.log(landmarkImageStore.landmark_images)
 }
 
 </script>

@@ -48,7 +48,6 @@ const landmarksStore = useLandmarksStore()
 const cameraStore = useVirtualCameraStore()
 
 function computeReprojection(landmark: Landmark) {
-  console.log("Reproject Please")
   const path = 'http://localhost:5000/reproject';
   if (landmark.position) {
     repository.computeReprojection(cameraStore.objectPath, landmark.position, props.modelValue.name).then((pose) => {
@@ -62,10 +61,6 @@ function computeReprojection(landmark: Landmark) {
 
 function checkVersions() {
   landmarksStore.landmarks.forEach((landmark, index) => {
-    console.log("Check Versions")
-    console.log(props.modelValue.versions.get(landmark.id) == null)
-    console.log(props.modelValue.versions.get(landmark.id) !== landmark.getVersion())
-    console.log(landmark.position != null)
     if (props.modelValue.versions.get(landmark.id) == null || props.modelValue.versions.get(landmark.id) !== landmark.getVersion()) {
       props.modelValue.versions.set(landmark.id, landmark.getVersion())
 
@@ -263,7 +258,6 @@ function screenFit() {
 function getPos(event: MouseEvent): Pos {  
   const svgRect = canvas.value!.getBoundingClientRect();
   let x = ((event.pageX - svgRect.left) / props.modelValue.zoom) - props.modelValue.offset.x - shiftCanvas.value.x
-  console.log(((event.pageX - svgRect.left) / props.modelValue.zoom) - props.modelValue.offset.x - shiftCanvas.value.x)
   let y = ((event.pageY - svgRect.top) / props.modelValue.zoom) - props.modelValue.offset.y - shiftCanvas.value.y
 
   return { x: x, y: y }
@@ -310,7 +304,6 @@ function zoomWithWheel(event: WheelEvent) {
 function startDrag(event: MouseEvent) {
   
   if (event.button == 0) {
-    console.log("Start Drag")
     printPos(event)
     dragging.value = true
     let pos = getPos(event)
@@ -330,8 +323,6 @@ function startDrag(event: MouseEvent) {
 function mousemove(event: MouseEvent) {
   
   if (dragging.value == true) {
-    console.log("Dragged")
-    console.log(event)
     printPos(event)
     if (landmarkDragged.value == null) {
       // no marker to drag => pan image

@@ -39,7 +39,6 @@ export class Distance {
     edit_distance: boolean
     
     constructor(label: string, left: Landmark, right : Landmark){
-        console.log("Creation Distance : " + left.id + " " + right.id)
         this.label = label
         this.landmarkLeft = left
         this.landmarkRight = right
@@ -55,14 +54,10 @@ export class Distance {
     }
 
     in(landmark : Landmark | string) : boolean{
-        console.log(this.landmarkLeft.equals(landmark) || this.landmarkRight.equals(landmark))
         return this.landmarkLeft.equals(landmark) || this.landmarkRight.equals(landmark)
     }
 
     equals(other : Distance){
-        console.log("Equals DIstance")
-        console.log(this.landmarkLeft.equals(other.landmarkLeft) && this.landmarkRight.equals(other.landmarkRight))
-        console.log(this.landmarkLeft.equals(other.landmarkRight) && this.landmarkRight.equals(other.landmarkLeft))
         return (this.landmarkLeft.equals(other.landmarkLeft) && this.landmarkRight.equals(other.landmarkRight))
             || (this.landmarkLeft.equals(other.landmarkRight) && this.landmarkRight.equals(other.landmarkLeft))
     }

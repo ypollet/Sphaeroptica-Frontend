@@ -132,7 +132,6 @@ export class Landmark {
     }
     
     async triangulatePosition(objectPath : string) {
-        console.log("triangulatePos for ", this.label, " : ", this.checkTriangulation())
         if(!this.checkTriangulation()){
             //not enough poses for triangulation, set position to undefined
             this.setPosition(undefined)

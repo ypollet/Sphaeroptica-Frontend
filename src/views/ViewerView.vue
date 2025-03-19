@@ -41,7 +41,6 @@ const landmarkImagesStore = useLandmarkImagesStore()
 const cameraStore = useVirtualCameraStore()
 
 let urlParams = new URLSearchParams(window.location.search);
-console.log(urlParams.get('series') as string)
 
 landmarksStore.$reset()
 landmarkImagesStore.$reset()
@@ -49,12 +48,9 @@ landmarkImagesStore.$reset()
 if(urlParams.has('series')){
   let seriesId = urlParams.get('series') as string
   if(cameraStore.objectPath != seriesId){
-    console.log("Different Object")
     landmarksStore.$reset()
     landmarkImagesStore.$reset()
     cameraStore.setPath(seriesId)
-  }else{
-    console.log("Test URL")
   }
   
   

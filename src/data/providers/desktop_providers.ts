@@ -40,7 +40,6 @@ export class DesktopProvider implements DataProvider {
 
     async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
       return Images(objectPath).then((res) => {
-        console.log(res)
         return res.images as Array<VirtualCameraImage>
       })
     }

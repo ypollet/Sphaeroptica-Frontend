@@ -49,7 +49,16 @@ export class WebProvider implements DataProvider {
         return axios.get(path).then((res) => {
             console.log("Query all images")
             console.log(res.data)
-            return res.data.images as VirtualCameraImage[]
+            let images = res.data.images as VirtualCameraImage[]
+            images.map((image) => {
+                image.fullImage = this.getImage(objectPath, image.name)
+                if(res.data.thumbnails){
+                    image.thumbnail = this.getThumbnail(objectPath, image.name)
+                }
+            })
+
+            console.log("Images = ", images)
+            return images
         })
     }
 
@@ -67,7 +76,7 @@ export class WebProvider implements DataProvider {
         const path = this.server + "/" + objectPath + "/shortcuts";
         return axios.get(path).then((res) => {
             let shortcuts = new Array<Shortcut>()
-            let map: Map<string, Coordinates> = new Map(Object.entries(res.data.commands))
+            let map: Map<string, Coordinates> = new Map(Object.entries(res.data))
             map.forEach((val: Coordinates, key: string) => {
                 shortcuts.push({ name: key, coordinates: val })
             });
@@ -82,8 +91,7 @@ export class WebProvider implements DataProvider {
             position: position,
             image: imageName
         }).then((res) => {
-            let pose: Pos = res.data.pose
-            return pose
+            return res.data
         })
 
     }
@@ -93,8 +101,7 @@ export class WebProvider implements DataProvider {
         return axios.post(path, {
             poses: Object.fromEntries(poses)
         }).then((res) => {
-            let position = res.data.position
-            return position
+            return res.data
         })
     }
 

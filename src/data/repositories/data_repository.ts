@@ -30,10 +30,9 @@
 
 import type { Repository } from "./repository";
 import type { Shortcut } from "../models/shortcut";
-import type { VirtualCameraImage } from "../models/virtual_camera_image";
+import type { ProjectData, VirtualCameraImage } from "../models/virtual_camera_image";
 
 import type { DataProvider } from "../providers/providers";
-import type { LandmarkImage } from "../models/landmark_image";
 import type { Pos } from "../models/pos";
 
 export class DataRepository implements Repository {
@@ -43,23 +42,10 @@ export class DataRepository implements Repository {
         this.provider = provider
     }
 
-    async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
+    async getImages(objectPath: string): Promise<ProjectData> {
         return this.provider.getImages(objectPath).then((images) => {
             return images
         })
-    }
-
-    getImage(vcImage : VirtualCameraImage): LandmarkImage {
-        return {
-            name: vcImage.name,
-            image: vcImage.fullImage,
-            longLat : vcImage.coordinates,
-            zoom: -1,
-            offset: {x:0, y:0},
-            versions : new Map(),
-            reprojections : new Map()
-          }
-
     }
 
     async getShorcuts(objectPath: string): Promise<Array<Shortcut>> {

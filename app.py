@@ -66,7 +66,6 @@ def triangulate(id):
 
         # Triangulation computation with all the undistorted landmarks
         landmark_pos = reconstruction.triangulate_point(proj_points)
-
         return jsonify(landmark_pos.tolist())
 
 
@@ -184,7 +183,14 @@ def images(id):
             "longitude": converters.rad2degrees(long),
             "latitude": converters.rad2degrees(lat),
         }
-    to_jsonify = {"images": encoded_images, "thumbnails": "thumbnails" in calib_file}
+    to_jsonify = {
+        "images": encoded_images,
+        "size": {
+            "height": calib_file["intrinsics"]["height"],
+            "width": calib_file["intrinsics"]["width"],
+        },
+        "thumbnails": "thumbnails" in calib_file,
+    }
     return jsonify(to_jsonify)
 
 

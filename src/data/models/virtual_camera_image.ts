@@ -1,6 +1,7 @@
 // Sphaeroptica - 3D Viewer on calibrated images - Frontend
 
 import type { Coordinates } from "./coordinates"
+import type { Pos } from "./pos"
 
 // Copyright (C) 2024 Yann Pollet, Royal Belgian Institute of Natural Sciences
 
@@ -34,5 +35,20 @@ export type VirtualCameraImage = {
     name: string,
     coordinates: Coordinates,
     fullImage: string,
-    thumbnail: string
+    thumbnail: string,
+    versions : Map<string, number>,
+    reprojections : Map<string, Pos>
 }
+
+export type ProjectData = {
+    images: Array<VirtualCameraImage>,
+    size: Size,
+    thumbnails : boolean
+}
+
+export type Size = {
+    height: number,
+    width: number
+}
+
+export type Ratio = Size

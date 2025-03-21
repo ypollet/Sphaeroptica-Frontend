@@ -31,27 +31,32 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { ref, onMounted, nextTick, type HTMLAttributes, watch, version } from 'vue'
 import { cn, ZOOM_MAX, ZOOM_MIN, DOT_RADIUS, SPACE_TARGET } from '@/lib/utils'
-import { LandmarkImage } from "@/data/models/landmark_image"
 import { Landmark } from "@/data/models/landmark"
-import { useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
+import { useLandmarkImagesStore, useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuTrigger,
 } from '@/components/ui/context-menu'
 import { RepositoryFactory } from '@/data/repositories/repository_factory'
 import { repositorySettings } from "@/config/appSettings"
 import type { Pos } from '@/data/models/pos'
+import { storeToRefs } from 'pinia'
+import type { Ratio } from '@/data/models/virtual_camera_image'
 
 
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 const landmarksStore = useLandmarksStore()
 const cameraStore = useVirtualCameraStore()
+const imageStore = useLandmarkImagesStore()
+
+const { selectedImage } = storeToRefs(cameraStore)
+
+
 
 function computeReprojection(landmark: Landmark) {
-  const path = 'http://localhost:5000/reproject';
   if (landmark.position) {
-    repository.computeReprojection(cameraStore.objectPath, landmark.position, props.modelValue.name).then((pose) => {
-      props.modelValue.reprojections.set(landmark.id, pose)
+    repository.computeReprojection(cameraStore.objectPath, landmark.position, cameraStore.selectedImage.name).then((pose) => {
+      cameraStore.selectedImage.reprojections.set(landmark.id, pose)
       update()
     }).catch((error) => {
       console.error(error);
@@ -61,32 +66,64 @@ function computeReprojection(landmark: Landmark) {
 
 function checkVersions() {
   landmarksStore.landmarks.forEach((landmark, index) => {
-    if (props.modelValue.versions.get(landmark.id) == null || props.modelValue.versions.get(landmark.id) !== landmark.getVersion()) {
-      props.modelValue.versions.set(landmark.id, landmark.getVersion())
-
+    if (cameraStore.selectedImage.versions.get(landmark.id) == null || cameraStore.selectedImage.versions.get(landmark.id) !== landmark.getVersion()) {
+      cameraStore.selectedImage.versions.set(landmark.id, landmark.getVersion())
+      
       if (landmark.position != null) {
         computeReprojection(landmark)
       } else {
         // automatically delete key just in case
-        props.modelValue.reprojections.delete(landmark.id)
+        cameraStore.selectedImage.reprojections.delete(landmark.id)
       }
     }
   })
 }
-landmarksStore.$subscribe((mutation, state) => {
-  checkVersions()
-  update()
-})
+
+function getRatio(): Ratio {
+  if (base_image.value && base_image.value.complete) {
+    return {
+      width: base_image.value.naturalWidth / imageStore.size.width,
+      height: base_image.value.naturalHeight / imageStore.size.height
+    }
+  }
+  return {
+    width: 0,
+    height: 0
+  }
+}
+
+const base_image = ref<HTMLImageElement>(new Image())
+
+base_image.value.onload = (ev: Event) => {
+  if (imageStore.zoom <= 0) {
+    if (cameraStore.selectedImage.thumbnail) {
+      screenFit()
+    }
+  }
+  loaded()
+}
+
+base_image.value.src = cameraStore.selectedImage.thumbnail || cameraStore.selectedImage.fullImage
+base_image.value.alt = (cameraStore.selectedImage.thumbnail) ? 'Thumbnail of ' + cameraStore.selectedImage.name : cameraStore.selectedImage.name
+watch(
+  selectedImage,
+  () => {
+    
+    base_image.value.src = cameraStore.selectedImage.thumbnail || cameraStore.selectedImage.fullImage
+    base_image.value.alt = (cameraStore.selectedImage.thumbnail) ? 'Thumbnail of ' + cameraStore.selectedImage.name : cameraStore.selectedImage.name
+    base_image.value.onload = (ev: Event) => loaded()
+    checkVersions()
+  }
+)
 
 const props = defineProps<{
-  modelValue: LandmarkImage
   class?: HTMLAttributes['class']
 }>()
 
 const imageContainer = ref<HTMLDivElement | null>(null)
-const base_image = ref<HTMLImageElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
 
+const full_image = new Image()
 const shiftCanvas = ref<Pos>({ x: 0, y: 0 })
 const dragging = ref<boolean>(false)
 const landmarkDragged = ref<Landmark | null>(null)
@@ -113,120 +150,163 @@ onMounted(() => {
 
 function loaded() {
   nextTick(() => {
-    if (props.modelValue.zoom <= 0) {
-      screenFit()
-    }
+    screenFit()
+    let image_name = cameraStore.selectedImage.name
+    setTimeout(() => {
+      if (image_name == cameraStore.selectedImage.name) {
+        
+        nextTick(() => {
+          // Just verifies we draw the right image
+          if (base_image.value.alt.endsWith(image_name)) {
+            full_image.src = cameraStore.selectedImage.fullImage
+            full_image.alt = image_name
+
+            full_image.onload = (ev: Event) => {
+              if (base_image.value.alt.endsWith(full_image.alt)) {
+                base_image.value = full_image
+                update()
+              }
+            }
+          }
+        })
+      }
+    }, 500);
     update()
   })
 }
 
 function drawImage() {
-  if (canvas.value && base_image.value && base_image.value.complete && props.modelValue.zoom > 0) {
+  if (canvas.value && base_image.value && base_image.value.complete && imageStore.zoom > 0) {
+    let ratio = getRatio()
+
     let ctx = canvas.value.getContext("2d")!
 
-    ctx.scale(props.modelValue.zoom, props.modelValue.zoom)
+    let zoomX = imageStore.zoom / ratio.width
+    let zoomY = imageStore.zoom / ratio.height
 
-    ctx.translate(props.modelValue.offset.x, props.modelValue.offset.y)
+    let radius = DOT_RADIUS / zoomX
+
+    ctx.scale(zoomX, zoomY)
+
+    ctx.translate(imageStore.offset.x * ratio.width, imageStore.offset.y * ratio.height)
 
     shiftCanvas.value = {
-      x: Math.max(0, (canvas.value.width - base_image.value.naturalWidth * props.modelValue.zoom) / 2) / props.modelValue.zoom,
-      y: Math.max(0, (canvas.value.height - base_image.value.naturalHeight * props.modelValue.zoom) / 2) / props.modelValue.zoom
+      x: Math.max(0, (canvas.value.width - base_image.value.naturalWidth * zoomX) / 2) / zoomX,
+      y: Math.max(0, (canvas.value.height - base_image.value.naturalHeight * zoomY) / 2) / zoomY
     }
     ctx.drawImage(base_image.value, 0, 0, base_image.value.naturalWidth, base_image.value.naturalHeight,
       shiftCanvas.value.x, shiftCanvas.value.y, base_image.value.naturalWidth, base_image.value.naturalHeight)
 
     landmarksStore.landmarks.forEach((landmark, id) => {
-      let marker = landmark.getPoses().get(props.modelValue.name)
-      let radius = DOT_RADIUS / props.modelValue.zoom
-      if (!marker && !landmark.equals(landmarkDragged.value)) {
-        //if there  is no pose on the image, check position
-
-        marker = props.modelValue.reprojections.get(landmark.id)
-        if (marker != undefined) {
-          // draw reprojections already computed
-          ctx.beginPath();
-          ctx.arc((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y), radius, 0, 2 * Math.PI);
-          ctx.fillStyle = landmark.getColorHEX()
-          ctx.fill();
-          ctx.lineWidth = DOT_RADIUS / 2 / props.modelValue.zoom;
-          ctx.strokeStyle = "white";
-          ctx.stroke();
-          ctx.closePath()
-        }
-        return
-      }
       ctx.beginPath();
       if (landmark.equals(landmarkDragged.value)) {
-        marker = draggedPos.value
-        const targetRadius = radius * 4
-        // draw circle
-        ctx.arc((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y), targetRadius, 0, 2 * Math.PI);
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = DOT_RADIUS / 2 / props.modelValue.zoom;
-        ctx.stroke()
-        ctx.closePath();
+        let marker = draggedPos.value
+        // update pos marker depending on image
+        marker = {
+          x: marker.x * ratio.width,
+          y: marker.y * ratio.height
+        }
 
-        // draw white lines diagonals
-        ctx.beginPath();
-        let start: Pos = posCircle(marker, 45, targetRadius, shiftCanvas.value);
-        let end: Pos = posCircle(marker, 45, targetRadius * SPACE_TARGET, shiftCanvas.value);
-        ctx.moveTo(start.x, start.y)
-        ctx.lineTo(end.x, end.y)
-
-        start = posCircle(marker, 135, targetRadius, shiftCanvas.value);
-        end = posCircle(marker, 135, targetRadius * SPACE_TARGET, shiftCanvas.value);
-        ctx.moveTo(start.x, start.y)
-        ctx.lineTo(end.x, end.y)
-
-        start = posCircle(marker, 225, targetRadius, shiftCanvas.value);
-        end = posCircle(marker, 225, targetRadius * SPACE_TARGET, shiftCanvas.value);
-        ctx.moveTo(start.x, start.y)
-        ctx.lineTo(end.x, end.y)
-
-        start = posCircle(marker, 315, targetRadius, shiftCanvas.value);
-        end = posCircle(marker, 315, targetRadius * SPACE_TARGET, shiftCanvas.value);
-        ctx.moveTo(start.x, start.y)
-        ctx.lineTo(end.x, end.y)
-
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = DOT_RADIUS / 3 / props.modelValue.zoom;
-
-        ctx.stroke()
-        ctx.closePath();
-
-        // draw black lines lines horizontal and vertical
-        ctx.beginPath();
-
-        //horizontal
-        ctx.moveTo((marker.x + shiftCanvas.value.x) + (targetRadius * (1 - SPACE_TARGET)), (marker.y + shiftCanvas.value.y))
-        ctx.lineTo((marker.x + shiftCanvas.value.x) + (targetRadius * SPACE_TARGET), (marker.y + shiftCanvas.value.y))
-
-        ctx.moveTo((marker.x + shiftCanvas.value.x) - (targetRadius * (1 - SPACE_TARGET)), (marker.y + shiftCanvas.value.y))
-        ctx.lineTo((marker.x + shiftCanvas.value.x) - (targetRadius * SPACE_TARGET), (marker.y + shiftCanvas.value.y))
-
-        //vertical
-        ctx.moveTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) + (targetRadius * (1 - SPACE_TARGET)))
-        ctx.lineTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) + (targetRadius * SPACE_TARGET))
-
-        ctx.moveTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) - (targetRadius * (1 - SPACE_TARGET)))
-        ctx.lineTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) - (targetRadius * SPACE_TARGET))
-
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = DOT_RADIUS / 3 / props.modelValue.zoom;
-        ctx.stroke()
+        drawTarget(ctx, marker, radius)
       }
       else {
-        // Marker is defined and landmarkDragged not equals landmark
-        ctx.arc((marker!.x + shiftCanvas.value.x), (marker!.y + shiftCanvas.value.y), radius, 0, 2 * Math.PI);
-        ctx.fillStyle = landmark.getColorHEX()
-        ctx.fill();
-        ctx.lineWidth = DOT_RADIUS / 2 / props.modelValue.zoom;
-        ctx.strokeStyle = "black";
-        ctx.stroke();
+        drawMarker(ctx, landmark, radius)
       }
       ctx.closePath()
     });
+
   }
+}
+
+
+function drawTarget(ctx: CanvasRenderingContext2D, marker: Pos, radius: number) {
+  const targetRadius = radius * 4
+  ctx.beginPath();
+  // draw circle
+  ctx.arc((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y), targetRadius, 0, 2 * Math.PI);
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = radius / 2;
+  ctx.stroke()
+  ctx.closePath();
+
+  // draw white lines diagonals
+  ctx.beginPath();
+  let start: Pos = posCircle(marker, 45, targetRadius, shiftCanvas.value);
+  let end: Pos = posCircle(marker, 45, targetRadius * SPACE_TARGET, shiftCanvas.value);
+  ctx.moveTo(start.x, start.y)
+  ctx.lineTo(end.x, end.y)
+
+  start = posCircle(marker, 135, targetRadius, shiftCanvas.value);
+  end = posCircle(marker, 135, targetRadius * SPACE_TARGET, shiftCanvas.value);
+  ctx.moveTo(start.x, start.y)
+  ctx.lineTo(end.x, end.y)
+
+  start = posCircle(marker, 225, targetRadius, shiftCanvas.value);
+  end = posCircle(marker, 225, targetRadius * SPACE_TARGET, shiftCanvas.value);
+  ctx.moveTo(start.x, start.y)
+  ctx.lineTo(end.x, end.y)
+
+  start = posCircle(marker, 315, targetRadius, shiftCanvas.value);
+  end = posCircle(marker, 315, targetRadius * SPACE_TARGET, shiftCanvas.value);
+  ctx.moveTo(start.x, start.y)
+  ctx.lineTo(end.x, end.y)
+
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = radius / 3;
+
+  ctx.stroke()
+  ctx.closePath();
+
+  // draw black lines lines horizontal and vertical
+  ctx.beginPath();
+
+  //horizontal
+  ctx.moveTo((marker.x + shiftCanvas.value.x) + (targetRadius * (1 - SPACE_TARGET)), (marker.y + shiftCanvas.value.y))
+  ctx.lineTo((marker.x + shiftCanvas.value.x) + (targetRadius * SPACE_TARGET), (marker.y + shiftCanvas.value.y))
+
+  ctx.moveTo((marker.x + shiftCanvas.value.x) - (targetRadius * (1 - SPACE_TARGET)), (marker.y + shiftCanvas.value.y))
+  ctx.lineTo((marker.x + shiftCanvas.value.x) - (targetRadius * SPACE_TARGET), (marker.y + shiftCanvas.value.y))
+
+  //vertical
+  ctx.moveTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) + (targetRadius * (1 - SPACE_TARGET)))
+  ctx.lineTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) + (targetRadius * SPACE_TARGET))
+
+  ctx.moveTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) - (targetRadius * (1 - SPACE_TARGET)))
+  ctx.lineTo((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y) - (targetRadius * SPACE_TARGET))
+
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = radius / 3;
+  ctx.stroke()
+  ctx.closePath()
+}
+
+function drawMarker(ctx: CanvasRenderingContext2D, landmark: Landmark, radius: number) {
+  let marker = landmark.getPoses().get(cameraStore.selectedImage.name)
+  let color = "black"
+  if (marker == undefined) {
+    marker = cameraStore.selectedImage.reprojections.get(landmark.id)
+    color = "white"
+    if (marker == undefined) {
+      // if no projections and reprojections
+      return
+    }
+  }
+  let ratio = getRatio()
+  if (landmark.getPoses().has(cameraStore.selectedImage.name)) {
+
+  }
+  marker = {
+    x: marker.x * ratio.width,
+    y: marker.y * ratio.height
+  }
+  ctx.beginPath()
+  ctx.arc((marker.x + shiftCanvas.value.x), (marker.y + shiftCanvas.value.y), radius, 0, 2 * Math.PI);
+  ctx.fillStyle = landmark.getColorHEX()
+  ctx.fill();
+  ctx.lineWidth = radius / 2;
+  ctx.strokeStyle = color;
+  ctx.stroke();
+  ctx.closePath()
 }
 
 function posCircle(center: Pos, angle: number, radius: number, translate: Pos = { x: 0, y: 0 }): Pos {
@@ -247,46 +327,46 @@ function update() {
 }
 
 function screenFit() {
-  if (base_image.value && base_image.value.complete && imageContainer.value && canvas.value) {
+  if (imageContainer.value && canvas.value) {
     canvas.value.width = Math.floor(imageContainer.value.clientWidth)
     canvas.value.height = Math.floor(imageContainer.value.clientHeight)
 
-    props.modelValue.zoom = Math.min(imageContainer.value.clientWidth / base_image.value.naturalWidth, imageContainer.value.clientHeight / base_image.value.naturalHeight)
+    imageStore.zoom = Math.min(imageContainer.value.clientWidth / imageStore.size.width, imageContainer.value.clientHeight / imageStore.size.height)
   }
 }
 
-function getPos(event: MouseEvent): Pos {  
+function getPos(event: MouseEvent): Pos {
+  let ratio = getRatio()
   const svgRect = canvas.value!.getBoundingClientRect();
-  let x = ((event.pageX - svgRect.left) / props.modelValue.zoom) - props.modelValue.offset.x - shiftCanvas.value.x
-  let y = ((event.pageY - svgRect.top) / props.modelValue.zoom) - props.modelValue.offset.y - shiftCanvas.value.y
-
+  let x = ((event.pageX - svgRect.left) / imageStore.zoom) - imageStore.offset.x - (shiftCanvas.value.x / ratio.width)
+  let y = ((event.pageY - svgRect.top) / imageStore.zoom) - imageStore.offset.y - (shiftCanvas.value.y / ratio.height)
   return { x: x, y: y }
 }
 
 function updateOffset(movementX: number, movementY: number) {
-  if (base_image.value && canvas.value) {
-    props.modelValue.offset.x = props.modelValue.offset.x + movementX / props.modelValue.zoom
-    props.modelValue.offset.y = props.modelValue.offset.y + movementY / props.modelValue.zoom
+  if (canvas.value) {
+    imageStore.offset.x = imageStore.offset.x + movementX / imageStore.zoom
+    imageStore.offset.y = imageStore.offset.y + movementY / imageStore.zoom
 
     //check value
-    props.modelValue.offset.x = Math.min(0, Math.max(-((base_image.value.naturalWidth * props.modelValue.zoom) - canvas.value.width) / props.modelValue.zoom, props.modelValue.offset.x))
-    props.modelValue.offset.y = Math.min(0, Math.max(-((base_image.value.naturalHeight * props.modelValue.zoom) - canvas.value.height) / props.modelValue.zoom, props.modelValue.offset.y))
+    imageStore.offset.x = Math.min(0, Math.max(-((imageStore.size.width * imageStore.zoom) - canvas.value.width) / imageStore.zoom, imageStore.offset.x))
+    imageStore.offset.y = Math.min(0, Math.max(-((imageStore.size.height * imageStore.zoom) - canvas.value.height) / imageStore.zoom, imageStore.offset.y))
   }
 }
 
 function updateZoom(zoomDelta: number) {
 
-  props.modelValue.zoom = +(props.modelValue.zoom * (1 + zoomDelta / 20)).toFixed(2)
+  imageStore.zoom = +(imageStore.zoom * (1 + zoomDelta / 20)).toFixed(2)
 
   //check value
-  props.modelValue.zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, props.modelValue.zoom))
+  imageStore.zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, imageStore.zoom))
 }
 
 
 function zoomWithWheel(event: WheelEvent) {
-  let oldZoom = props.modelValue.zoom
+  let oldZoom = imageStore.zoom
   updateZoom(Math.sign(-event.deltaY))
-  let deltaZoom = props.modelValue.zoom / oldZoom
+  let deltaZoom = imageStore.zoom / oldZoom
 
   //get pos mouse in canvas
   const svgRect = canvas.value!.getBoundingClientRect();
@@ -302,26 +382,26 @@ function zoomWithWheel(event: WheelEvent) {
 }
 
 function startDrag(event: MouseEvent) {
-  
+
   if (event.button == 0) {
     printPos(event)
     dragging.value = true
     let pos = getPos(event)
     landmarksStore.landmarks.forEach((landmark, index) => {
-      let marker = landmark.getPoses().get(props.modelValue.name) || props.modelValue.reprojections.get(landmark.id)
+      let marker = landmark.getPoses().get(cameraStore.selectedImage.name) || cameraStore.selectedImage.reprojections.get(landmark.id)
       if (!marker) {
         //if undefined
         return
       }
-      if (pointInsideCircle(pos, marker, DOT_RADIUS / props.modelValue.zoom)) {
+      if (pointInsideCircle(pos, marker, DOT_RADIUS / imageStore.zoom)) {
         landmarkDragged.value = landmark
       }
     })
   }
 }
 
+
 function mousemove(event: MouseEvent) {
-  
   if (dragging.value == true) {
     printPos(event)
     if (landmarkDragged.value == null) {
@@ -342,7 +422,7 @@ function stopDrag(event: MouseEvent) {
     dragging.value = false
     if (landmarkDragged.value != null) {
       //update pos of landmark
-      landmarkDragged.value.addPose(props.modelValue.name, getPos(event))
+      landmarkDragged.value.addPose(cameraStore.selectedImage.name, getPos(event))
 
       //triangulate landmark
       landmarkDragged.value.triangulatePosition(cameraStore.objectPath)
@@ -372,8 +452,9 @@ function pointInsideCircle(pointCoord: Pos, circleCoord: Pos, radius: number) {
 }
 
 function onImage(pos: Pos): boolean {
+  let ratio = getRatio()
   if (base_image.value) {
-    return pos.x >= 0 && pos.y >= 0 && pos.x <= base_image.value.naturalWidth && pos.y <= base_image.value.naturalHeight
+    return pos.x >= 0 && pos.y >= 0 && pos.x <= base_image.value.naturalWidth / ratio.width && pos.y <= base_image.value.naturalHeight / ratio.height
   }
   return false
 }
@@ -388,12 +469,12 @@ function openContextMenu(event: MouseEvent) {
   }
   let pos = getPos(event)
   landmarksStore.landmarks.forEach((landmark, index) => {
-    let marker = landmark.getPoses().get(props.modelValue.name)
+    let marker = landmark.getPoses().get(cameraStore.selectedImage.name)
     if (!marker) {
       //if undefined
       return
     }
-    if (pointInsideCircle(pos, marker, DOT_RADIUS / props.modelValue.zoom)) {
+    if (pointInsideCircle(pos, marker, DOT_RADIUS / imageStore.zoom)) {
       landmarkDragged.value = landmark
     }
   })
@@ -407,7 +488,7 @@ function closeContextMenu() {
 }
 
 function clickContext(landmark: Landmark) {
-  landmark.addPose(props.modelValue.name, { x: posContextMenu.value.x, y: posContextMenu.value.y })
+  landmark.addPose(cameraStore.selectedImage.name, { x: posContextMenu.value.x, y: posContextMenu.value.y })
   //triangulate landmark
   landmark.triangulatePosition(cameraStore.objectPath)
   update()
@@ -419,12 +500,12 @@ function addLandmark() {
   let id = landmarksStore.generateID()
   let landmark = new Landmark(id, id)
   landmarksStore.addLandmark(landmark);
-  landmark.addPose(props.modelValue.name, { x: posContextMenu.value.x, y: posContextMenu.value.y })
+  landmark.addPose(cameraStore.selectedImage.name, { x: posContextMenu.value.x, y: posContextMenu.value.y })
   update()
 }
 
 function deleteLandmark(landmark: Landmark) {
-  landmark.removePose(props.modelValue.name)
+  landmark.removePose(cameraStore.selectedImage.name)
   landmark.triangulatePosition(cameraStore.objectPath).then(() => {
     computeReprojection(landmark)
   })
@@ -476,8 +557,8 @@ function deleteLandmark(landmark: Landmark) {
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
-    <img ref="base_image" class="hidden" :src="props.modelValue.image" alt="Image of view" aspect-ratio="auto"
-      @load="loaded">
+    <!--<img ref="base_image" class="hidden" :src="props.modelValue.image" alt="Image of view" aspect-ratio="auto"
+      @load="loaded">-->
   </div>
 
 </template>

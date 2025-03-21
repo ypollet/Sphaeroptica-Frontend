@@ -30,10 +30,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <script setup lang="ts">
 import Menu from "@/components/Menu.vue";
-import Tabs from "@/components/Tabs.vue";
 import { Separator } from "@/components/ui/separator";
 import { Sidebar } from "@/components/ui/sidebar";
 import { useLandmarkImagesStore, useLandmarksStore, useSettingsStore, useVirtualCameraStore } from "@/lib/stores";
+import ImageViewer from "@/components/ui/image-viewer/ImageViewer.vue";
+
 
 const settingsStore = useSettingsStore()
 const landmarksStore = useLandmarksStore()
@@ -42,12 +43,11 @@ const cameraStore = useVirtualCameraStore()
 
 let urlParams = new URLSearchParams(window.location.search);
 
-landmarksStore.$reset()
-landmarkImagesStore.$reset()
-
 if(urlParams.has('series')){
+  console.log("Has series")
   let seriesId = urlParams.get('series') as string
   if(cameraStore.objectPath != seriesId){
+    console.log("Complete Reset : ", seriesId)
     landmarksStore.$reset()
     landmarkImagesStore.$reset()
     cameraStore.setPath(seriesId)
@@ -68,7 +68,7 @@ if(urlParams.has('series')){
       </div>
 
       <div class="rest_width rest_height flex grow items-center justify-center">
-        <Tabs />
+        <ImageViewer />
       </div>
     </div>
   </main>

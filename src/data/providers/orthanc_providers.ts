@@ -32,7 +32,7 @@ import type { DataProvider } from "./providers";
 
 import axios, { type AxiosResponse } from "axios";
 import type { Coordinates } from "../models/coordinates";
-import type { VirtualCameraImage } from "../models/virtual_camera_image";
+import type { ProjectData, VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
 import type { Pos } from "../models/pos";
 
@@ -44,10 +44,10 @@ export class OrthancProvider implements DataProvider {
     }
 
 
-    async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
+    async getImages(objectPath: string): Promise<ProjectData> {
         const path = this.server + "/sphaeroptica/" + objectPath + '/images';
         return axios.get(path).then((res) => {
-            return res.data.images as VirtualCameraImage[]
+            return res.data
         })
     }
 

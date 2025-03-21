@@ -31,7 +31,7 @@
 import type { DataProvider } from "./providers";
 
 import axios from "axios";
-import type { VirtualCameraImage } from "../models/virtual_camera_image";
+import type { ProjectData, VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
 import type { Pos } from "../models/pos";
 import type { Coordinates } from "../models/coordinates";
@@ -43,17 +43,21 @@ export class WebProvider implements DataProvider {
         this.server = server
     }
 
-    async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
+    async getImages(objectPath: string): Promise<ProjectData> {
         const path = this.server + "/" + objectPath + '/images';
         return axios.get(path).then((res) => {
+            let data = res.data
             let images = res.data.images as VirtualCameraImage[]
             images.map((image) => {
                 image.fullImage = this.getImage(objectPath, image.name)
                 if(res.data.thumbnails){
                     image.thumbnail = this.getThumbnail(objectPath, image.name)
                 }
+                image.reprojections = new Map()
+                image.versions = new Map()
             })
-            return images
+            data.images = images
+            return data
         })
     }
 

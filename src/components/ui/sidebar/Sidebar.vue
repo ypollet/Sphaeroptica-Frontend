@@ -40,9 +40,12 @@ import {
 
 import { useVirtualCameraStore, useLandmarksStore} from "@/lib/stores";
 import { Landmark } from "@/data/models/landmark";
+import CameraViewer from "@/components/ui/camera-viewer/CameraViewer.vue";
+
 import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 import { type Shortcut } from "@/data/models/shortcut";
 import { Scale } from "@/lib/utils";
+import { round } from "mathjs"
 
 import { RepositoryFactory } from '@/data/repositories/repository_factory'
 import { repositorySettings } from "@/config/appSettings"
@@ -106,6 +109,10 @@ getShortcuts();
 
 <template>
   <div class="pb-[12px] w-auto">
+    <h2 class="mb-2 px-4 text-center font-semibold tracking-tight">
+      ({{ round(cameraStore.coordinates.longitude, 2) }}, {{ round(cameraStore.coordinates.latitude, 2)}})
+    </h2>
+    <CameraViewer />
     <div class="space-y-4 py-4">
       <div class="px-3 py-2">
         <h2 class="mb-2 px-4 text-lg font-semibold tracking-tight">

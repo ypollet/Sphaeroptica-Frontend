@@ -34,15 +34,23 @@ import { degreesToRad } from '@/lib/utils'
 import { DequeMax2 } from '@/data/models/dequeMax2'
 import { Distance } from '@/data/models/distance'
 import { Landmark } from '@/data/models/landmark'
-import { LandmarkImage } from '@/data/models/landmark_image'
 import Color from 'color'
 import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 import { destr } from "destr";
+import * as turf  from '@turf/turf'
+import type {  FeatureCollection, GeoJsonProperties, Point } from 'geojson';
 
 const LONG_MAX = 360
 const LONG_MIN = 0
 
-export const DEFAULT_TAB = "viewer"
+export const DEFAULT_IMAGE = {
+  name: "RBINS Logo",
+  fullImage: "https://www.naturalsciences.be/bundles/8c62adb1e0fbef009ef7c06c69a991890012e203/img/logos/logo.svg",
+  thumbnail: "",
+  coordinates: { longitude: 0, latitude: 0 }, 
+  versions: new Map(), 
+  reprojections: new Map()
+};
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({ isLeft: false }),
@@ -61,7 +69,8 @@ export const useSettingsStore = defineStore('settings', {
 export const useVirtualCameraStore = defineStore('camera', {
   state: () => ({
     objectPath: "",
-    images : new Map<string, VirtualCameraImage>(),
+    images: new Array<VirtualCameraImage>(),
+    posImages : turf.featureCollection([]),
     latMin: Number.MAX_VALUE,
     latMax: Number.MIN_VALUE,
     coordinates: {
@@ -71,6 +80,23 @@ export const useVirtualCameraStore = defineStore('camera', {
   }),
   getters: {
     toRad: (state) => [degreesToRad(state.coordinates.longitude), degreesToRad(state.coordinates.latitude)],
+    coord : (state) => [state.coordinates.longitude, state.coordinates.latitude],
+    selectedImage: (state) => {
+      if(state.images == null){
+        return DEFAULT_IMAGE
+      } 
+      let targetPoint = turf.point([state.coordinates.longitude, state.coordinates.latitude])
+      let points = state.posImages as FeatureCollection<Point, GeoJsonProperties>
+      let nearest = turf.nearestPoint(targetPoint, points);
+
+      if (nearest === null || nearest.properties.index >= state.images.length) {
+        return DEFAULT_IMAGE
+      }
+      
+      let imageData = state.images[nearest.properties.index]
+
+      return imageData
+    }
   },
   actions: {
     home() {
@@ -80,7 +106,7 @@ export const useVirtualCameraStore = defineStore('camera', {
       }
     },
     setPath(path: string) {
-      this.images = new Map<string, VirtualCameraImage>()
+      this.images = new Array<VirtualCameraImage>()
       this.latMin = Number.MAX_VALUE
       this.latMax = Number.MIN_VALUE
       this.objectPath = path
@@ -89,7 +115,7 @@ export const useVirtualCameraStore = defineStore('camera', {
         latitude: 0,
       }
     },
-    setLongitude(move: number) {
+    moveLongitude(move: number) {
       let difference: number = LONG_MAX - LONG_MIN
       this.coordinates.longitude -= LONG_MIN + move
       while (this.coordinates.longitude < LONG_MIN) {
@@ -97,7 +123,7 @@ export const useVirtualCameraStore = defineStore('camera', {
       }
       this.coordinates.longitude = ((this.coordinates.longitude) % difference) + LONG_MIN
     },
-    setLatitude(move: number) {
+    moveLatitude(move: number) {
       this.coordinates.latitude = math.min(math.max(this.coordinates.latitude + move, this.latMin), this.latMax)
     },
 
@@ -110,13 +136,15 @@ export const useVirtualCameraStore = defineStore('camera', {
       deserialize: (value: string) => {
         let state = destr<StateTree>(value)
         let stateCopy = Object.assign({}, state)
-        stateCopy.images = new Map(Object.entries(state.images))
+        stateCopy.images = Array.from(state.images)
+        stateCopy.images.forEach((image : VirtualCameraImage) => {
+          image.versions = new Map(Object.entries(image.versions))
+          image.reprojections = new Map(Object.entries(image.reprojections))
+        })
         return stateCopy
       },
       serialize: (state: StateTree) => {
-        let stateCopy = Object.assign({}, state)
-        stateCopy.images = Object.fromEntries(state.images)
-        return JSON.stringify(stateCopy)
+        return JSON.stringify(state)
       }
     },
   },
@@ -184,37 +212,13 @@ export const useLandmarksStore = defineStore('landmarks', {
 })
 
 export const useLandmarkImagesStore = defineStore('landmarks_images', {
-  state: () => ({ landmark_images: Array<LandmarkImage>(), selected: -1 }),
-  getters: {
-    getTabName: (state) => (state.selected >= 0 && state.selected < state.landmark_images.length) ? state.landmark_images[state.selected].name : DEFAULT_TAB,
-  },
-  actions: {
-    setTab(value: string) {
-      this.selected = this.landmark_images.findIndex((image) => image.name == value)
-    },
-    removeImage(index: number) {
-      this.landmark_images.splice(index, 1)
-    },
-    addImage(image: LandmarkImage) {
-      if (this.landmark_images.filter((el) => el.name == image.name).length == 0) {
-        this.landmark_images.push(image)
-      }
-    }
-  },
+  state: () => ({
+    zoom: 0,
+    offset: { x: 0, y: 0 },
+    size : { width : -1, height : -1}
+  }),
   persist: {
     storage: localStorage,
     debug: true,
-    afterHydrate: (ctx: PiniaPluginContext) => {
-      let landmark_images = ctx.store.$state.landmark_images.map((x: LandmarkImage) => x)
-      ctx.store.$state.landmark_images = landmark_images.map((jsonObject: LandmarkImage) =>
-        new LandmarkImage(jsonObject.name,
-          jsonObject.image,
-          jsonObject.longLat,
-          jsonObject.zoom,
-          jsonObject.offset,
-          new Map(Object.entries(jsonObject.versions)),
-          new Map(Object.entries(jsonObject.reprojections)))
-      )
-    },
   },
 })

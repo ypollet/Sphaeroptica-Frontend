@@ -29,12 +29,12 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import type { Coordinates } from "../models/coordinates";
-import type { VirtualCameraImage } from "../models/virtual_camera_image";
+import type { ProjectData, VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
 import type { Pos } from "../models/pos";
 
 export interface DataProvider {
-        getImages: (objectPath: string) => Promise<Array<VirtualCameraImage>>;
+        getImages: (objectPath: string) => Promise<ProjectData>;
         getShorcuts: (objectPath: string) => Promise<Array<Shortcut>>;
         computeReprojection: (objectPath: string, position: Array<number>, image: string) => Promise<Pos>;
         triangulate: (objectPath: string, poses: Map<string, Pos>) => Promise<Array<number> | undefined>

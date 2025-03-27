@@ -3,7 +3,7 @@
 import {main} from '../models';
 import {photogrammetry} from '../models';
 
-export function Images(arg1:string):Promise<main.cameraViewer>;
+export function Images(arg1:string):Promise<main.CameraViewer>;
 
 export function Reproject(arg1:string,arg2:string,arg3:Array<number>):Promise<photogrammetry.Pos>;
 

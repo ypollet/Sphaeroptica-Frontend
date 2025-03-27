@@ -31,38 +31,53 @@
 import type { DataProvider } from "./providers";
 
 import type { Coordinates } from "../models/coordinates";
-import type { VirtualCameraImage } from "../models/virtual_camera_image";
+import type { ProjectData, Size, VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
 import { Images, Shortcuts, Reproject, Triangulate } from "../../../wailsjs/go/main/App.js";
 import type { Pos } from "../models/pos";
+import type { main } from "wailsjs/go/models";
 
 export class DesktopProvider implements DataProvider {
 
-    async getImages(objectPath: string): Promise<Array<VirtualCameraImage>> {
-      return Images(objectPath).then((res) => {
-        return res.images as Array<VirtualCameraImage>
-      })
-    }
+  async getImages(objectPath: string): Promise<ProjectData> {
+    return Images(objectPath).then((res: main.CameraViewer) => {
+      let images = res.images
+      return {
+        images: images.map((image) => {
+          return {
+            name: image.name,
+            coordinates: image.coordinates,
+            fullImage: image.fullImage,
+            thumbnail: image.thumbnail,
+            versions: new Map<string, number>(),
+            reprojections: new Map<string, Pos>()
+          }
+        }),
+        size: res.size as Size,
+        thumbnails: res.thumbnails
+      }
+    })
+  }
 
-    async getShorcuts(objectPath: string): Promise<Array<Shortcut>> {
-        return Shortcuts(objectPath).then((res) => {
-          let shortcuts = new Array<Shortcut>()
-            let map: Map<string, Coordinates> = new Map(Object.entries(res))
-            map.forEach((val: Coordinates, key: string) => {
-                shortcuts.push({ name: key, coordinates: val })
-            });
+  async getShorcuts(objectPath: string): Promise<Array<Shortcut>> {
+    return Shortcuts(objectPath).then((res) => {
+      let shortcuts = new Array<Shortcut>()
+      let map: Map<string, Coordinates> = new Map(Object.entries(res))
+      map.forEach((val: Coordinates, key: string) => {
+        shortcuts.push({ name: key, coordinates: val })
+      });
 
-          return shortcuts
-        })
-    }
+      return shortcuts
+    })
+  }
 
-    async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Pos> {
-        return Reproject(objectPath, imageName, position)
-    }
+  async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Pos> {
+    return Reproject(objectPath, imageName, position)
+  }
 
-    async triangulate(objectPath: string, poses: Map<string, Pos>): Promise<Array<number> | undefined> {
-        let posesObj = Object.fromEntries(poses)
-        return Triangulate(objectPath, posesObj);
-    }
+  async triangulate(objectPath: string, poses: Map<string, Pos>): Promise<Array<number> | undefined> {
+    let posesObj = Object.fromEntries(poses)
+    return Triangulate(objectPath, posesObj);
+  }
 
 }

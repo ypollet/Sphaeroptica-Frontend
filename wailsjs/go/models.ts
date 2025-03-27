@@ -1,13 +1,27 @@
 export namespace main {
 	
-	export class virtualCameraImage {
+	export class Size {
+	    width: number;
+	    height: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Size(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.width = source["width"];
+	        this.height = source["height"];
+	    }
+	}
+	export class VirtualCameraImage {
 	    name: string;
 	    fullImage: string;
 	    thumbnail: string;
 	    coordinates: photogrammetry.Coordinates;
 	
 	    static createFrom(source: any = {}) {
-	        return new virtualCameraImage(source);
+	        return new VirtualCameraImage(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -36,16 +50,20 @@ export namespace main {
 		    return a;
 		}
 	}
-	export class cameraViewer {
-	    images: virtualCameraImage[];
+	export class CameraViewer {
+	    images: VirtualCameraImage[];
+	    size: Size;
+	    thumbnails: boolean;
 	
 	    static createFrom(source: any = {}) {
-	        return new cameraViewer(source);
+	        return new CameraViewer(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.images = this.convertValues(source["images"], virtualCameraImage);
+	        this.images = this.convertValues(source["images"], VirtualCameraImage);
+	        this.size = this.convertValues(source["size"], Size);
+	        this.thumbnails = source["thumbnails"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -66,6 +84,7 @@ export namespace main {
 		    return a;
 		}
 	}
+	
 
 }
 

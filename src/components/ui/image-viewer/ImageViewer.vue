@@ -50,7 +50,7 @@ const cameraStore = useVirtualCameraStore()
 const imageStore = useLandmarkImagesStore()
 
 const { selectedImage } = storeToRefs(cameraStore)
-
+const { landmarks } = storeToRefs(landmarksStore)
 
 
 function computeReprojection(landmark: Landmark) {
@@ -68,7 +68,7 @@ function checkVersions() {
   landmarksStore.landmarks.forEach((landmark, index) => {
     if (cameraStore.selectedImage.versions.get(landmark.id) == null || cameraStore.selectedImage.versions.get(landmark.id) !== landmark.getVersion()) {
       cameraStore.selectedImage.versions.set(landmark.id, landmark.getVersion())
-      
+
       if (landmark.position != null) {
         computeReprojection(landmark)
       } else {
@@ -77,6 +77,7 @@ function checkVersions() {
       }
     }
   })
+  update()
 }
 
 function getRatio(): Ratio {
@@ -105,16 +106,32 @@ base_image.value.onload = (ev: Event) => {
 
 base_image.value.src = cameraStore.selectedImage.thumbnail || cameraStore.selectedImage.fullImage
 base_image.value.alt = (cameraStore.selectedImage.thumbnail) ? 'Thumbnail of ' + cameraStore.selectedImage.name : cameraStore.selectedImage.name
+if (cameraStore.selectedImage.thumbnail) {
+      base_image.value.onload = (ev: Event) => loaded()
+    } else {
+      base_image.value.onload = (ev: Event) => {
+        if (imageStore.zoom <= 0) {
+          screenFit()
+        }
+      }
+    }
+
+
 watch(
   selectedImage,
   () => {
-    
+
     base_image.value.src = cameraStore.selectedImage.thumbnail || cameraStore.selectedImage.fullImage
     base_image.value.alt = (cameraStore.selectedImage.thumbnail) ? 'Thumbnail of ' + cameraStore.selectedImage.name : cameraStore.selectedImage.name
     base_image.value.onload = (ev: Event) => loaded()
     checkVersions()
   }
 )
+watch(landmarks, () => {
+  checkVersions()
+})
+
+
 
 const props = defineProps<{
   class?: HTMLAttributes['class']
@@ -154,7 +171,7 @@ function loaded() {
     let image_name = cameraStore.selectedImage.name
     setTimeout(() => {
       if (image_name == cameraStore.selectedImage.name) {
-        
+
         nextTick(() => {
           // Just verifies we draw the right image
           if (base_image.value.alt.endsWith(image_name)) {
@@ -323,6 +340,27 @@ function update() {
 
     //draw Image
     drawImage()
+
+    const svgRect = canvas.value!.getBoundingClientRect();
+
+    let topLeft = getPos({ x: svgRect.left, y: svgRect.top })
+    topLeft = {
+      x: Math.max(0, topLeft.x),
+      y: Math.max(0, topLeft.y)
+    }
+    
+    
+    let shift = {
+      x: Math.max(0, (canvas.value.width - imageStore.size.width * imageStore.zoom))/ imageStore.zoom,
+      y: Math.max(0, (canvas.value.height - imageStore.size.height * imageStore.zoom))/ imageStore.zoom
+    }
+    
+    imageStore.zoomRect = {
+      top: topLeft.y,
+      left: topLeft.x,
+      width: canvas.value.width / imageStore.zoom - shift.x,
+      height: canvas.value.height / imageStore.zoom - shift.y,
+    }
   }
 }
 
@@ -335,11 +373,11 @@ function screenFit() {
   }
 }
 
-function getPos(event: MouseEvent): Pos {
+function getPos(pos: Pos): Pos {
   let ratio = getRatio()
   const svgRect = canvas.value!.getBoundingClientRect();
-  let x = ((event.pageX - svgRect.left) / imageStore.zoom) - imageStore.offset.x - (shiftCanvas.value.x / ratio.width)
-  let y = ((event.pageY - svgRect.top) / imageStore.zoom) - imageStore.offset.y - (shiftCanvas.value.y / ratio.height)
+  let x = ((pos.x - svgRect.left) / imageStore.zoom) - imageStore.offset.x - (shiftCanvas.value.x / ratio.width)
+  let y = ((pos.y - svgRect.top) / imageStore.zoom) - imageStore.offset.y - (shiftCanvas.value.y / ratio.height)
   return { x: x, y: y }
 }
 
@@ -384,9 +422,11 @@ function zoomWithWheel(event: WheelEvent) {
 function startDrag(event: MouseEvent) {
 
   if (event.button == 0) {
-    printPos(event)
     dragging.value = true
-    let pos = getPos(event)
+    let pos = getPos({
+      x: event.pageX,
+      y: event.pageY
+    })
     landmarksStore.landmarks.forEach((landmark, index) => {
       let marker = landmark.getPoses().get(cameraStore.selectedImage.name) || cameraStore.selectedImage.reprojections.get(landmark.id)
       if (!marker) {
@@ -403,14 +443,16 @@ function startDrag(event: MouseEvent) {
 
 function mousemove(event: MouseEvent) {
   if (dragging.value == true) {
-    printPos(event)
     if (landmarkDragged.value == null) {
       // no marker to drag => pan image
       updateOffset(event.movementX, event.movementY)
     }
     else {
       // drag marker
-      draggedPos.value = getPos(event)
+      draggedPos.value = getPos({
+        x: event.pageX,
+        y: event.pageY
+      })
     }
 
     update()
@@ -422,7 +464,10 @@ function stopDrag(event: MouseEvent) {
     dragging.value = false
     if (landmarkDragged.value != null) {
       //update pos of landmark
-      landmarkDragged.value.addPose(cameraStore.selectedImage.name, getPos(event))
+      landmarkDragged.value.addPose(cameraStore.selectedImage.name, getPos({
+        x: event.pageX,
+        y: event.pageY
+      }))
 
       //triangulate landmark
       landmarkDragged.value.triangulatePosition(cameraStore.objectPath)
@@ -440,8 +485,7 @@ function reinitDraggedLandmark() {
   draggedPos.value = { x: -1, y: -1 }
 }
 
-function printPos(event: MouseEvent) {
-  let pos = getPos(event)
+function printPos(pos: Pos) {
   console.log("Position = ", pos.x, " : ", pos.y)
 }
 
@@ -461,13 +505,19 @@ function onImage(pos: Pos): boolean {
 
 function openContextMenu(event: MouseEvent) {
   contextMenuOpen.value = true
-  posContextMenu.value = getPos(event)
+  posContextMenu.value = getPos({
+    x: event.pageX,
+    y: event.pageY
+  })
   if (!onImage(posContextMenu.value)) {
     // Don't show context menu if image not clicked
     event.preventDefault()
     return;
   }
-  let pos = getPos(event)
+  let pos = getPos({
+    x: event.pageX,
+    y: event.pageY
+  })
   landmarksStore.landmarks.forEach((landmark, index) => {
     let marker = landmark.getPoses().get(cameraStore.selectedImage.name)
     if (!marker) {

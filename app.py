@@ -52,11 +52,22 @@ def triangulate(id):
         with open(f"{directory}/calibration.json", "r") as f:
             calib_file = json.load(f)
 
-        intrinsics = np.matrix(calib_file["intrinsics"]["camera matrix"]["matrix"])
-        dist_coeffs = np.matrix(calib_file["intrinsics"]["distortion matrix"]["matrix"])
+        intrinsics_info = calib_file["intrinsics"]["cameraMatrix"]
+        dist_coeffs_info = calib_file["intrinsics"]["distortionMatrix"]
+
+        intrinsics = np.matrix(intrinsics_info["data"]).reshape(
+            intrinsics_info["shape"]["row"], intrinsics_info["shape"]["col"]
+        )
+        dist_coeffs = np.matrix(dist_coeffs_info["data"]).reshape(
+            dist_coeffs_info["shape"]["row"], dist_coeffs_info["shape"]["col"]
+        )
+
         proj_points = []
         for image in poses:
-            extrinsics = np.matrix(calib_file["extrinsics"][image]["matrix"])
+            extrinsics_info = calib_file["extrinsics"][image]["matrix"]
+            extrinsics = np.matrix(extrinsics_info["data"]).reshape(
+                extrinsics_info["shape"]["row"], extrinsics_info["shape"]["col"]
+            )
             proj_mat = reconstruction.projection_matrix(intrinsics, extrinsics)
             pose = np.matrix([poses[image]["x"], poses[image]["y"]])
             undistorted_pos = reconstruction.undistort_iter(
@@ -80,9 +91,19 @@ def reproject(id):
         with open(f"{directory}/calibration.json", "r") as f:
             calib_file = json.load(f)
 
-        intrinsics = np.matrix(calib_file["intrinsics"]["camera matrix"]["matrix"])
-        dist_coeffs = np.matrix(calib_file["intrinsics"]["distortion matrix"]["matrix"])
-        extrinsics = np.matrix(calib_file["extrinsics"][image_name]["matrix"])[0:3, 0:4]
+        intrinsics_info = calib_file["intrinsics"]["cameraMatrix"]
+        dist_coeffs_info = calib_file["intrinsics"]["distortionMatrix"]
+        extrinsics_info = calib_file["extrinsics"][image_name]["matrix"]
+
+        intrinsics = np.matrix(intrinsics_info["data"]).reshape(
+            intrinsics_info["shape"]["row"], intrinsics_info["shape"]["col"]
+        )
+        dist_coeffs = np.matrix(dist_coeffs_info["data"]).reshape(
+            dist_coeffs_info["shape"]["row"], dist_coeffs_info["shape"]["col"]
+        )
+        extrinsics = np.matrix(extrinsics_info["data"]).reshape(
+            extrinsics_info["shape"]["row"], extrinsics_info["shape"]["col"]
+        )
 
         pose = reconstruction.project_points(
             position, intrinsics, extrinsics, dist_coeffs
@@ -158,10 +179,13 @@ def images(id):
             )
             image_data["name"] = image_name
 
-            mat = np.matrix(calib_file["extrinsics"][image_name]["matrix"])
+            mat_info = calib_file["extrinsics"][image_name]["matrix"]
+            mat = np.matrix(mat_info["data"]).reshape(
+                mat_info["shape"]["row"], mat_info["shape"]["col"]
+            )
             rotation = mat[0:3, 0:3]
             trans = mat[0:3, 3]
-            C = converters.get_camera_world_coordinates(rotation, trans)
+            C = converters.get_camera_world_coordinates(rotation, trans).reshape(3, 1)
 
             centers[image_name] = C
             centers_x.append(C.item(0))  # x
@@ -178,6 +202,9 @@ def images(id):
         image_name = image_data["name"]
         C = centers[image_name]
         vec = C - center
+        print(C)
+        print(center)
+        print(vec)
         long, lat = converters.get_long_lat(vec)
         image_data["coordinates"] = {
             "longitude": converters.rad2degrees(long),

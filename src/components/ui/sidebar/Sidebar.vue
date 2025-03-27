@@ -38,12 +38,10 @@ import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
 } from '@/components/ui/context-menu'
 
-import { useVirtualCameraStore, useLandmarksStore} from "@/lib/stores";
+import { useVirtualCameraStore, useLandmarksStore, useLandmarkImagesStore} from "@/lib/stores";
 import { Landmark } from "@/data/models/landmark";
 import CameraViewer from "@/components/ui/camera-viewer/CameraViewer.vue";
 
-import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
-import { type Shortcut } from "@/data/models/shortcut";
 import { Scale } from "@/lib/utils";
 import { round } from "mathjs"
 
@@ -54,6 +52,7 @@ import type { Coordinates } from "@/data/models/coordinates";
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 const landmarksStore = useLandmarksStore()
+const imageStore = useLandmarkImagesStore()
 const cameraStore = useVirtualCameraStore();
 
 var mapShortcuts: Map<string, Coordinates> = new Map();
@@ -110,7 +109,7 @@ getShortcuts();
 <template>
   <div class="pb-[12px] w-auto">
     <h2 class="mb-2 px-4 text-center font-semibold tracking-tight">
-      ({{ round(cameraStore.coordinates.longitude, 2) }}, {{ round(cameraStore.coordinates.latitude, 2)}})
+      ({{ round(cameraStore.coordinates.longitude, 2) }}, {{ round(cameraStore.coordinates.latitude)}}) : {{ round(imageStore.zoom * 100) }}%
     </h2>
     <CameraViewer />
     <div class="space-y-4 py-4">

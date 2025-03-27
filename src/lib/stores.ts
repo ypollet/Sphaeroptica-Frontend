@@ -82,7 +82,7 @@ export const useVirtualCameraStore = defineStore('camera', {
     toRad: (state) => [degreesToRad(state.coordinates.longitude), degreesToRad(state.coordinates.latitude)],
     coord : (state) => [state.coordinates.longitude, state.coordinates.latitude],
     selectedImage: (state) => {
-      if(state.images == null){
+      if(state.images == null || state.images.length == 0){
         return DEFAULT_IMAGE
       } 
       let targetPoint = turf.point([state.coordinates.longitude, state.coordinates.latitude])
@@ -215,7 +215,13 @@ export const useLandmarkImagesStore = defineStore('landmarks_images', {
   state: () => ({
     zoom: 0,
     offset: { x: 0, y: 0 },
-    size : { width : -1, height : -1}
+    size : { width : -1, height : -1},
+    zoomRect: {
+      top: 0,
+      left: 0,
+      width: 0,
+      height:0 
+    },
   }),
   persist: {
     storage: localStorage,

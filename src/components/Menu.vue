@@ -62,13 +62,11 @@ import { Switch } from '@/components/ui/switch'
 import Color from "color"
 
 import { Landmark } from '@/data/models/landmark'
-import { Distance } from '@/data/models/distance'
 
 
 import { useToggle, useDark } from '@vueuse/core'
 import { useSettingsStore, useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
 import saveAs from 'file-saver';
-import * as math from 'mathjs'
 
 const settingsStore = useSettingsStore()
 const landmarksStore = useLandmarksStore()

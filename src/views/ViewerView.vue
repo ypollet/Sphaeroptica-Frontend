@@ -29,48 +29,26 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <script setup lang="ts">
-import Menu from "@/components/Menu.vue";
-import { Separator } from "@/components/ui/separator";
 import { Sidebar } from "@/components/ui/sidebar";
-import { useLandmarkImagesStore, useLandmarksStore, useSettingsStore, useVirtualCameraStore } from "@/lib/stores";
 import ImageViewer from "@/components/ui/image-viewer/ImageViewer.vue";
-
+import { useSettingsStore } from "@/lib/stores";
 
 const settingsStore = useSettingsStore()
-const landmarksStore = useLandmarksStore()
-const landmarkImagesStore = useLandmarkImagesStore()
-const cameraStore = useVirtualCameraStore()
 
-let urlParams = new URLSearchParams(window.location.search);
-
-if(urlParams.has('series')){
-  console.log("Has series")
-  let seriesId = urlParams.get('series') as string
-  if(cameraStore.objectPath != seriesId){
-    console.log("Complete Reset : ", seriesId)
-    landmarksStore.$reset()
-    landmarkImagesStore.$reset()
-    cameraStore.setPath(seriesId)
-  }
-  
-  
-}
 </script>
 
 <template>
   <main class="h-screen">
-    <Menu class="sticky menu top-0 flex flex-row grow z-50"></Menu>
-    <Separator></Separator>
-    <div class="h-full flex"
-    :class="settingsStore.isLeft ? 'flex-row' : 'flex-row-reverse'">
+    <div class="h-full flex" :class="settingsStore.isLeft ? 'flex-row' : 'flex-row-reverse'">
       <div class="rest_height overflow-auto sidebar rounded-md border p-4">
         <Sidebar />
       </div>
 
-      <div class="rest_width rest_height flex grow items-center justify-center">
+      <div class="rest_width rest-height flex grow items-center justify-center">
         <ImageViewer />
       </div>
     </div>
+
   </main>
 </template>
 

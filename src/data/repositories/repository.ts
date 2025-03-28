@@ -37,4 +37,5 @@ export interface Repository {
     getShorcuts : (objectPath:string) => Promise<Array<Shortcut>>;
     computeReprojection : (objectPath:string, position: Array<number>, imageName: string) => Promise<Pos>;
     triangulate: (objectPath : string, poses: Map<string, Pos>) => Promise<Array<number> | undefined>
+    importNewFile: () => Promise<string>
 }

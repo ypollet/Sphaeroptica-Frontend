@@ -28,22 +28,24 @@
 
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import type { DataProvider } from "./providers";
-
 import type { Coordinates } from "../models/coordinates";
-import type { ProjectData, Size, VirtualCameraImage } from "../models/virtual_camera_image";
+import type { ProjectData, Size } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
-import { Images, Shortcuts, Reproject, Triangulate } from "../../../wailsjs/go/main/App.js";
+import { Images, Shortcuts, Reproject, Triangulate,  ImportNewFile} from "../../../wailsjs/go/main/App.js";
 import type { Pos } from "../models/pos";
 import type { main } from "wailsjs/go/models";
+import type { Repository } from "./repository";
 
-export class DesktopProvider implements DataProvider {
+export class DesktopRepository implements Repository {
+
+  importNewFile(): Promise<string> {
+    return ImportNewFile()
+  };
 
   async getImages(objectPath: string): Promise<ProjectData> {
     return Images(objectPath).then((res: main.CameraViewer) => {
-      let images = res.images
       return {
-        images: images.map((image) => {
+        images: res.images.map((image) => {
           return {
             name: image.name,
             coordinates: image.coordinates,

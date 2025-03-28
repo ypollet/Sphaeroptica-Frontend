@@ -29,14 +29,29 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <script setup lang="ts">
+import Button from "@/components/ui/button/Button.vue";
 import Label from "@/components/ui/label/Label.vue";
+import { repositorySettings } from "@/config/appSettings"
+import { RepositoryFactory } from "@/data/repositories/repository_factory";
+import { useVirtualCameraStore } from "@/lib/stores";
 
+const cameraStore = useVirtualCameraStore()
+const repository = RepositoryFactory.get(repositorySettings.type)
+
+async function openNewFile(){
+    console.log("Open New File")
+    let projectFile = await repository.importNewFile()
+    cameraStore.setPath(projectFile)
+}
 </script>
 
 <template>
     <main class="h-screen">
-        <Label class="text-4xl justify-center items-center align-middle flex grow h-full text-red-600 dark:text-red-400">
-            Error 404 : please select a valid URL
+        <div v-if="repositorySettings.type == 'DESKTOP'" class="justify-center items-center flex grow h-full">
+            <Button @click="openNewFile" class="text-4xl p-8">Open Sphaeroptica Project</Button>
+        </div>
+        <Label class="text-4xl justify-center items-center align-middle flex grow h-full text-red-600 dark:text-red-400" v-else>
+            Error 404 : please select a valid URL {{ repositorySettings.type }}
         </Label>
     </main>
 

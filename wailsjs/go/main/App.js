@@ -6,6 +6,10 @@ export function Images(arg1) {
   return window['go']['main']['App']['Images'](arg1);
 }
 
+export function ImportNewFile() {
+  return window['go']['main']['App']['ImportNewFile']();
+}
+
 export function Reproject(arg1, arg2, arg3) {
   return window['go']['main']['App']['Reproject'](arg1, arg2, arg3);
 }

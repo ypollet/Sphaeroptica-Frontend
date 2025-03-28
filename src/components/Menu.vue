@@ -63,9 +63,10 @@ import Color from "color"
 
 import { Landmark } from '@/data/models/landmark'
 
-
+import { RepositoryFactory } from '@/data/repositories/repository_factory'
 import { useToggle, useDark } from '@vueuse/core'
 import { useSettingsStore, useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
+import { repositorySettings } from "@/config/appSettings"
 import saveAs from 'file-saver';
 
 const settingsStore = useSettingsStore()
@@ -75,6 +76,8 @@ const cameraStore = useVirtualCameraStore()
 const isDark = useDark({
   storageKey: 'localStorage'
 })
+
+const repository = RepositoryFactory.get(repositorySettings.type)
 
 const toggleDark = useToggle(isDark)
 
@@ -128,6 +131,17 @@ function downloadJSON() {
   saveAs(blob, "landmarks_" + cameraStore.objectPath + "_" + new Date().getTime() + ".json");
 }
 
+async function openFile() {
+  console.log("OPEN FILE")
+  let projectFile = await repository.importNewFile()
+  cameraStore.setPath(projectFile)
+}
+
+function createFile() {
+  console.log("CREATE FILE")
+}
+
+
 function onSubmit(event: Event) {
   event.preventDefault()
   let form = event.target as HTMLFormElement
@@ -173,14 +187,19 @@ function importLandmarks(jsonData: string) {
           File
         </MenubarTrigger>
         <MenubarContent>
+          <MenubarLabel v-if="repositorySettings.type == 'DESKTOP'">
+            Files
+          </MenubarLabel>
+          <MenubarItem @select="openFile" inset v-if="repositorySettings.type == 'DESKTOP'">Open project</MenubarItem>
+          <MenubarItem @select="createFile" inset v-if="repositorySettings.type == 'DESKTOP'">Create new project</MenubarItem>
           <MenubarLabel>
             Landmarks
           </MenubarLabel>
           <DialogTrigger asChild>
-            <MenubarItem inset>Import</MenubarItem>
+            <MenubarItem inset :disabled="cameraStore.objectPath == ''">Import</MenubarItem>
           </DialogTrigger>
-          <MenubarSub>
-            <MenubarSubTrigger inset>Export</MenubarSubTrigger>
+          <MenubarSub :disabled="cameraStore.objectPath == ''">
+            <MenubarSubTrigger inset :disabled="cameraStore.objectPath == ''">Export</MenubarSubTrigger>
             <MenubarSubContent>
               <MenubarItem @select="downloadCsv">
                 CSV

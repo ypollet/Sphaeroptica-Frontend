@@ -103,11 +103,18 @@ function addDistance(){
 function resetScale(){
   landmarksStore.adjustFactor = 1
 }
+function reset(){
+  console.log("Reset")
+  cameraStore.setPath(cameraStore.objectPath)
+  console.log(cameraStore.$state)
+}
+
 getShortcuts();
 </script>
 
 <template>
   <div class="pb-[12px] w-auto">
+    <Button class="w-full" @click="reset">Reset</Button>
     <h2 class="mb-2 px-4 text-center font-semibold tracking-tight">
       ({{ round(cameraStore.coordinates.longitude, 2) }}, {{ round(cameraStore.coordinates.latitude)}}) : {{ round(imageStore.zoom * 100) }}%
     </h2>

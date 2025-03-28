@@ -28,20 +28,22 @@
 
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import type { DataProvider } from "./providers";
-
 import axios from "axios";
 import type { ProjectData, VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
 import type { Pos } from "../models/pos";
 import type { Coordinates } from "../models/coordinates";
+import type { Repository } from "./repository";
 
-export class WebProvider implements DataProvider {
+export class WebRepository implements Repository {
     server: string;
 
     constructor(server: string) {
         this.server = server
     }
+    importNewFile() : Promise<string> {
+        throw Error("Not implemented")
+    };
 
     async getImages(objectPath: string): Promise<ProjectData> {
         const path = this.server + "/" + objectPath + '/images';

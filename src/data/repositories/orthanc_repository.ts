@@ -28,21 +28,23 @@
 
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import type { DataProvider } from "./providers";
-
-import axios, { type AxiosResponse } from "axios";
+import axios from "axios";
 import type { Coordinates } from "../models/coordinates";
 import type { ProjectData, VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
 import type { Pos } from "../models/pos";
+import type { Repository } from "./repository";
 
-export class OrthancProvider implements DataProvider {
+export class OrthancRepository implements Repository {
     server: string;
 
     constructor(server: string) {
         this.server = server
     }
 
+    importNewFile() : Promise<string> {
+        throw Error("Not implemented")
+    };
 
     async getImages(objectPath: string): Promise<ProjectData> {
         const path = this.server + "/sphaeroptica/" + objectPath + '/images';

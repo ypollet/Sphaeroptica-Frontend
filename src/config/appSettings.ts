@@ -28,11 +28,7 @@
 
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-export const providerSettings = {
+export const repositorySettings = {
     type : import.meta.env.VITE_BACKEND_TYPE,
     url: import.meta.env.VITE_BACKEND_URL
-}
-
-export const repositorySettings = {
-    type : import.meta.env.VITE_REPOSITORY,
 }

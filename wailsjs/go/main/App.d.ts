@@ -5,6 +5,8 @@ import {photogrammetry} from '../models';
 
 export function Images(arg1:string):Promise<main.CameraViewer>;
 
+export function ImportNewFile():Promise<string>;
+
 export function Reproject(arg1:string,arg2:string,arg3:Array<number>):Promise<photogrammetry.Pos>;
 
 export function Shortcuts(arg1:string):Promise<{[key: string]: photogrammetry.Coordinates}>;

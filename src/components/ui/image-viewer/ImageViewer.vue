@@ -370,6 +370,7 @@ function screenFit() {
     canvas.value.height = Math.floor(imageContainer.value.clientHeight)
 
     imageStore.zoom = Math.min(imageContainer.value.clientWidth / imageStore.size.width, imageContainer.value.clientHeight / imageStore.size.height)
+    imageStore.offset = {x:0, y:0}
   }
 }
 
@@ -389,6 +390,7 @@ function updateOffset(movementX: number, movementY: number) {
     //check value
     imageStore.offset.x = Math.min(0, Math.max(-((imageStore.size.width * imageStore.zoom) - canvas.value.width) / imageStore.zoom, imageStore.offset.x))
     imageStore.offset.y = Math.min(0, Math.max(-((imageStore.size.height * imageStore.zoom) - canvas.value.height) / imageStore.zoom, imageStore.offset.y))
+    console.log(imageStore.offset)
   }
 }
 
@@ -411,10 +413,13 @@ function zoomWithWheel(event: WheelEvent) {
   let mouseX = event.pageX - svgRect.left
   let mouseY = event.pageY - svgRect.top
 
+  console.log(mouseX, mouseY)
+
   //update offset
   let deltaOffsetX = -((svgRect.width * deltaZoom) - svgRect.width) * (mouseX / svgRect.width) // (dest offset - src offset) * ratio of pos mouse
   let deltaOffsetY = -((svgRect.height * deltaZoom) - svgRect.height) * (mouseY / svgRect.height)
 
+  console.log(deltaOffsetX, deltaOffsetY)
   updateOffset(deltaOffsetX, deltaOffsetY)
   update()
 }

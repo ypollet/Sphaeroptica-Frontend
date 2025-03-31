@@ -106,7 +106,9 @@ function resetScale(){
 function reset(){
   console.log("Reset")
   cameraStore.setPath(cameraStore.objectPath)
-  console.log(cameraStore.$state)
+  imageStore.$reset()
+  console.log(imageStore.$state)
+  console.log("Offset ", imageStore.offset)
 }
 
 getShortcuts();

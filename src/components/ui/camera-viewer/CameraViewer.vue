@@ -104,7 +104,6 @@ async function getImages(): Promise<Array<VirtualCameraImage>> {
     try {
 
       images.forEach((image: VirtualCameraImage, index: number) => {
-        console.log(image)
         let point = turf.point([image.coordinates.longitude, image.coordinates.latitude], { 'index': index })
         points.push(point)
         if (image.coordinates.latitude < latMin) {

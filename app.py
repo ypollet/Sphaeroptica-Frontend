@@ -197,14 +197,10 @@ def images(id):
             print(error)
             continue
     radius, center = reconstruction.sphereFit(centers_x, centers_y, centers_z)
-
     for image_data in encoded_images:
         image_name = image_data["name"]
         C = centers[image_name]
         vec = C - center
-        print(C)
-        print(center)
-        print(vec)
         long, lat = converters.get_long_lat(vec)
         image_data["coordinates"] = {
             "longitude": converters.rad2degrees(long),

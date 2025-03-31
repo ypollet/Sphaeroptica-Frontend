@@ -59,7 +59,6 @@ export const useSettingsStore = defineStore('settings', {
       this.isLeft = value
     },
   },
-
   persist: {
     storage: localStorage,
   }

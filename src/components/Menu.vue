@@ -134,7 +134,9 @@ function downloadJSON() {
 async function openFile() {
   console.log("OPEN FILE")
   let projectFile = await repository.importNewFile()
-  cameraStore.setPath(projectFile)
+  if(projectFile != ""){
+    cameraStore.setPath(projectFile)
+  }
 }
 
 function createFile() {
@@ -190,8 +192,9 @@ function importLandmarks(jsonData: string) {
           <MenubarLabel v-if="repositorySettings.type == 'DESKTOP'">
             Files
           </MenubarLabel>
-          <MenubarItem @select="openFile" inset v-if="repositorySettings.type == 'DESKTOP'">Open project</MenubarItem>
-          <MenubarItem @select="createFile" inset v-if="repositorySettings.type == 'DESKTOP'">Create new project</MenubarItem>
+          <MenubarItem @select="openFile" inset v-if="repositorySettings.type == 'DESKTOP'">Open</MenubarItem>
+          <MenubarItem @select="createFile" inset v-if="repositorySettings.type == 'DESKTOP'">New</MenubarItem>
+          <MenubarSeparator v-if="repositorySettings.type == 'DESKTOP'"/>
           <MenubarLabel>
             Landmarks
           </MenubarLabel>

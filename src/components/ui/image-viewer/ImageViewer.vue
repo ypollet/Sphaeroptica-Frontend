@@ -140,7 +140,7 @@ const props = defineProps<{
 const imageContainer = ref<HTMLDivElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
 
-const full_image = new Image()
+var full_image = new Image()
 const shiftCanvas = ref<Pos>({ x: 0, y: 0 })
 const dragging = ref<boolean>(false)
 const landmarkDragged = ref<Landmark | null>(null)
@@ -175,6 +175,7 @@ function loaded() {
         nextTick(() => {
           // Just verifies we draw the right image
           if (base_image.value.alt.endsWith(image_name)) {
+            full_image = new Image()
             full_image.src = cameraStore.selectedImage.fullImage
             full_image.alt = image_name
 
@@ -412,8 +413,6 @@ function zoomWithWheel(event: WheelEvent) {
   const svgRect = canvas.value!.getBoundingClientRect();
   let mouseX = event.pageX - svgRect.left
   let mouseY = event.pageY - svgRect.top
-
-  console.log(mouseX, mouseY)
 
   //update offset
   let deltaOffsetX = -((svgRect.width * deltaZoom) - svgRect.width) * (mouseX / svgRect.width) // (dest offset - src offset) * ratio of pos mouse

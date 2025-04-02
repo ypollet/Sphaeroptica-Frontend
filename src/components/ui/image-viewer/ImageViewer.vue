@@ -391,7 +391,6 @@ function updateOffset(movementX: number, movementY: number) {
     //check value
     imageStore.offset.x = Math.min(0, Math.max(-((imageStore.size.width * imageStore.zoom) - canvas.value.width) / imageStore.zoom, imageStore.offset.x))
     imageStore.offset.y = Math.min(0, Math.max(-((imageStore.size.height * imageStore.zoom) - canvas.value.height) / imageStore.zoom, imageStore.offset.y))
-    console.log(imageStore.offset)
   }
 }
 
@@ -418,7 +417,6 @@ function zoomWithWheel(event: WheelEvent) {
   let deltaOffsetX = -((svgRect.width * deltaZoom) - svgRect.width) * (mouseX / svgRect.width) // (dest offset - src offset) * ratio of pos mouse
   let deltaOffsetY = -((svgRect.height * deltaZoom) - svgRect.height) * (mouseY / svgRect.height)
 
-  console.log(deltaOffsetX, deltaOffsetY)
   updateOffset(deltaOffsetX, deltaOffsetY)
   update()
 }

@@ -49,7 +49,18 @@ export class OrthancRepository implements Repository {
     async getImages(objectPath: string): Promise<ProjectData> {
         const path = this.server + "/sphaeroptica/" + objectPath + '/images';
         return axios.get(path).then((res) => {
-            return res.data
+            let data = res.data
+            let images = res.data.images as VirtualCameraImage[]
+            images.map((image) => {
+                image.fullImage = this.getImage(objectPath, image.name)
+                if(res.data.thumbnails){
+                    image.thumbnail = this.getThumbnail(objectPath, image.name)
+                }
+                image.reprojections = new Map()
+                image.versions = new Map()
+            })
+            data.images = images
+            return data
         })
     }
 

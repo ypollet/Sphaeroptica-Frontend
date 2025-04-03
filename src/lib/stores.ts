@@ -210,11 +210,11 @@ export const useLandmarksStore = defineStore('landmarks', {
   },
 })
 
-export const useLandmarkImagesStore = defineStore('landmarks_images', {
+export const useImageStore = defineStore('images', {
   state: () => ({
     zoom: 0,
     offset: { x: 0, y: 0 },
-    size : { width : -1, height : -1},
+    size : { width : 1000, height : 1000},
     zoomRect: {
       top: 0,
       left: 0,

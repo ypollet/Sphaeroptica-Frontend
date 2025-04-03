@@ -33,7 +33,7 @@ import Menu from "@/components/Menu.vue";
 import { Separator } from "@/components/ui/separator";
 import SelectView from './views/SelectView.vue';
 import ViewerView from './views/ViewerView.vue';
-import { useLandmarkImagesStore, useLandmarksStore, useVirtualCameraStore } from "@/lib/stores";
+import { useImageStore, useLandmarksStore, useVirtualCameraStore } from "@/lib/stores";
 
 useDark({
   storageKey: 'localStorage'
@@ -41,16 +41,14 @@ useDark({
 
 
 const landmarksStore = useLandmarksStore()
-const landmarkImagesStore = useLandmarkImagesStore()
+const landmarkImagesStore = useImageStore()
 const cameraStore = useVirtualCameraStore()
 
 let urlParams = new URLSearchParams(window.location.search);
 
 if(urlParams.has('series')){
-  console.log("Has series")
   let seriesId = urlParams.get('series') as string
   if(cameraStore.objectPath != seriesId){
-    console.log("Complete Reset : ", seriesId)
     landmarksStore.$reset()
     landmarkImagesStore.$reset()
     cameraStore.setPath(seriesId)
@@ -64,11 +62,11 @@ else{
 </script>
 
 <template>
-  <div class="overflow-hidden">
+  <main class="overflow-visible h-screen">
     <Menu class="sticky menu top-0 flex flex-row grow z-50"></Menu>
     <Separator></Separator>
     <ViewerView v-if="cameraStore.objectPath"/>
     <SelectView v-else/>
-  </div>
+  </main>
 </template>
 

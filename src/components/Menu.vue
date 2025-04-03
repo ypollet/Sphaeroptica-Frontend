@@ -132,7 +132,6 @@ function downloadJSON() {
 }
 
 async function openFile() {
-  console.log("OPEN FILE")
   let projectFile = await repository.importNewFile()
   if(projectFile != ""){
     cameraStore.setPath(projectFile)
@@ -140,7 +139,6 @@ async function openFile() {
 }
 
 function createFile() {
-  console.log("CREATE FILE")
 }
 
 
@@ -183,7 +181,6 @@ function importLandmarks(jsonData: string) {
 <template>
   <Dialog>
     <Menubar class="rounded border-b z-100 h-10">
-
       <MenubarMenu>
         <MenubarTrigger class="relative">
           File

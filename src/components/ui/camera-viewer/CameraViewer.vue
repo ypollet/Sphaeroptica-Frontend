@@ -36,7 +36,7 @@ import { Loader2 } from 'lucide-vue-next';
 
 import { useQuery } from '@tanstack/vue-query'
 
-import { useLandmarkImagesStore, useVirtualCameraStore } from '@/lib/stores';
+import { useImageStore, useVirtualCameraStore } from '@/lib/stores';
 
 import type { VirtualCameraImage } from '@/data/models/virtual_camera_image'
 import * as turf from '@turf/turf'
@@ -48,7 +48,7 @@ import type { Feature, Point } from 'geojson';
 import { storeToRefs } from 'pinia';
 import { round } from 'mathjs'
 
-const imageStore = useLandmarkImagesStore()
+const imageStore = useImageStore()
 const cameraStore = useVirtualCameraStore()
 const { zoomRect } = storeToRefs(imageStore)
 const { images } = storeToRefs(cameraStore)

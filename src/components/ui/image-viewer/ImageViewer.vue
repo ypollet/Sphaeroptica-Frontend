@@ -32,7 +32,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 import { ref, onMounted, nextTick, type HTMLAttributes, watch, version } from 'vue'
 import { cn, ZOOM_MAX, ZOOM_MIN, DOT_RADIUS, SPACE_TARGET } from '@/lib/utils'
 import { Landmark } from "@/data/models/landmark"
-import { useLandmarkImagesStore, useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
+import { useImageStore, useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuTrigger,
 } from '@/components/ui/context-menu'
@@ -42,12 +42,11 @@ import type { Pos } from '@/data/models/pos'
 import { storeToRefs } from 'pinia'
 import type { Ratio, VirtualCameraImage } from '@/data/models/virtual_camera_image'
 
-
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 const landmarksStore = useLandmarksStore()
 const cameraStore = useVirtualCameraStore()
-const imageStore = useLandmarkImagesStore()
+const imageStore = useImageStore()
 
 const { selectedImage } = storeToRefs(cameraStore)
 const { landmarks } = storeToRefs(landmarksStore)
@@ -56,7 +55,7 @@ landmarksStore.$subscribe(()=> {
   update()
 })
 
-async function computeReprojection(image :VirtualCameraImage, landmark: Landmark) {
+async function computeReprojection(image : VirtualCameraImage, landmark: Landmark) {
   if (landmark.position) {
     repository.computeReprojection(cameraStore.objectPath, landmark.position, image.name).then((pose) => {
       image.reprojections.set(landmark.id, pose)
@@ -109,6 +108,7 @@ base_image.value.onload = (ev: Event) => {
 
 base_image.value.src = cameraStore.selectedImage.thumbnail || cameraStore.selectedImage.fullImage
 base_image.value.alt = (cameraStore.selectedImage.thumbnail) ? 'Thumbnail of ' + cameraStore.selectedImage.name : cameraStore.selectedImage.name
+
 if (cameraStore.selectedImage.thumbnail) {
       base_image.value.onload = (ev: Event) => loaded()
     } else {
@@ -469,10 +469,17 @@ function stopDrag(event: MouseEvent) {
     dragging.value = false
     if (landmarkDragged.value != null) {
       //update pos of landmark
-      landmarkDragged.value.addPose(cameraStore.selectedImage.name, getPos({
+
+      let pos = getPos({
         x: event.pageX,
         y: event.pageY
-      }))
+      })
+
+      pos = {
+        x: Math.max(0, Math.min(imageStore.size.width, pos.x)),
+        y: Math.max(0, Math.min(imageStore.size.height, pos.y))
+      }
+      landmarkDragged.value.addPose(cameraStore.selectedImage.name, pos)
 
       //triangulate landmark
       landmarkDragged.value.triangulatePosition(cameraStore.objectPath)

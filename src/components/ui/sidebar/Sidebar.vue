@@ -38,7 +38,7 @@ import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
 } from '@/components/ui/context-menu'
 
-import { useVirtualCameraStore, useLandmarksStore, useLandmarkImagesStore} from "@/lib/stores";
+import { useVirtualCameraStore, useLandmarksStore, useImageStore} from "@/lib/stores";
 import { Landmark } from "@/data/models/landmark";
 import CameraViewer from "@/components/ui/camera-viewer/CameraViewer.vue";
 
@@ -52,7 +52,7 @@ import type { Coordinates } from "@/data/models/coordinates";
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 const landmarksStore = useLandmarksStore()
-const imageStore = useLandmarkImagesStore()
+const imageStore = useImageStore()
 const cameraStore = useVirtualCameraStore();
 
 var mapShortcuts: Map<string, Coordinates> = new Map();
@@ -112,10 +112,10 @@ getShortcuts();
 </script>
 
 <template>
-  <div class="pb-[12px] w-auto">
+  <div class="pb-[12px] w-full flex-col">
     <!--<Button class="w-full" @click="reset">Reset</Button>-->
     <h2 class="mb-2 px-4 text-center font-semibold tracking-tight">
-      ({{ round(cameraStore.coordinates.longitude, 2) }}, {{ round(cameraStore.coordinates.latitude)}}) : {{ round(imageStore.zoom * 100) }}%
+      Camera Viewer ({{ round(cameraStore.coordinates.longitude, 2) }}, {{ round(cameraStore.coordinates.latitude)}}) : {{ round(imageStore.zoom * 100) }}%
     </h2>
     <CameraViewer />
     <div class="space-y-4 py-4">

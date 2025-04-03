@@ -38,18 +38,15 @@ const settingsStore = useSettingsStore()
 </script>
 
 <template>
-  <main class="h-screen">
-    <div class="h-full flex" :class="settingsStore.isLeft ? 'flex-row' : 'flex-row-reverse'">
-      <div class="rest_height overflow-auto sidebar rounded-md border p-4">
+    <div class="rest_height flex max-w-screen" :class="settingsStore.isLeft ? 'flex-row' : 'flex-row-reverse'">
+      <div class="h-full w-96 flex-none overflow-auto rounded-md border p-4">
         <Sidebar />
       </div>
 
-      <div class="rest_width rest-height flex grow items-center justify-center">
+      <div class="h-full w-0 flex-auto items-center justify-center">
         <ImageViewer />
       </div>
     </div>
-
-  </main>
 </template>
 
 <style scoped>
@@ -62,10 +59,10 @@ const settingsStore = useSettingsStore()
 }
 
 .rest_height {
-  height: calc(100% - 61px);
+  height: calc(100% - 41px);
 }
 
 .rest_width {
-  width: 75%;
+  width: calc(100% - 20rem);
 }
 </style>

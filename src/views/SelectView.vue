@@ -39,7 +39,6 @@ const cameraStore = useVirtualCameraStore()
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 async function openNewFile(){
-    console.log("Open New File")
     let projectFile = await repository.importNewFile()
     cameraStore.setPath(projectFile)
 }

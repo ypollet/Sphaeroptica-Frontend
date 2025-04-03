@@ -40,7 +40,7 @@ import { RepositoryFactory } from '@/data/repositories/repository_factory'
 import { repositorySettings } from "@/config/appSettings"
 import type { Pos } from '@/data/models/pos'
 import { storeToRefs } from 'pinia'
-import type { Ratio } from '@/data/models/virtual_camera_image'
+import type { Ratio, VirtualCameraImage } from '@/data/models/virtual_camera_image'
 
 
 const repository = RepositoryFactory.get(repositorySettings.type)
@@ -52,11 +52,15 @@ const imageStore = useLandmarkImagesStore()
 const { selectedImage } = storeToRefs(cameraStore)
 const { landmarks } = storeToRefs(landmarksStore)
 
+landmarksStore.$subscribe(()=> {
+  update()
+})
 
-function computeReprojection(landmark: Landmark) {
+async function computeReprojection(image :VirtualCameraImage, landmark: Landmark) {
   if (landmark.position) {
-    repository.computeReprojection(cameraStore.objectPath, landmark.position, cameraStore.selectedImage.name).then((pose) => {
-      cameraStore.selectedImage.reprojections.set(landmark.id, pose)
+    repository.computeReprojection(cameraStore.objectPath, landmark.position, image.name).then((pose) => {
+      image.reprojections.set(landmark.id, pose)
+      image.versions.set(landmark.id, landmark.getVersion())
       update()
     }).catch((error) => {
       console.error(error);
@@ -64,20 +68,19 @@ function computeReprojection(landmark: Landmark) {
   }
 }
 
-function checkVersions() {
+async function checkVersions() {
   landmarksStore.landmarks.forEach((landmark, index) => {
     if (cameraStore.selectedImage.versions.get(landmark.id) == null || cameraStore.selectedImage.versions.get(landmark.id) !== landmark.getVersion()) {
-      cameraStore.selectedImage.versions.set(landmark.id, landmark.getVersion())
-
       if (landmark.position != null) {
-        computeReprojection(landmark)
+        computeReprojection(cameraStore.selectedImage, landmark)
       } else {
         // automatically delete key just in case
         cameraStore.selectedImage.reprojections.delete(landmark.id)
+        update()
       }
     }
   })
-  update()
+
 }
 
 function getRatio(): Ratio {
@@ -559,7 +562,7 @@ function addLandmark() {
 function deleteLandmark(landmark: Landmark) {
   landmark.removePose(cameraStore.selectedImage.name)
   landmark.triangulatePosition(cameraStore.objectPath).then(() => {
-    computeReprojection(landmark)
+    computeReprojection(cameraStore.selectedImage, landmark)
   })
 }
 </script>

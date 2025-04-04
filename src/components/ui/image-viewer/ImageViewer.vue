@@ -51,6 +51,8 @@ const imageStore = useImageStore()
 const { selectedImage } = storeToRefs(cameraStore)
 const { landmarks } = storeToRefs(landmarksStore)
 
+const screenZoom = ref<number>(1)
+
 landmarksStore.$subscribe(()=> {
   update()
 })
@@ -373,7 +375,8 @@ function screenFit() {
     canvas.value.width = Math.floor(imageContainer.value.clientWidth)
     canvas.value.height = Math.floor(imageContainer.value.clientHeight)
 
-    imageStore.zoom = Math.min(imageContainer.value.clientWidth / imageStore.size.width, imageContainer.value.clientHeight / imageStore.size.height)
+    screenZoom.value = Math.min(imageContainer.value.clientWidth / imageStore.size.width, imageContainer.value.clientHeight / imageStore.size.height)
+    imageStore.zoom = screenZoom.value
     imageStore.offset = {x:0, y:0}
   }
 }
@@ -402,7 +405,7 @@ function updateZoom(zoomDelta: number) {
   imageStore.zoom = +(imageStore.zoom * (1 + zoomDelta / 20)).toFixed(2)
 
   //check value
-  imageStore.zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, imageStore.zoom))
+  imageStore.zoom = Math.max(ZOOM_MIN*screenZoom.value, Math.min(ZOOM_MAX, imageStore.zoom))
 }
 
 

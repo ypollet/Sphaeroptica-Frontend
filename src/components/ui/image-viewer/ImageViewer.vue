@@ -30,6 +30,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, type HTMLAttributes, watch, version } from 'vue'
+import { useWindowSize } from '@vueuse/core'
 import { cn, ZOOM_MAX, ZOOM_MIN, DOT_RADIUS, SPACE_TARGET } from '@/lib/utils'
 import { Landmark } from "@/data/models/landmark"
 import { useImageStore, useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
@@ -157,6 +158,7 @@ const degrees_to_radians = (deg: number) => (deg * Math.PI) / 180.0; // Convert 
 
 onMounted(() => {
   const resizeObserver = new ResizeObserver(function () {
+    console.log("Resize : ", useWindowSize().height.value)
     if (imageContainer.value && canvas.value && base_image.value) {
       canvas.value.width = Math.floor(imageContainer.value.clientWidth)
       canvas.value.height = Math.floor(imageContainer.value.clientHeight)
@@ -579,7 +581,7 @@ function deleteLandmark(landmark: Landmark) {
 
 <template>
   <div ref="imageContainer"
-    :class="cn('relative border w-full h-full flex justify-center items-center overflow-auto', props.class)"
+    :class="cn('relative border w-full h-full flex justify-center items-center overflow-visible', props.class)"
     @wheel.prevent>
     <ContextMenu>
       <ContextMenuTrigger class="flex w-full h-full">

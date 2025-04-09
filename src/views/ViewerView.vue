@@ -38,31 +38,22 @@ const settingsStore = useSettingsStore()
 </script>
 
 <template>
-    <div class="rest_height flex max-w-screen" :class="settingsStore.isLeft ? 'flex-row' : 'flex-row-reverse'">
+  <div class="rest_height">
+    <div class="flex w-screen h-full" :class="settingsStore.isLeft ? 'flex-row' : 'flex-row-reverse'">
       <div class="h-full w-96 flex-none overflow-auto rounded-md border p-4">
         <Sidebar />
       </div>
 
       <div class="h-full w-0 flex-auto items-center justify-center">
-        <ImageViewer />
+        <ImageViewer/>
       </div>
     </div>
+  </div>
 </template>
 
 <style scoped>
-.menu {
-  height: 60px;
-}
-
-.sidebar {
-  width: 25%;
-}
-
 .rest_height {
   height: calc(100% - 41px);
 }
 
-.rest_width {
-  width: calc(100% - 20rem);
-}
 </style>

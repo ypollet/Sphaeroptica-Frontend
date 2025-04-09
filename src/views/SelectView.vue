@@ -45,13 +45,20 @@ async function openNewFile(){
 </script>
 
 <template>
-    <main class="h-screen">
+    <div class="rest_height">
         <div v-if="repositorySettings.type == 'DESKTOP'" class="justify-center items-center flex grow h-full">
             <Button @click="openNewFile" class="text-4xl p-8">Open Sphaeroptica Project</Button>
         </div>
         <Label class="text-4xl justify-center items-center align-middle flex grow h-full text-red-600 dark:text-red-400" v-else>
             Error 404 : please select a valid URL {{ repositorySettings.type }}
         </Label>
-    </main>
+    </div>
 
 </template>
+
+<style scoped>
+.rest_height {
+  height: calc(100% - 41px);
+}
+
+</style>

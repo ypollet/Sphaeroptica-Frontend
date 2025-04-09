@@ -104,7 +104,7 @@ function resetScale(){
   landmarksStore.adjustFactor = 1
 }
 function reset(){
-  cameraStore.setPath(cameraStore.objectPath)
+  cameraStore.$reset()
   imageStore.$reset()
 }
 

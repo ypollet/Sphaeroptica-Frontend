@@ -46,15 +46,15 @@ const cameraStore = useVirtualCameraStore()
 
 let urlParams = new URLSearchParams(window.location.search);
 
-if(urlParams.has('series')){
+if (urlParams.has('series')) {
   let seriesId = urlParams.get('series') as string
-  if(cameraStore.objectPath != seriesId){
+  if (cameraStore.objectPath != seriesId) {
     landmarksStore.$reset()
     landmarkImagesStore.$reset()
     cameraStore.setPath(seriesId)
   }
 }
-else{
+else {
   landmarksStore.$reset()
   landmarkImagesStore.$reset()
   cameraStore.$reset()
@@ -62,11 +62,10 @@ else{
 </script>
 
 <template>
-  <main class="overflow-visible h-screen">
+  <main class="overflow-hidden h-screen">
     <Menu class="sticky menu top-0 flex flex-row grow z-50"></Menu>
     <Separator></Separator>
-    <ViewerView v-if="cameraStore.objectPath"/>
-    <SelectView v-else/>
+    <ViewerView v-if="cameraStore.objectPath" />
+    <SelectView v-else />
   </main>
 </template>
-

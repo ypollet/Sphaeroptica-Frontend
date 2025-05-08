@@ -63,7 +63,7 @@ else {
 
 <template>
   <main class="overflow-hidden h-screen">
-    <Menu class="sticky menu top-0 flex flex-row grow z-50"></Menu>
+    <Menu class="sticky top-0 flex flex-row grow z-50"></Menu>
     <Separator></Separator>
     <ViewerView v-if="cameraStore.objectPath" />
     <SelectView v-else />

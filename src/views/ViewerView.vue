@@ -55,5 +55,4 @@ const settingsStore = useSettingsStore()
 .rest_height {
   height: calc(100% - 41px);
 }
-
 </style>

@@ -41,7 +41,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-vue-next";
 
 import * as math from "mathjs"
-import { Scale } from "@/lib/utils";
+import { Scale } from "@/lib/lib";
 
 const STEP = 0.01
 const ROUND = 5

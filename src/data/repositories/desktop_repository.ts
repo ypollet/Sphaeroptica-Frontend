@@ -31,15 +31,32 @@
 import type { Coordinates } from "../models/coordinates";
 import type { ProjectData, Size } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
-import { Images, Shortcuts, Reproject, Triangulate,  ImportNewFile} from "../../../wailsjs/go/main/App.js";
+import { Images, Shortcuts, Reproject, Triangulate, ImportNewFile, GetImportMethods, OpenImportFile, ImportProject } from "../../../wailsjs/go/main/App.js";
 import type { Pos } from "../models/pos";
 import type { main } from "wailsjs/go/models";
 import type { Repository } from "./repository";
+import type { ImportFile } from "../models/imports";
+import { object } from "zod";
 
 export class DesktopRepository implements Repository {
 
+  async importProject(software: string, files: Map<string, string>): Promise<string> {
+    return ImportProject(software, Object.fromEntries(files))
+  };
+
+  getImportFile(software: string, index: number): Promise<string> {
+    return OpenImportFile(software, index)
+  };
+
   importNewFile(): Promise<string> {
     return ImportNewFile()
+  };
+
+  getImportMethods(): Promise<Map<string, Array<ImportFile>>> {
+    return GetImportMethods().then((res) => {
+      let map: Map<string, Array<ImportFile>> = new Map(Object.entries(res))
+      return map
+    });
   };
 
   async getImages(objectPath: string): Promise<ProjectData> {

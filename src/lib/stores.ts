@@ -30,7 +30,7 @@
 
 import * as math from 'mathjs'
 import { defineStore, type PiniaPluginContext, type StateTree } from 'pinia'
-import { degreesToRad } from '@/lib/utils'
+import { degreesToRad } from '@/lib/lib'
 import { DequeMax2 } from '@/data/models/dequeMax2'
 import { Distance } from '@/data/models/distance'
 import { Landmark } from '@/data/models/landmark'

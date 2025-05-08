@@ -44,6 +44,7 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from '@/components/ui/menubar'
+
 import {
   Dialog,
   DialogContent,
@@ -52,8 +53,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose
+  DialogClose,
+  DialogItem
 } from '@/components/ui/dialog'
+
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { useForm, validate, type FormContext } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import * as z from 'zod'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -68,6 +82,11 @@ import { useToggle, useDark } from '@vueuse/core'
 import { useSettingsStore, useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
 import { repositorySettings } from "@/config/appSettings"
 import saveAs from 'file-saver';
+import type { ImportFile } from '@/data/models/imports'
+import { ref, onMounted } from 'vue'
+import ImportFormItem from './ImportFormItem.vue'
+
+
 
 const settingsStore = useSettingsStore()
 const landmarksStore = useLandmarksStore()
@@ -77,9 +96,25 @@ const isDark = useDark({
   storageKey: 'localStorage'
 })
 
+const isEditDialogOpen = ref<boolean>(false)
+const setIsEditDialogOpen = useToggle(isEditDialogOpen)
+const isDeleteDialogOpen = ref<boolean>(false)
+const setIsDeleteDialogOpen = useToggle(isDeleteDialogOpen)
+
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 const toggleDark = useToggle(isDark)
+
+const imports = ref<Map<string, Array<ImportFile>>>(new Map())
+const importMap = new Map<string, any>()
+
+onMounted(async () => {
+  if (repositorySettings.type == "DESKTOP") {
+    repository.getImportMethods().then((res) => {
+      imports.value = res
+    })
+  }
+})
 
 
 function downloadCsv() {
@@ -120,9 +155,9 @@ function downloadJSON() {
   let arrayDistance = new Array<Object>()
   landmarksStore.distances.forEach((distance) => {
     arrayDistance.push({
-      "label" : distance.label,
-      "left" : distance.landmarkLeft.id,
-      "right" : distance.landmarkRight.id
+      "label": distance.label,
+      "left": distance.landmarkLeft.id,
+      "right": distance.landmarkRight.id
     })
   })
   data.set('distances', arrayDistance)
@@ -133,16 +168,13 @@ function downloadJSON() {
 
 async function openFile() {
   let projectFile = await repository.importNewFile()
-  if(projectFile != ""){
+  if (projectFile != "") {
     cameraStore.setPath(projectFile)
   }
 }
 
-function createFile() {
-}
 
-
-function onSubmit(event: Event) {
+function submitLandmarks(event: Event) {
   event.preventDefault()
   let form = event.target as HTMLFormElement
   let inputFile = form.elements[0] as HTMLInputElement
@@ -155,11 +187,12 @@ function onSubmit(event: Event) {
     })
   }
 }
+
 function importLandmarks(jsonData: string) {
   let jsonObject = JSON.parse(jsonData)
   let mapData: Map<string, any> = new Map(Object.entries(jsonObject));
   let oldIds = new Map<string, Landmark>()
-  let mapLandmarks : Map<string, Object> = new Map(Object.entries(mapData.get("landmarks")))
+  let mapLandmarks: Map<string, Object> = new Map(Object.entries(mapData.get("landmarks")))
   mapLandmarks.forEach((value: Object, key: string) => {
     let landmarkMap = new Map(Object.entries(value));
     let landmark = new Landmark(landmarksStore.generateID(), landmarkMap.get("label"), 1, Color(landmarkMap.get("color")), new Map(Object.entries(landmarkMap.get("poses"))), landmarkMap.get("position"))
@@ -167,94 +200,91 @@ function importLandmarks(jsonData: string) {
     landmarksStore.addLandmark(landmark)
   })
 
-  if(mapData.get("distances")){
-    mapData.get("distances").forEach((distanceObject : Object) => {
+  if (mapData.get("distances")) {
+    mapData.get("distances").forEach((distanceObject: Object) => {
       let distanceMap = new Map(Object.entries(distanceObject));
       landmarksStore.addDistance(oldIds.get(distanceMap.get("left"))!, oldIds.get(distanceMap.get("right"))!, distanceMap.get("label"))
     })
   }
 }
 
-
 </script>
 
 <template>
-  <Dialog>
-    <Menubar class="rounded border-b z-100 h-10">
-      <MenubarMenu>
-        <MenubarTrigger class="relative">
-          File
-        </MenubarTrigger>
-        <MenubarContent>
-          <MenubarLabel v-if="repositorySettings.type == 'DESKTOP'">
-            Files
-          </MenubarLabel>
-          <MenubarItem @select="openFile" inset v-if="repositorySettings.type == 'DESKTOP'">Open</MenubarItem>
-          <MenubarItem @select="createFile" inset v-if="repositorySettings.type == 'DESKTOP'">New</MenubarItem>
-          <MenubarSeparator v-if="repositorySettings.type == 'DESKTOP'"/>
-          <MenubarLabel>
-            Landmarks
-          </MenubarLabel>
-          <DialogTrigger asChild>
-            <MenubarItem inset :disabled="cameraStore.objectPath == ''">Import</MenubarItem>
-          </DialogTrigger>
-          <MenubarSub :disabled="cameraStore.objectPath == ''">
-            <MenubarSubTrigger inset :disabled="cameraStore.objectPath == ''">Export</MenubarSubTrigger>
-            <MenubarSubContent>
-              <MenubarItem @select="downloadCsv">
-                CSV
-              </MenubarItem>
-              <MenubarItem @select="downloadJSON">
-                JSON
-              </MenubarItem>
-            </MenubarSubContent>
-          </MenubarSub>
-        </MenubarContent>
-      </MenubarMenu>
-      <MenubarMenu>
-        <MenubarTrigger>Edit</MenubarTrigger>
-        <MenubarContent>
-          <MenubarItem disabled>
-            Undo <MenubarShortcut>⌘Z</MenubarShortcut>
-          </MenubarItem>
-          <MenubarItem disabled>
-            Redo <MenubarShortcut>⇧⌘Z</MenubarShortcut>
-          </MenubarItem>
-        </MenubarContent>
-      </MenubarMenu>
-      <MenubarMenu>
-        <MenubarTrigger>
-          Settings
-        </MenubarTrigger>
-        <MenubarContent>
-          <MenubarLabel inset>
-            <div class="flex flex-row justify-between h-full w-full"><span>Dark Mode :</span>
-              <Switch :checked="isDark" @update:checked="toggleDark" class="inline-block align-middle ml-auto"></Switch>
-            </div>
-          </MenubarLabel>
-          <MenubarLabel inset>
-            <div class="flex flex-row justify-between h-full w-full"><span>Reverse Mode :</span>
-              <Switch :checked="settingsStore.isLeft" @update:checked="settingsStore.useToggleLeft"
-                class="inline-block align-middle self-end"></Switch>
-            </div>
-          </MenubarLabel>
-        </MenubarContent>
-      </MenubarMenu>
-    </Menubar>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Add the landmark file</DialogTitle>
-        <DialogDescription>Add the json files containing the landmarks</DialogDescription>
-      </DialogHeader>
-      <form @submit="onSubmit">
-        <Label>File</Label>
-        <Input type="file" placeholder="your landmark json file" />
-        <DialogFooter>
-          <DialogClose as-child>
-            <Button type="submit">Confirm</Button>
-          </DialogClose>
-        </DialogFooter>
-      </form>
-    </DialogContent>
-  </Dialog>
+  <Menubar class="rounded border-b z-100 h-10">
+    <MenubarMenu>
+      <MenubarTrigger class="relative">
+        File
+      </MenubarTrigger>
+      <MenubarContent>
+        <MenubarLabel v-if="repositorySettings.type == 'DESKTOP'">
+          Files
+        </MenubarLabel>
+        <MenubarItem @select="openFile" inset v-if="repositorySettings.type == 'DESKTOP'">Open</MenubarItem>
+        <MenubarSub v-if="repositorySettings.type == 'DESKTOP'">
+          <MenubarSubTrigger inset>New</MenubarSubTrigger>
+          <MenubarSubContent>
+              <ImportFormItem v-for="importType in imports.keys()" :title="importType" :imports="imports.get(importType)!"/>
+          </MenubarSubContent>
+        </MenubarSub>
+        <MenubarSeparator v-if="repositorySettings.type == 'DESKTOP'" />
+        <MenubarLabel>
+          Landmarks
+        </MenubarLabel>
+        <DialogItem triggerChildren="Import" :disabledTrigger="cameraStore.objectPath == ''"
+          dialogTitle="Add the landmark file" , dialogDescription="Add the json files containing the landmarks">
+          <form @submit="submitLandmarks" >
+            <Label>File json</Label>
+            <Input type="file" />
+            <DialogFooter>
+              <DialogClose as-child>
+                <Button type="submit">Confirm</Button>
+              </DialogClose>
+            </DialogFooter>
+          </form>
+        </DialogItem>
+        <MenubarSub :disabled="cameraStore.objectPath == ''">
+          <MenubarSubTrigger inset :disabled="cameraStore.objectPath == ''">Export</MenubarSubTrigger>
+          <MenubarSubContent>
+            <MenubarItem @select="downloadCsv">
+              CSV
+            </MenubarItem>
+            <MenubarItem @select="downloadJSON">
+              JSON
+            </MenubarItem>
+          </MenubarSubContent>
+        </MenubarSub>
+      </MenubarContent>
+    </MenubarMenu>
+    <MenubarMenu>
+      <MenubarTrigger>Edit</MenubarTrigger>
+      <MenubarContent>
+        <MenubarItem disabled>
+          Undo <MenubarShortcut>⌘Z</MenubarShortcut>
+        </MenubarItem>
+        <MenubarItem disabled>
+          Redo <MenubarShortcut>⇧⌘Z</MenubarShortcut>
+        </MenubarItem>
+      </MenubarContent>
+    </MenubarMenu>
+    <MenubarMenu>
+      <MenubarTrigger>
+        Settings
+      </MenubarTrigger>
+      <MenubarContent>
+        <MenubarLabel inset>
+          <div class="flex flex-row justify-between h-full w-full"><span>Dark Mode :</span>
+            <Switch :checked="isDark" @update:checked="toggleDark" class="inline-block align-middle ml-auto"></Switch>
+          </div>
+        </MenubarLabel>
+        <MenubarLabel inset>
+          <div class="flex flex-row justify-between h-full w-full"><span>Reverse Mode :</span>
+            <Switch :checked="settingsStore.isLeft" @update:checked="settingsStore.useToggleLeft"
+              class="inline-block align-middle self-end"></Switch>
+          </div>
+        </MenubarLabel>
+      </MenubarContent>
+    </MenubarMenu>
+  </Menubar>
+
 </template>

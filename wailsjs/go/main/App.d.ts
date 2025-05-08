@@ -3,9 +3,15 @@
 import {main} from '../models';
 import {photogrammetry} from '../models';
 
+export function GetImportMethods():Promise<{[key: string]: Array<main.ImportForm>}>;
+
 export function Images(arg1:string):Promise<main.CameraViewer>;
 
 export function ImportNewFile():Promise<string>;
+
+export function ImportProject(arg1:string,arg2:{[key: string]: string}):Promise<string>;
+
+export function OpenImportFile(arg1:string,arg2:number):Promise<string>;
 
 export function Reproject(arg1:string,arg2:string,arg3:Array<number>):Promise<photogrammetry.Pos>;
 

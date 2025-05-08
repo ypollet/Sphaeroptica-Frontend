@@ -42,7 +42,7 @@ import { useVirtualCameraStore, useLandmarksStore, useImageStore} from "@/lib/st
 import { Landmark } from "@/data/models/landmark";
 import CameraViewer from "@/components/ui/camera-viewer/CameraViewer.vue";
 
-import { Scale } from "@/lib/utils";
+import { Scale } from "@/lib/lib";
 import { round } from "mathjs"
 
 import { RepositoryFactory } from '@/data/repositories/repository_factory'
@@ -62,33 +62,32 @@ function getShortcuts() {
       shortcuts.forEach((item) => {
         mapShortcuts.set(item.name, item.coordinates);
       });
+      console.log("Map shortcuts")
+      console.log(mapShortcuts)
     })
     .catch((error) => {
       console.error(error);
     }); 
 }
 
-const map: Map<string, string> = new Map();
-map.set("top", "SUPERIOR");
-map.set("bot", "INFERIOR");
-map.set("left", "LEFT");
-map.set("right", "RIGHT");
-map.set("front", "FRONT");
-map.set("back", "POST");
 
 function shortcut(event: Event) {
-  
   let target = event.currentTarget as HTMLButtonElement;
+  let valKey = (target != null) ? target.attributes.getNamedItem("data-key")?.value : undefined
+  console.log(valKey)
   if (
-    target == null ||
-    target.attributes.getNamedItem("data-key")?.value == undefined
+    valKey == undefined
   ) {
     return;
   }
-  // TODO : It's ugly there's a triple Map !!
-  let newPos: Coordinates | undefined = mapShortcuts.get(map.get(target.attributes.getNamedItem("data-key")?.value!)!)!
+  let newPos: Coordinates | undefined = mapShortcuts.get(valKey)!
+  console.log(newPos)
   if (newPos != undefined) {
-    cameraStore.coordinates = newPos;
+    // Don't forget to copy the object
+    cameraStore.coordinates = {
+      longitude : newPos.longitude,
+      latitude : newPos.latitude
+    };
   }
 }
 
@@ -104,7 +103,7 @@ function resetScale(){
   landmarksStore.adjustFactor = 1
 }
 function reset(){
-  cameraStore.$reset()
+  cameraStore.setPath(cameraStore.objectPath)
   imageStore.$reset()
 }
 
@@ -115,7 +114,7 @@ getShortcuts();
   <div class="pb-[12px] w-full flex-col">
     <!--<Button class="w-full" @click="reset">Reset</Button>-->
     <h2 class="mb-2 px-4 text-center font-semibold tracking-tight">
-      Camera Viewer ({{ round(cameraStore.coordinates.longitude, 2) }}, {{ round(cameraStore.coordinates.latitude)}}) : {{ round(imageStore.zoom * 100) }}%
+      Camera Viewer ({{ round(cameraStore.coordinates.longitude) }}, {{ round(cameraStore.coordinates.latitude)}}) : {{ round(imageStore.zoom * 100) }}%
     </h2>
     <CameraViewer />
     <div class="space-y-4 py-4">
@@ -126,26 +125,26 @@ getShortcuts();
         <div class="grid grid-cols-4">
           <div class="grid grid-cols-subgrid col-span-4">
             <div class="col-start-2">
-              <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="top">
+              <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="SUPERIOR">
                 TOP
               </Button>
             </div>
           </div>
-          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="left">
+          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="LEFT">
             LEFT
           </Button>
-          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="front">
+          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="FRONT">
             FRONT
           </Button>
-          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="right">
+          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="RIGHT">
             RIGHT
           </Button>
-          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="back">
+          <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="POST">
             BACK
           </Button>
           <div class="grid grid-cols-subgrid col-span-4">
             <div class="col-start-2">
-              <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="bot">
+              <Button @click="shortcut" variant="secondary" class="w-full justify-center" data-key="INFERIOR">
                 BOT
               </Button>
             </div>

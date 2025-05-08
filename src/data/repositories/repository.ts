@@ -31,6 +31,8 @@
 import type { ProjectData } from "@/data/models/virtual_camera_image";
 import type { Shortcut } from "@/data/models/shortcut";
 import type { Pos } from "../models/pos";
+import type { ImportFile } from "../models/imports";
+import type { Side } from "node_modules/radix-vue/dist/Popper";
 
 export interface Repository {
     getImages : (objectPath:string) => Promise<ProjectData>;
@@ -38,4 +40,7 @@ export interface Repository {
     computeReprojection : (objectPath:string, position: Array<number>, imageName: string) => Promise<Pos>;
     triangulate: (objectPath : string, poses: Map<string, Pos>) => Promise<Array<number> | undefined>
     importNewFile: () => Promise<string>
+    getImportMethods: () => Promise<Map<string, Array<ImportFile>>>
+    getImportFile: (software : string, index : number) => Promise<string>
+    importProject: (software : string, files : Map<string, string>) => Promise<string>
 }

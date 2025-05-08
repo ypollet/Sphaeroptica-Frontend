@@ -34,6 +34,7 @@ import type { ProjectData, VirtualCameraImage } from "../models/virtual_camera_i
 import type { Shortcut } from "../models/shortcut";
 import type { Pos } from "../models/pos";
 import type { Repository } from "./repository";
+import type { ImportFile } from "../models/imports";
 
 export class OrthancRepository implements Repository {
     server: string;
@@ -41,8 +42,17 @@ export class OrthancRepository implements Repository {
     constructor(server: string) {
         this.server = server
     }
-
+    importProject(software: string, files: Map<string, string>) : Promise<string>{
+        throw Error("Not implemented")
+    };
+    getImportFile(software : string, index : number) : Promise<string> {
+        throw Error("Not implemented")
+    };
     importNewFile() : Promise<string> {
+        throw Error("Not implemented")
+    };
+
+    getImportMethods() : Promise<Map<string, Array<ImportFile>>> {
         throw Error("Not implemented")
     };
 

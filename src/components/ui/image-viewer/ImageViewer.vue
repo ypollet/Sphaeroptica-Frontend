@@ -31,7 +31,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import { ref, onMounted, nextTick, type HTMLAttributes, watch, version } from 'vue'
 import { useWindowSize } from '@vueuse/core'
-import { cn, ZOOM_MAX, ZOOM_MIN, DOT_RADIUS, SPACE_TARGET } from '@/lib/utils'
+import { cn } from "@/lib/utils"
+import { ZOOM_MAX, ZOOM_MIN, DOT_RADIUS, SPACE_TARGET } from '@/lib/lib'
 import { Landmark } from "@/data/models/landmark"
 import { useImageStore, useLandmarksStore, useVirtualCameraStore } from '@/lib/stores'
 import {
@@ -158,7 +159,6 @@ const degrees_to_radians = (deg: number) => (deg * Math.PI) / 180.0; // Convert 
 
 onMounted(() => {
   const resizeObserver = new ResizeObserver(function () {
-    console.log("Resize : ", useWindowSize().height.value)
     if (imageContainer.value && canvas.value && base_image.value) {
       canvas.value.width = Math.floor(imageContainer.value.clientWidth)
       canvas.value.height = Math.floor(imageContainer.value.clientHeight)

@@ -146,9 +146,11 @@ function updateRect() {
 
 
 function mouseEnter(event: MouseEvent) {
+  event.preventDefault()
   isPressed = true
 }
 function mouseMove(event: MouseEvent) {
+  event.preventDefault()
   if (isPressed) {
     let widthContainer = imageContainer.value!.clientWidth
     let heightContainer = imageContainer.value!.clientHeight
@@ -159,7 +161,8 @@ function mouseMove(event: MouseEvent) {
 
   }
 }
-function mouseLeave() {
+function mouseLeave(event: MouseEvent) {
+  event.preventDefault()
   isPressed = false
 }
 </script>

@@ -90,6 +90,7 @@ import ImportFormItem from './ImportFormItem.vue'
 
 const settingsStore = useSettingsStore()
 const landmarksStore = useLandmarksStore()
+const imageStore = useLandmarksStore()
 const cameraStore = useVirtualCameraStore()
 
 const isDark = useDark({
@@ -168,7 +169,9 @@ function downloadJSON() {
 
 async function openFile() {
   let projectFile = await repository.importNewFile()
-  if (projectFile != "") {
+  if (projectFile != "" && projectFile != cameraStore.objectPath) {
+    landmarksStore.$reset()
+    imageStore.$reset()
     cameraStore.setPath(projectFile)
   }
 }

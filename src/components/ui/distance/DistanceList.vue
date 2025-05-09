@@ -57,7 +57,7 @@ function changeScale(payload: string | number, distance: Distance) {
 </script>
 
 <template>
-    <div class="flex min-h-48 max-w-full flex flex-col border">
+    <div class="flex h-48 overflow-auto max-w-full flex flex-col border">
         <div v-for="(distance, index) in landmarksStore.distances" class="flex flex-col w-full h-10">
             <div class="flex row items-center justify-start space-x-3 px-3 w-full h-full">
                 <Label v-show="!distance.edit_label" class="flex whitespace-nowrap w-36"

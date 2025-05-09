@@ -31,13 +31,16 @@ import { Button } from './ui/button'
 import { RepositoryFactory } from '@/data/repositories/repository_factory'
 import { repositorySettings } from '@/config/appSettings'
 import { useForwardPropsEmits, type DialogRootEmits, type DialogRootProps } from 'radix-vue'
-import { nextTick, onMounted, ref } from 'vue';
-import { useVirtualCameraStore } from '@/lib/stores';
+import { nextTick, ref } from 'vue';
+import { useImageStore, useLandmarksStore, useVirtualCameraStore } from '@/lib/stores';
 import { Loader2 } from 'lucide-vue-next';
 
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 const cameraStore = useVirtualCameraStore()
+const landmarksStore = useLandmarksStore()
+const imageStore = useImageStore()
+
 
 const props = defineProps<DialogRootProps &
 {
@@ -75,11 +78,16 @@ const onSubmit = importForm.handleSubmit(async (values) => {
     loading.value = true
     let path = await repository.importProject(props.title, vals)
 
-    if (path != null) {
-        cameraStore.setPath(path)
-    }
+
     open.value = false
-    nextTick(() => loading.value = false)
+    nextTick(() => {
+        loading.value = false
+        if (path != null) {
+            landmarksStore.$reset()
+            imageStore.$reset()
+            cameraStore.setPath(path)
+        }
+    })
 })
 
 function browse(index: number): Promise<string> {

@@ -85,6 +85,8 @@ import saveAs from 'file-saver';
 import type { ImportFile } from '@/data/models/imports'
 import { ref, onMounted } from 'vue'
 import ImportFormItem from './ImportFormItem.vue'
+import type { DistanceJSON, ExportJSON, LandmarkJSON } from '@/data/models/export/landmarks_json'
+import { type LandmarkCSV } from '@/data/models/export/landmarks_csv'
 
 
 
@@ -118,18 +120,39 @@ onMounted(async () => {
 })
 
 
-function downloadCsv() {
+function downloadCsv() {  
+  
+  console.log("Download CSV")
+
   const rows = [
     ["Label", "Color", "X", "Y", "Z", "X_adjused", "Y_adjusted", "Z_adjusted"]
   ];
 
+  let rowsData = Array<LandmarkCSV>();
   landmarksStore.landmarks.filter((landmark) => landmark.position != undefined).forEach((landmark) => {
     landmark = landmark as Landmark
-    let ajdusted_pos: Array<number> = landmark.position!.map((input) => input * landmarksStore.adjustFactor)
-    let row: Array<string> = [landmark.label, landmark.getColorHEX(), landmark.position![0].toString(), landmark.position![1].toString(), landmark.position![2].toString(), ajdusted_pos[0].toString(), ajdusted_pos[1].toString(), ajdusted_pos[2].toString()]
-    rows.push(row)
+    let adjusted_pos: Array<number> = landmark.position!.map((input) => input * landmarksStore.adjustFactor)
+    let data: LandmarkCSV = {
+      label : landmark.label, 
+      color : landmark.getColorHEX(), 
+      x: landmark.position![0].toString(), 
+      y: landmark.position![1].toString(), 
+      z: landmark.position![2].toString(), 
+      x_adjusted: adjusted_pos[0].toString(), 
+      y_adjusted: adjusted_pos[1].toString(), 
+      z_adjusted: adjusted_pos[2].toString()}
+    rowsData.push(data)
   })
 
+  
+  if (repositorySettings.type == "DESKTOP") {
+    repository.landmarkCSV(rowsData);
+    return;
+  }
+  rowsData.forEach((data) => {
+    let row: Array<string> = [data.label, data.color, data.x, data.y, data.z, data.x_adjusted, data.y_adjusted, data.z_adjusted]
+    rows.push(row)
+  })
   let csvContent = rows.map(e => e.join(";")).join("\n");
 
   let blob: Blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
@@ -137,11 +160,8 @@ function downloadCsv() {
 }
 
 function downloadJSON() {
-  const data: Map<string, any> = new Map()
 
-  data.set('scale_factor', landmarksStore.adjustFactor)
-
-  let mapLandmark = new Map<string, Object>()
+  let mapLandmark = new Map<string, LandmarkJSON>()
 
   landmarksStore.landmarks.forEach((landmark) => {
     mapLandmark.set(landmark.id, {
@@ -151,9 +171,8 @@ function downloadJSON() {
       "poses": Object.fromEntries(landmark.poses)
     })
   })
-  data.set('landmarks', Object.fromEntries(mapLandmark))
 
-  let arrayDistance = new Array<Object>()
+  let arrayDistance = new Array<DistanceJSON>()
   landmarksStore.distances.forEach((distance) => {
     arrayDistance.push({
       "label": distance.label,
@@ -161,9 +180,19 @@ function downloadJSON() {
       "right": distance.landmarkRight.id
     })
   })
-  data.set('distances', arrayDistance)
 
-  var blob = new Blob([JSON.stringify(Object.fromEntries(data.entries()), null, 2)], { type: "application/json;charset=utf-8" });
+  const data : ExportJSON = {
+    scaleFactor: landmarksStore.adjustFactor,
+    landmarks: Object.fromEntries(mapLandmark),
+    distances: arrayDistance,
+  }
+
+  if (repositorySettings.type == "DESKTOP") {
+    repository.landmarksJSON(data);
+    return;
+  }
+
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
   saveAs(blob, "landmarks_" + cameraStore.objectPath + "_" + new Date().getTime() + ".json");
 }
 
@@ -210,7 +239,6 @@ function importLandmarks(jsonData: string) {
     })
   }
 }
-
 </script>
 
 <template>
@@ -227,16 +255,17 @@ function importLandmarks(jsonData: string) {
         <MenubarSub v-if="repositorySettings.type == 'DESKTOP'">
           <MenubarSubTrigger inset>New</MenubarSubTrigger>
           <MenubarSubContent>
-              <ImportFormItem v-for="importType in imports.keys()" :title="importType" :imports="imports.get(importType)!"/>
+            <ImportFormItem v-for="importType in imports.keys()" :title="importType"
+              :imports="imports.get(importType)!" />
           </MenubarSubContent>
         </MenubarSub>
         <MenubarSeparator v-if="repositorySettings.type == 'DESKTOP'" />
         <MenubarLabel>
           Landmarks
         </MenubarLabel>
-        <DialogItem triggerChildren="Import" :disabledTrigger="cameraStore.objectPath == ''"
+        <DialogItem triggerChildren="Import" :disableTrigger="cameraStore.objectPath == ''"
           dialogTitle="Add the landmark file" , dialogDescription="Add the json files containing the landmarks">
-          <form @submit="submitLandmarks" >
+          <form @submit="submitLandmarks">
             <Label>File json</Label>
             <Input type="file" />
             <DialogFooter>

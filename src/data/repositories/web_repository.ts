@@ -35,6 +35,8 @@ import type { Pos } from "../models/pos";
 import type { Coordinates } from "../models/coordinates";
 import type { Repository } from "./repository";
 import type { ImportFile } from "../models/imports";
+import type { LandmarkCSV } from "../models/export/landmarks_csv";
+import type { ExportJSON } from "../models/export/landmarks_json";
 
 export class WebRepository implements Repository {
     server: string;
@@ -42,17 +44,23 @@ export class WebRepository implements Repository {
     constructor(server: string) {
         this.server = server
     }
-    importProject(software: string, files: Map<string, string>) : Promise<string>{
+    async landmarkCSV(landmarks: Array<LandmarkCSV>){
         throw Error("Not implemented")
     };
-    getImportFile(software : string, index : number) : Promise<string> {
+    async landmarksJSON(landmarks: ExportJSON){
         throw Error("Not implemented")
     };
-    importNewFile() : Promise<string> {
+    importProject(software: string, files: Map<string, string>): Promise<string> {
+        throw Error("Not implemented")
+    };
+    getImportFile(software: string, index: number): Promise<string> {
+        throw Error("Not implemented")
+    };
+    importNewFile(): Promise<string> {
         throw Error("Not implemented")
     };
 
-    getImportMethods() : Promise<Map<string, Array<ImportFile>>> {
+    getImportMethods(): Promise<Map<string, Array<ImportFile>>> {
         throw Error("Not implemented")
     };
 
@@ -63,7 +71,7 @@ export class WebRepository implements Repository {
             let images = res.data.images as VirtualCameraImage[]
             images.map((image) => {
                 image.fullImage = this.getImage(objectPath, image.name)
-                if(res.data.thumbnails){
+                if (res.data.thumbnails) {
                     image.thumbnail = this.getThumbnail(objectPath, image.name)
                 }
                 image.reprojections = new Map()

@@ -35,6 +35,8 @@ import type { Shortcut } from "../models/shortcut";
 import type { Pos } from "../models/pos";
 import type { Repository } from "./repository";
 import type { ImportFile } from "../models/imports";
+import type { LandmarkCSV } from "../models/export/landmarks_csv";
+import type { ExportJSON } from "../models/export/landmarks_json";
 
 export class OrthancRepository implements Repository {
     server: string;
@@ -42,6 +44,12 @@ export class OrthancRepository implements Repository {
     constructor(server: string) {
         this.server = server
     }
+    async landmarkCSV (landmarks: Array<LandmarkCSV>){
+        throw Error("Not implemented")
+    };
+    async landmarksJSON (landmarks: ExportJSON){
+        throw Error("Not implemented")
+    };
     importProject(software: string, files: Map<string, string>) : Promise<string>{
         throw Error("Not implemented")
     };

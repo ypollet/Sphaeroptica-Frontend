@@ -33,6 +33,8 @@ import type { Shortcut } from "@/data/models/shortcut";
 import type { Pos } from "../models/pos";
 import type { ImportFile } from "../models/imports";
 import type { Side } from "node_modules/radix-vue/dist/Popper";
+import type { LandmarkCSV } from "../models/export/landmarks_csv";
+import type { ExportJSON } from "../models/export/landmarks_json";
 
 export interface Repository {
     getImages : (objectPath:string) => Promise<ProjectData>;
@@ -43,4 +45,6 @@ export interface Repository {
     getImportMethods: () => Promise<Map<string, Array<ImportFile>>>
     getImportFile: (software : string, index : number) => Promise<string>
     importProject: (software : string, files : Map<string, string>) => Promise<string>
+    landmarkCSV: (landmarks : Array<LandmarkCSV>) => void
+    landmarksJSON: (landmarks : ExportJSON) => void
 }

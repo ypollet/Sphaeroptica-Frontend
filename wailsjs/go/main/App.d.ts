@@ -3,6 +3,10 @@
 import {main} from '../models';
 import {photogrammetry} from '../models';
 
+export function CreateLandmarksCSV(arg1:Array<main.LandmarkCSV>):Promise<string>;
+
+export function CreateLandmarksJSON(arg1:main.ExportJSON):Promise<string>;
+
 export function GetImportMethods():Promise<{[key: string]: Array<main.ImportForm>}>;
 
 export function Images(arg1:string):Promise<main.CameraViewer>;

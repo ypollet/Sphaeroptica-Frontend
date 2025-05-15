@@ -84,6 +84,134 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class DistanceJSON {
+	    label: string;
+	    left: string;
+	    right: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DistanceJSON(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.label = source["label"];
+	        this.left = source["left"];
+	        this.right = source["right"];
+	    }
+	}
+	export class PoseJSON {
+	    x: number;
+	    y: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new PoseJSON(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.x = source["x"];
+	        this.y = source["y"];
+	    }
+	}
+	export class LandmarkJSON {
+	    label: string;
+	    color: string;
+	    position: number[];
+	    poses: {[key: string]: PoseJSON};
+	
+	    static createFrom(source: any = {}) {
+	        return new LandmarkJSON(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.label = source["label"];
+	        this.color = source["color"];
+	        this.position = source["position"];
+	        this.poses = this.convertValues(source["poses"], PoseJSON, true);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class ExportJSON {
+	    scaleFactor: number;
+	    landmarks: {[key: string]: LandmarkJSON};
+	    distances: DistanceJSON[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ExportJSON(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.scaleFactor = source["scaleFactor"];
+	        this.landmarks = this.convertValues(source["landmarks"], LandmarkJSON, true);
+	        this.distances = this.convertValues(source["distances"], DistanceJSON);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class LandmarkCSV {
+	    label: string;
+	    color: string;
+	    x: string;
+	    y: string;
+	    z: string;
+	    x_adjusted: string;
+	    y_adjusted: string;
+	    z_adjusted: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new LandmarkCSV(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.label = source["label"];
+	        this.color = source["color"];
+	        this.x = source["x"];
+	        this.y = source["y"];
+	        this.z = source["z"];
+	        this.x_adjusted = source["x_adjusted"];
+	        this.y_adjusted = source["y_adjusted"];
+	        this.z_adjusted = source["z_adjusted"];
+	    }
+	}
+	
+	
 	
 
 }

@@ -31,16 +31,25 @@
 import type { Coordinates } from "../models/coordinates";
 import type { ProjectData, Size } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
-import { Images, Shortcuts, Reproject, Triangulate, ImportNewFile, GetImportMethods, OpenImportFile, ImportProject } from "../../../wailsjs/go/main/App.js";
+import { Images, Shortcuts, Reproject, Triangulate, ImportNewFile, GetImportMethods, OpenImportFile, ImportProject, CreateLandmarksCSV, CreateLandmarksJSON } from "../../../wailsjs/go/main/App.js";
 import type { Pos } from "../models/pos";
 import type { main } from "wailsjs/go/models";
 import type { Repository } from "./repository";
 import type { ImportFile } from "../models/imports";
-import { object } from "zod";
+import type { LandmarkCSV } from "../models/export/landmarks_csv";
+import type { ExportJSON } from "../models/export/landmarks_json";
 
 export class DesktopRepository implements Repository {
+  
+  async landmarkCSV (landmarks: Array<LandmarkCSV>){
+    return CreateLandmarksCSV(landmarks);
+  };
 
-  async importProject(software: string, files: Map<string, string>): Promise<string> {
+  async landmarksJSON (landmarks: ExportJSON){
+    return CreateLandmarksJSON(Object(landmarks));
+  };
+
+  importProject(software: string, files: Map<string, string>): Promise<string> {
     return ImportProject(software, Object.fromEntries(files))
   };
 

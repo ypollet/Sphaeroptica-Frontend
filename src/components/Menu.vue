@@ -267,7 +267,7 @@ function importLandmarks(jsonData: string) {
           dialogTitle="Add the landmark file" , dialogDescription="Add the json files containing the landmarks">
           <form @submit="submitLandmarks">
             <Label>File json</Label>
-            <Input type="file" />
+            <Input type="file" accept="application/json"/>
             <DialogFooter>
               <DialogClose as-child>
                 <Button type="submit">Confirm</Button>

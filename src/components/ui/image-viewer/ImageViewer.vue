@@ -437,6 +437,7 @@ function startDrag(event: MouseEvent) {
       x: event.pageX,
       y: event.pageY
     })
+    draggedPos.value = pos
     landmarksStore.landmarks.forEach((landmark, index) => {
       let marker = landmark.getPoses().get(cameraStore.selectedImage.name) || cameraStore.selectedImage.reprojections.get(landmark.id)
       if (!marker) {
@@ -447,7 +448,9 @@ function startDrag(event: MouseEvent) {
         landmarkDragged.value = landmark
       }
     })
+    update()
   }
+  
 }
 
 

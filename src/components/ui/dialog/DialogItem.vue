@@ -26,8 +26,6 @@ const emits = defineEmits<DialogRootEmits>()
 const forwarded = useForwardPropsEmits(props, emits)
 
 function closeDialog(payload : boolean){
-    console.log("close Dialog : ", payload)
-    console.log(props.open)
     emits('update:open',payload)
 }
 

@@ -74,7 +74,6 @@ const importForm = useForm({
 const onSubmit = importForm.handleSubmit(async (values) => {
     let vals = new Map<string, string>(Object.entries(values))
 
-    console.log(vals)
     loading.value = true
     let path = await repository.importProject(props.title, vals)
 

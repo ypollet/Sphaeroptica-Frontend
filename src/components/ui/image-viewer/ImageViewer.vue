@@ -60,8 +60,6 @@ landmarksStore.$subscribe(()=> {
 
 async function computeReprojection(image : VirtualCameraImage, landmark: Landmark) {
   if (landmark.position) {
-    console.log("Reprojection : ")
-    console.log(landmark.position)
     repository.computeReprojection(cameraStore.objectPath, landmark.position, image.name).then((pose) => {
       image.reprojections.set(landmark.id, pose)
       image.versions.set(landmark.id, landmark.getVersion())

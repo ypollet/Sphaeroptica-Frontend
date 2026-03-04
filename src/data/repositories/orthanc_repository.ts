@@ -108,13 +108,17 @@ export class OrthancRepository implements Repository {
     async computeReprojection(objectPath: string, position: Array<number>, imageName: string): Promise<Pos> {
         const path = this.server + "/sphaeroptica/" + imageName + '/reproject?x=' + position[0]
             + "&y=" + position[1] + "&z=" + position[2] + "&w=" + position[3];
-        return axios.get(path)
+        return axios.get(path).then((res) => {
+            return res.data
+        })
     }
 
     async triangulate(objectPath: string, poses: Map<string, Pos>): Promise<Array<number> | undefined> {
         const path = this.server + "/sphaeroptica/" + '/triangulate';
         return axios.post(path, {
             poses: Object.fromEntries(poses)
+        }).then((res) => {
+            return res.data
         })
     }
 

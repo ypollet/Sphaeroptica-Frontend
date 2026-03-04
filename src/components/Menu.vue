@@ -122,7 +122,6 @@ onMounted(async () => {
 
 function downloadCsv() {  
   
-  console.log("Download CSV")
 
   const rows = [
     ["Label", "Color", "X", "Y", "Z", "X_adjused", "Y_adjusted", "Z_adjusted"]

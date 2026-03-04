@@ -62,8 +62,6 @@ function getShortcuts() {
       shortcuts.forEach((item) => {
         mapShortcuts.set(item.name, item.coordinates);
       });
-      console.log("Map shortcuts")
-      console.log(mapShortcuts)
     })
     .catch((error) => {
       console.error(error);
@@ -74,14 +72,12 @@ function getShortcuts() {
 function shortcut(event: Event) {
   let target = event.currentTarget as HTMLButtonElement;
   let valKey = (target != null) ? target.attributes.getNamedItem("data-key")?.value : undefined
-  console.log(valKey)
   if (
     valKey == undefined
   ) {
     return;
   }
   let newPos: Coordinates | undefined = mapShortcuts.get(valKey)!
-  console.log(newPos)
   if (newPos != undefined) {
     // Don't forget to copy the object
     cameraStore.coordinates = {

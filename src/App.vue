@@ -50,12 +50,10 @@ let urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has('series')) {
   
   let seriesId = urlParams.get('series') as string
-  console.log(seriesId)
   if (cameraStore.objectPath != seriesId) {
     landmarksStore.$reset()
     landmarkImagesStore.$reset()
     cameraStore.setPath(seriesId)
-    console.log(cameraStore.objectPath)
   }
 }
 else {

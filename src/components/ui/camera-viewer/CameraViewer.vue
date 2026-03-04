@@ -120,7 +120,8 @@ async function getImages(): Promise<Array<VirtualCameraImage>> {
       imageStore.size = data.size
     } catch (e) {
       console.error("Orthanc sent the data but there's an error, we'll reset and start again : " + (e as Error).message)
-      cameraStore.$reset()
+      let path = cameraStore.objectPath
+      cameraStore.setPath(path)
       throw new Error((e as Error).message)
     }
     return images

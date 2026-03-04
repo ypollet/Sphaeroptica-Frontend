@@ -4,7 +4,6 @@ from flask_cors import CORS, cross_origin
 
 import pystache
 from base64 import encodebytes
-import glob
 import io
 import os
 from PIL import Image

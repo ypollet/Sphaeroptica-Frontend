@@ -30,7 +30,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, type HTMLAttributes, watch, version } from 'vue'
-import { useWindowSize } from '@vueuse/core'
 import { cn } from "@/lib/utils"
 import { ZOOM_MAX, ZOOM_MIN, DOT_RADIUS, SPACE_TARGET } from '@/lib/lib'
 import { Landmark } from "@/data/models/landmark"
@@ -61,6 +60,8 @@ landmarksStore.$subscribe(()=> {
 
 async function computeReprojection(image : VirtualCameraImage, landmark: Landmark) {
   if (landmark.position) {
+    console.log("Reprojection : ")
+    console.log(landmark.position)
     repository.computeReprojection(cameraStore.objectPath, landmark.position, image.name).then((pose) => {
       image.reprojections.set(landmark.id, pose)
       image.versions.set(landmark.id, landmark.getVersion())

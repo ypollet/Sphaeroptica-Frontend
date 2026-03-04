@@ -114,7 +114,7 @@ export class OrthancRepository implements Repository {
     }
 
     async triangulate(objectPath: string, poses: Map<string, Pos>): Promise<Array<number> | undefined> {
-        const path = this.server + "/sphaeroptica/" + '/triangulate';
+        const path = this.server + "/sphaeroptica/" + 'triangulate';
         return axios.post(path, {
             poses: Object.fromEntries(poses)
         }).then((res) => {

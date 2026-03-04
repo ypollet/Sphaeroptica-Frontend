@@ -96,7 +96,7 @@ export class OrthancRepository implements Repository {
         const path = this.server + "/sphaeroptica/" + objectPath + "/shortcuts";
         return axios.get(path).then((res) => {
             let shortcuts = new Array<Shortcut>()
-            let map: Map<string, Coordinates> = new Map(Object.entries(res.data.commands))
+            let map: Map<string, Coordinates> = new Map(Object.entries(res.data))
             map.forEach((val: Coordinates, key: string) => {
                 shortcuts.push({ name: key, coordinates: val })
             });

@@ -155,7 +155,7 @@ function downloadCsv() {
   let csvContent = rows.map(e => e.join(";")).join("\n");
 
   let blob: Blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  saveAs(blob, "landmarks_" + cameraStore.objectPath + ".csv")
+  saveAs(blob, "landmarks_" + cameraStore.objectPath + "_" + new Date().getTime() + ".csv")
 }
 
 function downloadJSON() {

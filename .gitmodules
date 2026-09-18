@@ -1,6 +1,6 @@
 [submodule "data"]
 	path = data
 	url = git@github.com:ypollet/Sphaeroptica-Data.git
-[submodule "photgrammetry"]
-	path = photgrammetry
+[submodule "photogrammetry"]
+	path = photogrammetry
 	url = git@github.com:ypollet/Sphaeroptica-Photogrammetry.git

@@ -38,7 +38,7 @@ import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
 } from '@/components/ui/context-menu'
 
-import { useVirtualCameraStore, useLandmarksStore, useImageStore} from "@/lib/stores";
+import { useVirtualCameraStore, useLandmarksStore, useImageStore } from "@/lib/stores";
 import { Landmark } from "@/data/models/landmark";
 import CameraViewer from "@/components/ui/camera-viewer/CameraViewer.vue";
 
@@ -59,13 +59,13 @@ var mapShortcuts: Map<string, Coordinates> = new Map();
 
 function getShortcuts() {
   repository.getShorcuts(cameraStore.objectPath).then((shortcuts) => {
-      shortcuts.forEach((item) => {
-        mapShortcuts.set(item.name, item.coordinates);
-      });
-    })
+    shortcuts.forEach((item) => {
+      mapShortcuts.set(item.name, item.coordinates);
+    });
+  })
     .catch((error) => {
       console.error(error);
-    }); 
+    });
 }
 
 
@@ -81,24 +81,24 @@ function shortcut(event: Event) {
   if (newPos != undefined) {
     // Don't forget to copy the object
     cameraStore.coordinates = {
-      longitude : newPos.longitude,
-      latitude : newPos.latitude
+      longitude: newPos.longitude,
+      latitude: newPos.latitude
     };
   }
 }
 
-function addDistance(){
+function addDistance() {
   let id_left = landmarksStore.selectedGroup.deque[0]
   let id_right = landmarksStore.selectedGroup.deque[1]
-  let left : Landmark = landmarksStore.landmarks.find((x) => x.id == id_left) as Landmark
-  let right : Landmark = landmarksStore.landmarks.find((x) => x.id == id_right) as Landmark
+  let left: Landmark = landmarksStore.landmarks.find((x) => x.id == id_left) as Landmark
+  let right: Landmark = landmarksStore.landmarks.find((x) => x.id == id_right) as Landmark
   landmarksStore.addDistance(left, right)
 }
 
-function resetScale(){
+function resetScale() {
   landmarksStore.adjustFactor = 1
 }
-function reset(){
+function reset() {
   cameraStore.setPath(cameraStore.objectPath)
   imageStore.$reset()
 }
@@ -110,10 +110,14 @@ getShortcuts();
   <div class="pb-[12px] w-full flex-col">
     <!--<Button class="w-full" @click="reset">Reset</Button>-->
     <h2 class="mb-2 px-4 text-center font-semibold tracking-tight">
-      Camera Viewer ({{ round(cameraStore.coordinates.longitude) }}, {{ round(cameraStore.coordinates.latitude)}}) : {{ round(imageStore.zoom * 100) }}%
+      Camera Viewer ({{ round(cameraStore.coordinates.longitude) }}, {{ round(cameraStore.coordinates.latitude) }}) : {{
+        round(imageStore.zoom * 100) }}%
     </h2>
     <CameraViewer />
     <div class="space-y-4 py-4">
+      <div class="flex items-center justify-center">
+        <TextLogo width="50%" height="auto" />
+      </div>
       <div class="px-3 py-2">
         <h2 class="mb-2 px-4 text-lg font-semibold tracking-tight">
           Shortcuts
@@ -151,16 +155,16 @@ getShortcuts();
         <h2 class="relative px-7 text-lg font-semibold tracking-tight">
           Landmarks
         </h2>
-          <ContextMenu>
-            <ContextMenuTrigger class="flex w-full h-full">
-              <LandmarkList/>
-            </ContextMenuTrigger>
-            <ContextMenuContent class="w-64">
-              <ContextMenuItem class="block" inset @select="addDistance">
-                Create Distance
-              </ContextMenuItem>
+        <ContextMenu>
+          <ContextMenuTrigger class="flex w-full h-full">
+            <LandmarkList />
+          </ContextMenuTrigger>
+          <ContextMenuContent class="w-64">
+            <ContextMenuItem class="block" inset @select="addDistance">
+              Create Distance
+            </ContextMenuItem>
           </ContextMenuContent>
-          </ContextMenu>
+        </ContextMenu>
       </div>
       <div class="px-3 py-2">
         <div class="flex row">
@@ -186,7 +190,7 @@ getShortcuts();
             </Button>
           </div>
         </div>
-        <DistanceList/>
+        <DistanceList />
       </div>
     </div>
   </div>

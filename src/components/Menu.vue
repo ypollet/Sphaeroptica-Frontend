@@ -119,6 +119,12 @@ onMounted(async () => {
   }
 })
 
+function date2string(date : Date) {
+  let day = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}`
+  let time = `${date.getHours().toString().padStart(2,'0')}${date.getMinutes().toString().padStart(2,'0')}${date.getSeconds().toString().padStart(2,'0')}`
+  return `${day}-${time}`;
+}
+
 
 function downloadCsv() {  
   
@@ -155,7 +161,7 @@ function downloadCsv() {
   let csvContent = rows.map(e => e.join(";")).join("\n");
 
   let blob: Blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  saveAs(blob, "landmarks_" + cameraStore.objectPath + "_" + new Date().getTime() + ".csv")
+  saveAs(blob, "anno_sphaer_" + cameraStore.objectPath + "_" + date2string(new Date()) + ".csv")
 }
 
 function downloadJSON() {
@@ -192,7 +198,7 @@ function downloadJSON() {
   }
 
   var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
-  saveAs(blob, "landmarks_" + cameraStore.objectPath + "_" + new Date().getTime() + ".json");
+  saveAs(blob, "anno_sphaer_" + cameraStore.objectPath + "_" + date2string(new Date()) + ".json");
 }
 
 async function openFile() {

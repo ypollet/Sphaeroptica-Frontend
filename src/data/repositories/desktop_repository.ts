@@ -29,7 +29,7 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import type { Coordinates } from "../models/coordinates";
-import type { ProjectData, Size } from "../models/virtual_camera_image";
+import type { ProjectData, Size, VirtualCameraImage } from "../models/virtual_camera_image";
 import type { Shortcut } from "../models/shortcut";
 import { Images, Shortcuts, Reproject, Triangulate, ImportNewFile, GetImportMethods, OpenImportFile, ImportProject, CreateLandmarksCSV, CreateLandmarksJSON } from "../../../wailsjs/go/main/App.js";
 import type { Pos } from "../models/pos";

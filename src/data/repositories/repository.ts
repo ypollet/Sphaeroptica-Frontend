@@ -32,7 +32,6 @@ import type { ProjectData } from "@/data/models/virtual_camera_image";
 import type { Shortcut } from "@/data/models/shortcut";
 import type { Pos } from "../models/pos";
 import type { ImportFile } from "../models/imports";
-import type { Side } from "node_modules/radix-vue/dist/Popper";
 import type { LandmarkCSV } from "../models/export/landmarks_csv";
 import type { ExportJSON } from "../models/export/landmarks_json";
 

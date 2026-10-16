@@ -30,13 +30,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <script setup lang="ts">
 import {
   Menubar,
-  MenubarCheckboxItem,
   MenubarContent,
   MenubarItem,
   MenubarLabel,
   MenubarMenu,
-  MenubarRadioGroup,
-  MenubarRadioItem,
   MenubarSeparator,
   MenubarShortcut,
   MenubarSub,
@@ -46,28 +43,10 @@ import {
 } from '@/components/ui/menubar'
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
   DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
   DialogClose,
   DialogItem
 } from '@/components/ui/dialog'
-
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { useForm, validate, type FormContext } from 'vee-validate'
-import { toTypedSchema } from '@vee-validate/zod'
-import * as z from 'zod'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -99,17 +78,11 @@ const isDark = useDark({
   storageKey: 'localStorage'
 })
 
-const isEditDialogOpen = ref<boolean>(false)
-const setIsEditDialogOpen = useToggle(isEditDialogOpen)
-const isDeleteDialogOpen = ref<boolean>(false)
-const setIsDeleteDialogOpen = useToggle(isDeleteDialogOpen)
-
 const repository = RepositoryFactory.get(repositorySettings.type)
 
 const toggleDark = useToggle(isDark)
 
 const imports = ref<Map<string, Array<ImportFile>>>(new Map())
-const importMap = new Map<string, any>()
 
 onMounted(async () => {
   if (repositorySettings.type == "DESKTOP") {
@@ -124,7 +97,6 @@ function date2string(date : Date) {
   let time = `${date.getHours().toString().padStart(2,'0')}${date.getMinutes().toString().padStart(2,'0')}${date.getSeconds().toString().padStart(2,'0')}`
   return `${day}-${time}`;
 }
-
 
 function downloadCsv() {  
   
@@ -159,6 +131,8 @@ function downloadCsv() {
     rows.push(row)
   })
   let csvContent = rows.map(e => e.join(";")).join("\n");
+
+  let formattedDate = date2string(new Date())
 
   let blob: Blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   saveAs(blob, "anno_sphaer_" + cameraStore.objectPath + "_" + date2string(new Date()) + ".csv")
@@ -196,6 +170,8 @@ function downloadJSON() {
     repository.landmarksJSON(data);
     return;
   }
+
+  let formattedDate = date2string(new Date())
 
   var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
   saveAs(blob, "anno_sphaer_" + cameraStore.objectPath + "_" + date2string(new Date()) + ".json");

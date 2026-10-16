@@ -1,7 +1,7 @@
 <!-- 
 Sphaeroptica - 3D Viewer on calibrated images - Frontend
 
-Copyright (C) 2024 Yann Pollet, Royal Belgian Institute of Natural Sciences
+Copyright (C) 2024-2026 Yann Pollet, Royal Belgian Institute of Natural Sciences
 
 
 This program is free software: you can redistribute it and/or

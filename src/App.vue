@@ -34,6 +34,8 @@ import { Separator } from "@/components/ui/separator";
 import SelectView from './views/SelectView.vue';
 import ViewerView from './views/ViewerView.vue';
 import { useImageStore, useLandmarksStore, useVirtualCameraStore } from "@/lib/stores";
+import MainLogo from '@/components/ui/logo/MainLogo.vue';
+import { OnlyTextLogo } from './components/ui/logo/index.js';
 
 useDark({
   storageKey: 'localStorage'
@@ -65,9 +67,21 @@ else {
 
 <template>
   <main class="overflow-hidden h-screen">
-    <Menu class="sticky top-0 flex flex-row grow z-50"></Menu>
+    <div class="flex menu">
+      <Menu class="sticky top-0 flex flex-row grow z-50"/>
+      <div class="flex items-center space-x-2 pr-2">
+        <MainLogo :height=30 :width=30 />
+        <OnlyTextLogo :height=15 width="auto"/>
+      </div>
+    </div>
     <Separator></Separator>
     <ViewerView v-if="cameraStore.objectPath != null" />
     <SelectView v-else />
   </main>
 </template>
+
+<style scoped>
+.menu {
+  height: 40px;
+}
+</style>

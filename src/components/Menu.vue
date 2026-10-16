@@ -132,8 +132,6 @@ function downloadCsv() {
   })
   let csvContent = rows.map(e => e.join(";")).join("\n");
 
-  let formattedDate = date2string(new Date())
-
   let blob: Blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   saveAs(blob, "anno_sphaer_" + cameraStore.objectPath + "_" + date2string(new Date()) + ".csv")
 }
@@ -170,8 +168,6 @@ function downloadJSON() {
     repository.landmarksJSON(data);
     return;
   }
-
-  let formattedDate = date2string(new Date())
 
   var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
   saveAs(blob, "anno_sphaer_" + cameraStore.objectPath + "_" + date2string(new Date()) + ".json");
@@ -223,7 +219,7 @@ function importLandmarks(jsonData: string) {
 </script>
 
 <template>
-  <Menubar class="rounded border-b z-100 h-10">
+  <Menubar class="border-none z-100 h-10">
     <MenubarMenu>
       <MenubarTrigger class="relative">
         File

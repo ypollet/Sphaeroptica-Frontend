@@ -35,7 +35,6 @@ import SelectView from './views/SelectView.vue';
 import ViewerView from './views/ViewerView.vue';
 import { useImageStore, useLandmarksStore, useVirtualCameraStore } from "@/lib/stores";
 import MainLogo from '@/components/ui/logo/MainLogo.vue';
-import { OnlyTextLogo } from './components/ui/logo/index.js';
 
 useDark({
   storageKey: 'localStorage'
@@ -71,7 +70,7 @@ else {
       <Menu class="sticky top-0 flex flex-row grow z-50"/>
       <div class="flex items-center space-x-2 pr-2">
         <MainLogo :height=30 :width=30 />
-        <OnlyTextLogo :height=15 width="auto"/>
+        <h1 class="font-dejavu font-bold text-brand">Sphaeroptica</h1>
       </div>
     </div>
     <Separator></Separator>
